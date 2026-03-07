@@ -1,0 +1,173 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projetos Dinâmicos - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Projetos Dinâmicos</h1>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}" class="nav-link active">Dashboard</a>
+                <a href="{{ url_for('relatorio') }}" class="nav-link">Relatório</a>
+                
+                <div class="user-info">
+                    <span class="user-avatar" title="Modo Convidado">G</span>
+                    <span class="nav-link" style="cursor: default; opacity: 0.7;">Suporte</span>
+                </div>
+                
+                <button id="themeBtn" class="theme-btn" title="Alternar tema">🌓</button>
+                <button id="contrastBtn" class="theme-btn" title="Alto contraste">◐</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h2>Projetos Registrados</h2>
+                <button class="btn btn-primary" id="openModalBtn">+ Novo Projeto</button>
+            </div>
+
+            <div class="projects-grid">
+                {% for projeto in projetos %}
+                <div class="project-card">
+                    <div class="card-header">
+                        <h3>{{ projeto.nome }}</h3>
+                        <form method="POST" action="{{ url_for('delete_projeto', projeto_id=projeto.id) }}" class="delete-form" onsubmit="return confirm('Tem certeza que deseja excluir o projeto {{ projeto.nome }}?')">
+                            <button type="submit" class="delete-btn" title="Excluir Projeto">🗑️</button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <p class="descricao">{{ projeto.descricao }}</p>
+                        <p class="data">Criado em: {{ projeto.data_criacao.strftime('%d/%m/%Y') if projeto.data_criacao else '--/--/----' }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('projeto_detalhes', projeto_id=projeto.id) }}" class="btn btn-secondary">Ver Atividades</a>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="project-card add-card" id="openModalCard">
+                    <div class="add-icon">+</div>
+                    <p>Novo Projeto</p>
+                </div>
+            </div>
+
+            <div class="status-board">
+                <div class="status-column">
+                    <h3 class="status-title status-planejamento">Planejamento</h3>
+                    <div class="status-cards">
+                        {% for atividade in planejamentos %}
+                        <div class="status-card">
+                            <div class="status-card-header">
+                                <strong>{{ atividade.nome }}</strong>
+                            </div>
+                            <p class="status-projeto">{{ atividade.projeto_nome }}</p>
+                            <div class="status-meta">
+                                <span class="badge badge-{{ atividade.prioridade.split(' ')[0].lower() if atividade.prioridade else 'baixa' }}">{{ atividade.prioridade }}</span>
+                                <span class="stack-badge">{{ atividade.stack }}</span>
+                            </div>
+                            <a href="{{ url_for('projeto_detalhes', projeto_id=atividade.projeto_id) }}" class="btn btn-sm">Ver</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <h3 class="status-title status-andamento">Em Andamento</h3>
+                    <div class="status-cards">
+                        {% for atividade in andamentos %}
+                        <div class="status-card">
+                            <div class="status-card-header">
+                                <strong>{{ atividade.nome }}</strong>
+                            </div>
+                            <p class="status-projeto">{{ atividade.projeto_nome }}</p>
+                            <div class="status-meta">
+                                <span class="badge badge-{{ atividade.prioridade.split(' ')[0].lower() if atividade.prioridade else 'media' }}">{{ atividade.prioridade }}</span>
+                                <span class="stack-badge">{{ atividade.stack }}</span>
+                            </div>
+                            <a href="{{ url_for('projeto_detalhes', projeto_id=atividade.projeto_id) }}" class="btn btn-sm">Ver</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <h3 class="status-title status-concluido">Concluído</h3>
+                    <div class="status-cards">
+                        {% for atividade in concluidos %}
+                        <div class="status-card">
+                            <div class="status-card-header">
+                                <strong>{{ atividade.nome }}</strong>
+                            </div>
+                            <p class="status-projeto">{{ atividade.projeto_nome }}</p>
+                            <div class="status-meta">
+                                <span class="badge badge-{{ atividade.prioridade.split(' ')[0].lower() if atividade.prioridade else 'alta' }}">{{ atividade.prioridade }}</span>
+                                <span class="stack-badge">{{ atividade.stack }}</span>
+                            </div>
+                            <a href="{{ url_for('projeto_detalhes', projeto_id=atividade.projeto_id) }}" class="btn btn-sm">Ver</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="projetoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Projeto</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form action="{{ url_for('criar_projeto') }}" method="POST">
+                <div class="form-group">
+                    <label for="nome">Nome do Projeto</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Criar Projeto</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Projetos Dinâmicos. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        const modal = document.getElementById('projetoModal');
+        const closeBtn = document.querySelector('#projetoModal .close-btn');
+        
+        // Ajustado para funcionar com os dois botões de abrir modal
+        document.getElementById('openModalBtn').onclick = () => modal.classList.add('active');
+        document.getElementById('openModalCard').onclick = () => modal.classList.add('active');
+        
+        closeBtn.onclick = () => modal.classList.remove('active');
+        
+        // Fechar modal ao clicar fora dele
+        window.onclick = (event) => {
+            if (event.target == modal) modal.classList.remove('active');
+        };
+
+        // Temas
+        document.getElementById('themeBtn').onclick = () => {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        };
+        document.getElementById('contrastBtn').onclick = () => {
+            document.body.classList.toggle('high-contrast');
+            localStorage.setItem('contrast', document.body.classList.contains('high-contrast') ? 'on' : 'off');
+        };
+        if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-theme');
+        if (localStorage.getItem('contrast') === 'on') document.body.classList.add('high-contrast');
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ projeto.nome }} - Detalhes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Projetos Dinâmicos</h1>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('relatorio') }}" class="nav-link">Relatório</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <div>
+                    <h2>{{ projeto.nome }}</h2>
+                    <p>{{ projeto.descricao }}</p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">← Voltar</a>
+            </div>
+
+            <section class="activity-form-container">
+                <h3>Nova Atividade</h3>
+                <form action="{{ url_for('projeto_detalhes', projeto_id=projeto.id) }}" method="POST" class="form-grid">
+                    <div class="form-group">
+                        <label>Atividade</label>
+                        <input type="text" name="nome_atividade" required placeholder="O que será feito?">
+                    </div>
+                    <div class="form-group">
+                        <label>Stack</label>
+                        <select name="stack" id="stackSelect">
+                            <option value="frontend">Frontend</option>
+                            <option value="backend">Backend</option>
+                            <option value="database">Database</option>
+                            <option value="cloud">Cloud</option>
+                            <option value="other">Outro (especificar)</option>
+                        </select>
+                        <input type="text" name="new_stack" id="newStackInput" placeholder="Descreva o novo stack" style="display:none; margin-top:6px;">
+                    </div>
+                    <!-- Data/Hora agora é preenchida automaticamente pelo servidor -->
+                    <div class="form-group">
+                        <label>Prioridade</label>
+                        <select name="prioridade">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Relatório/Notas</label>
+                        <textarea name="relatorio" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+            </section>
+
+            <hr>
+
+            <section class="activities-list">
+                <h3>Atividades Registradas</h3>
+                <div class="activities-grid">
+                    
+                    {% for atividade in atividades %}
+                    <div class="activity-card">
+                        <div class="activity-content">
+                            <div class="activity-header">
+                                <strong>{{ atividade.nome }}</strong>
+                                <span class="badge badge-{{ atividade.prioridade.lower() if atividade.prioridade else 'baixa' }}">
+                                    {{ atividade.prioridade }}
+                                </span>
+                            </div>
+                            <p class="meta">🛠️ {{ atividade.stack }} | 📅 {{ atividade.data_hora.strftime('%d/%m/%Y %H:%M') if atividade.data_hora else '-' }}</p>
+                            <p class="desc">{{ atividade.relatorio }}</p>
+                        </div>
+
+                        <div class="activity-actions">
+                            <form action="{{ url_for('update_status', id=atividade.id) }}" method="POST">
+                                <select name="status" onchange="this.form.submit()" class="select-sm">
+                                    <option value="planejamento" {% if atividade.status == 'planejamento' %}selected{% endif %}>Planejamento</option>
+                                    <option value="andamento" {% if atividade.status == 'andamento' %}selected{% endif %}>Em Andamento</option>
+                                    <option value="concluido" {% if atividade.status == 'concluido' %}selected{% endif %}>Concluído</option>
+                                </select>
+                            </form>
+
+                            <form action="{{ url_for('delete_atividade', id=atividade.id) }}" method="POST" onsubmit="return confirm('Excluir esta atividade?')">
+                                <button type="submit" class="btn-delete" title="Excluir">🗑️</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="empty-msg">Nenhuma atividade para este projeto.</p>
+                    {% endfor %}
+                    </div>
+            </section>
+        </div>
+    </main>
+    <script>
+        // Mostra campo para novo stack quando selecionado 'Outro'
+        const stackSelect = document.getElementById('stackSelect');
+        const newStackInput = document.getElementById('newStackInput');
+        if(stackSelect){
+            stackSelect.addEventListener('change', function(){
+                if(this.value === 'other') newStackInput.style.display = 'block';
+                else newStackInput.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

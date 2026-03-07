@@ -1,0 +1,155 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Atividades - Projetos Dinâmicos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="logo">PROJETOS<span>DINÂMICOS</span></a>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('relatorio') }}" class="nav-link active">Relatórios</a>
+                <button id="themeBtn" class="theme-btn" title="Alternar Tema">☀️</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h2>Relatório Geral</h2>
+                <div class="actions">
+                    <a href="{{ url_for('gerar_pdf', projeto_id=request.args.get('projeto_id'), prioridade=request.args.get('prioridade'), status=request.args.get('status')) }}" 
+                       class="btn btn-primary">
+                        📄 Exportar PDF
+                    </a>
+                </div>
+            </div>
+
+            <section class="filters-card">
+                <form method="GET" action="{{ url_for('relatorio') }}" class="form-grid">
+                    <div class="form-group">
+                        <label for="projeto_id">Projeto</label>
+                        <select name="projeto_id" id="projeto_id">
+                            <option value="">Todos</option>
+                            {% for p in projetos %}
+                            <option value="{{ p.id }}" {% if request.args.get('projeto_id') == p.id|string %}selected{% endif %}>
+                                {{ p.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prioridade">Prioridade</label>
+                        <select name="prioridade" id="prioridade">
+                            <option value="">Todas</option>
+                            <option value="Baixa" {% if request.args.get('prioridade') == 'Baixa' %}selected{% endif %}>Baixa</option>
+                            <option value="Média" {% if request.args.get('prioridade') == 'Média' %}selected{% endif %}>Média</option>
+                            <option value="Alta" {% if request.args.get('prioridade') == 'Alta' %}selected{% endif %}>Alta</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select name="status" id="status">
+                            <option value="">Todos</option>
+                            <option value="planejamento" {% if request.args.get('status') == 'planejamento' %}selected{% endif %}>Planejamento</option>
+                            <option value="andamento" {% if request.args.get('status') == 'andamento' %}selected{% endif %}>Andamento</option>
+                            <option value="concluido" {% if request.args.get('status') == 'concluido' %}selected{% endif %}>Concluído</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: flex-end; gap: 10px;">
+                        <button type="submit" class="btn btn-secondary">Filtrar</button>
+                        <a href="{{ url_for('relatorio') }}" class="btn btn-outline">Limpar</a>
+                    </div>
+                </form>
+            </section>
+
+            <div class="table-container">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Projeto</th>
+                            <th>Atividade</th>
+                            <th>Stack</th>
+                            <th>Data/Hora</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atividade in atividades %}
+                        <tr>
+                            <td><strong>{{ atividade.projeto_nome }}</strong></td>
+                            <td>{{ atividade.atividade_nome }}</td>
+                            <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent);">{{ atividade.stack }}</span></td>
+                            <td>{{ atividade.data_hora.strftime('%d/%m/%Y %H:%M') if atividade.data_hora else '-' }}</td>
+                            <td>
+                                <span class="badge badge-{{ atividade.prioridade.lower() }}">
+                                    {{ atividade.prioridade }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-dot status-{{ atividade.status }}"></span>
+                                {{ atividade.status|capitalize }}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('delete_atividade', id=atividade.id) }}" method="POST" 
+                                      onsubmit="return confirm('Excluir esta atividade permanentemente?')">
+                                    <button type="submit" class="btn-delete" title="Excluir Atividade">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                Nenhuma atividade encontrada para os filtros aplicados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="summary">
+                <p>Registros encontrados: <strong>{{ atividades|length }}</strong></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Projetos Dinâmicos - Marília, SP</p>
+    </footer>
+
+    <script>
+        const themeBtn = document.getElementById('themeBtn');
+        const body = document.body;
+
+        const setTheme = (theme) => {
+            if (theme === 'light') {
+                body.classList.add('light-theme');
+                themeBtn.innerHTML = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.remove('light-theme');
+                themeBtn.innerHTML = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        };
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') setTheme('light');
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.contains('light-theme') ? setTheme('dark') : setTheme('light');
+        });
+    </script>
+</body>
+</html>

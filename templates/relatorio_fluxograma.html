@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fluxograma do Relatório</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .container { max-width: 1100px; margin: 20px auto; padding: 10px; }
+    .actions { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Fluxograma do Relatório</h2>
+    <div class="actions">
+      <a href="{{ url_for('relatorio') }}">← Voltar ao relatório</a>
+      <a style="margin-left:12px;" href="{{ url_for('gerar_pdf') }}">📄 Baixar Resumo (PDF)</a>
+    </div>
+
+    <div class="projects-summary">
+      {% for p in projetos_summary %}
+      <div class="project-card-sm">
+        <strong>{{ p.nome }}</strong>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{ p.pct }}%">&nbsp;</div>
+        </div>
+        <small>{{ p.concluidas }} / {{ p.total }} concluídas ({{ p.pct }}%)</small>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mermaid">
+{{ mermaid | safe }}
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/mermaid-loader.js') }}"></script>
+  <style>
+    .projects-summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .project-card-sm { border:1px solid #ddd; padding:8px; border-radius:6px; width:240px; }
+    .progress-bar { background:#eee; height:10px; border-radius:6px; overflow:hidden; margin:6px 0; }
+    .progress-fill { background:linear-gradient(90deg,#4CAF50,#8BC34A); height:100%; }
+  </style>
+</body>
+</html>
