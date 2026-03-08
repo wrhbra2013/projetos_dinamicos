@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Projeto</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Projetos Dinâmicos</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="relatorio.html" class="nav-link">Relatório</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <div>
+                    <h2 id="projetoNome">Carregando...</h2>
+                    <p id="projetoDescricao"></p>
+                </div>
+                <a href="index.html" class="btn btn-secondary">← Voltar</a>
+            </div>
+
+            <section class="activity-form-container">
+                <h3>Nova Atividade</h3>
+                <form id="formAtividade" class="form-grid">
+                    <input type="hidden" id="projetoId">
+                    <div class="form-group">
+                        <label>Atividade</label>
+                        <input type="text" id="nomeAtividade" name="nome_atividade" required placeholder="O que será feito?">
+                    </div>
+                    <div class="form-group">
+                        <label>Stack</label>
+                        <select name="stack" id="stackSelect">
+                            <option value="frontend">Frontend</option>
+                            <option value="backend">Backend</option>
+                            <option value="database">Database</option>
+                            <option value="cloud">Cloud</option>
+                            <option value="outro">Outro (especificar)</option>
+                        </select>
+                        <input type="text" name="new_stack" id="newStackInput" placeholder="Descreva o novo stack" style="display:none; margin-top:6px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridade</label>
+                        <select name="prioridade" id="prioridadeSelect">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Relatório/Notas</label>
+                        <textarea name="relatorio" id="relatorioInput" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+            </section>
+
+            <hr>
+
+            <section class="activities-list">
+                <h3>Atividades Registradas</h3>
+                <div class="activities-grid" id="atividadesGrid">
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+            
+            const params = new URLSearchParams(window.location.search);
+            const projetoId = parseInt(params.get('id'));
+            
+            if (!projetoId) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const projeto = App.getProjeto(projetoId);
+            if (!projeto) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('projetoId').value = projetoId;
+            document.getElementById('projetoNome').textContent = projeto.nome;
+            document.getElementById('projetoDescricao').textContent = projeto.descricao || '';
+            
+            App.renderAtividades(projetoId);
+            
+            document.getElementById('formAtividade').addEventListener('submit', (e) => {
+                e.preventDefault();
+                App.adicionarAtividade(projetoId);
+            });
+            
+            const stackSelect = document.getElementById('stackSelect');
+            const newStackInput = document.getElementById('newStackInput');
+            stackSelect.addEventListener('change', function() {
+                newStackInput.style.display = this.value === 'outro' ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

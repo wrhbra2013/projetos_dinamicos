@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projetos Dinâmicos - Dashboard</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Projetos Dinâmicos</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">Dashboard</a>
+                <a href="relatorio.html" class="nav-link">Relatório</a>
+                <a href="auditoria.html" class="nav-link" title="Auditoria">🔍</a>
+                <button id="themeBtn" class="theme-btn" title="Alternar tema">🌓</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h2>Projetos Registrados</h2>
+                <button class="btn btn-primary" id="openModalBtn">+ Novo Projeto</button>
+            </div>
+
+            <div class="projects-grid" id="projectsGrid">
+            </div>
+
+            <div class="status-board">
+                <div class="status-column">
+                    <h3 class="status-title status-planejamento">Planejamento</h3>
+                    <div class="status-cards" id="planejamentoCards">
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <h3 class="status-title status-andamento">Em Andamento</h3>
+                    <div class="status-cards" id="andamentoCards">
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <h3 class="status-title status-concluido">Concluído</h3>
+                    <div class="status-cards" id="concluidoCards">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="projetoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Projeto</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="formNovoProjeto">
+                <div class="form-group">
+                    <label for="nome">Nome do Projeto</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Criar Projeto</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Projetos Dinâmicos. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+            App.renderDashboard();
+        });
+    </script>
+</body>
+</html>

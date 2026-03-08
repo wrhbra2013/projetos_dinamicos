@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fluxograma do Relatório</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="static/css/style.css">
   <style>
     .container { max-width: 1100px; margin: 20px auto; padding: 10px; }
     .actions { margin-bottom: 12px; }
@@ -14,28 +14,25 @@
   <div class="container">
     <h2>Fluxograma do Relatório</h2>
     <div class="actions">
-      <a href="{{ url_for('relatorio') }}">← Voltar ao relatório</a>
-      <a style="margin-left:12px;" href="{{ url_for('gerar_pdf') }}">📄 Baixar Resumo (PDF)</a>
+      <a href="relatorio.html">← Voltar ao relatório</a>
     </div>
 
-    <div class="projects-summary">
-      {% for p in projetos_summary %}
-      <div class="project-card-sm">
-        <strong>{{ p.nome }}</strong>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: {{ p.pct }}%">&nbsp;</div>
-        </div>
-        <small>{{ p.concluidas }} / {{ p.total }} concluídas ({{ p.pct }}%)</small>
-      </div>
-      {% endfor %}
+    <div class="projects-summary" id="projectsSummary">
     </div>
 
-    <div class="mermaid">
-{{ mermaid | safe }}
+    <div class="mermaid" id="mermaidChart">
     </div>
   </div>
 
-  <script src="{{ url_for('static', filename='js/mermaid-loader.js') }}"></script>
+  <script src="static/js/mermaid.min.js"></script>
+  <script src="static/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        App.init();
+        mermaid.initialize({ startOnLoad: false });
+        App.renderFluxograma();
+    });
+  </script>
   <style>
     .projects-summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
     .project-card-sm { border:1px solid #ddd; padding:8px; border-radius:6px; width:240px; }
