@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte e Planos - Projetos Dinâmicos</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <style>
+        body {
+            padding: 40px 20px;
+        }
+        .suporte-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .suporte-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .suporte-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .suporte-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .plan-card {
+            background: var(--secondary);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            position: relative;
+        }
+        .plan-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+        .plan-card.featured {
+            border-color: var(--highlight);
+        }
+        .plan-card.featured::before {
+            content: "Mais Popular";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--highlight);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .plan-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .plan-price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 20px 0;
+        }
+        .plan-price span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin: 20px 0;
+        }
+        .plan-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .plan-features li::before {
+            content: "✓";
+            color: var(--success);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .plan-features li.disabled {
+            color: var(--text-secondary);
+        }
+        .plan-features li.disabled::before {
+            content: "✗";
+            color: var(--danger);
+        }
+        .plan-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+        }
+        .contact-section {
+            background: var(--secondary);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            text-align: center;
+        }
+        .contact-section h2 {
+            margin-bottom: 20px;
+        }
+        .contact-form {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .contact-form .form-group {
+            margin-bottom: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: var(--highlight);
+        }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="suporte-container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="suporte-header">
+            <h1>💬 Suporte Personalizado</h1>
+            <p>Escolha um plano e receba atendimento dedicado para seus projetos</p>
+        </div>
+
+        <div class="plans-grid">
+            <div class="plan-card">
+                <h3 class="plan-name">Básico</h3>
+                <div class="plan-price">R$ 97<span>/mês</span></div>
+                <ul class="plan-features">
+                    <li>Suporte por email</li>
+                    <li>Resposta em até 48h</li>
+                    <li>1 projeto simultâneo</li>
+                    <li class="disabled">Consultoria semanal</li>
+                    <li class="disabled">Prioridade alta</li>
+                    <li class="disabled"> Chamada de vídeo</li>
+                </ul>
+                <button class="btn btn-secondary plan-btn" onclick="Suporte.assinar('basic')">
+                    Escolher Plano
+                </button>
+            </div>
+
+            <div class="plan-card featured">
+                <h3 class="plan-name">Profissional</h3>
+                <div class="plan-price">R$ 197<span>/mês</span></div>
+                <ul class="plan-features">
+                    <li>Suporte prioritário</li>
+                    <li>Resposta em até 12h</li>
+                    <li>3 projetos simultâneos</li>
+                    <li>Consultoria semanal (30min)</li>
+                    <li>Prioridade alta</li>
+                    <li class="disabled">Chamada de vídeo</li>
+                </ul>
+                <button class="btn btn-primary plan-btn" onclick="Suporte.assinar('professional')">
+                    Escolher Plano
+                </button>
+            </div>
+
+            <div class="plan-card">
+                <h3 class="plan-name">Enterprise</h3>
+                <div class="plan-price">R$ 497<span>/mês</span></div>
+                <ul class="plan-features">
+                    <li>Suporte 24/7</li>
+                    <li>Resposta em até 2h</li>
+                    <li>Projetos ilimitados</li>
+                    <li>Consultoria ilimitada</li>
+                    <li>Prioridade máxima</li>
+                    <li>Chamada de vídeo</li>
+                </ul>
+                <button class="btn btn-secondary plan-btn" onclick="Suporte.assinar('enterprise')">
+                    Escolher Plano
+                </button>
+            </div>
+        </div>
+
+        <div class="contact-section">
+            <h2>📧 Entre em Contato</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">
+                Já é assinante? Gere seu ticket de suporte abaixo
+            </p>
+            
+            <form class="contact-form" id="formContato">
+                <div class="form-group">
+                    <label for="nome">Seu Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Cadastrado</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="assunto">Assunto</label>
+                    <select id="assunto" name="assunto">
+                        <option value="duvida">Dúvida geral</option>
+                        <option value="bug">Reportar problema</option>
+                        <option value="sugestao">Sugestão</option>
+                        <option value="faturamento">Faturamento</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mensagem">Mensagem</label>
+                    <textarea id="mensagem" name="mensagem" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+            </form>
+
+            <div style="margin-top: 30px;">
+                <p style="color: var(--text-secondary);">Status da Assinatura</p>
+                <div id="subscriptionStatus">
+                    <span class="status-badge inactive">Sem assinatura ativa</span>
+                </div>
+            </div>
+
+            <div class="secure-badge">
+                <span>🔒</span>
+                <span>Pagamentos processados com segurança pelo Stripe</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; color: var(--text-secondary);">
+            <p>Dúvidas? suporte@projetosdinamicos.com.br</p>
+        </div>
+    </div>
+
+    <script src="static/js/suporte.js"></script>
+    <script>
+        document.getElementById('formContato').addEventListener('submit', (e) => {
+            e.preventDefault();
+            Suporte.enviarMensagem();
+        });
+        
+        Suporte.init();
+    </script>
+</body>
+</html>
