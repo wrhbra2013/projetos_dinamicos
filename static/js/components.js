@@ -4,9 +4,10 @@ const HEADER_HTML = `<header class="header">
         <nav class="nav">
             <label for="page-dashboard" class="nav-link">Dashboard</label>
             <label for="page-mapa" class="nav-link">Mapa Visual</label>
-            <label for="page-comentarios" class="nav-link">Feedbacks</label>
             <label for="page-relatorio" class="nav-link">Relatórios</label>
             <a href="https://wa.me/5514981305888?text=Olá, preciso de suporte." target="_blank" class="nav-link" title="Suporte">Suporte</a>
+            
+            <!-- PARA FUTURA ANALISE -->
           <!--  <label for="page-planos" class="nav-link" title="Planos Premium">Planos</label> -->
             <button id="themeBtn" class="theme-btn" title="Alternar tema">🌓</button>
         </nav>

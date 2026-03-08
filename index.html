@@ -12,7 +12,6 @@
     <input type="radio" name="page" id="page-projeto">
     <input type="radio" name="page" id="page-atividade">
     <input type="radio" name="page" id="page-mapa">
-    <input type="radio" name="page" id="page-comentarios">
     <input type="radio" name="page" id="page-relatorio">
     <input type="radio" name="page" id="page-planos">
 
@@ -106,57 +105,12 @@
             </div>
         </section>
 
-        <!-- FEEDBACKS -->
-        <section class="page-content" id="comentarios">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Feedbacks & Sugestões</h2>
-                </div>
-
-                <div class="feedback-form">
-                    <form id="formFeedback">
-                        <div class="form-group">
-                            <label for="feedbackNome">Seu Nome</label>
-                            <input type="text" id="feedbackNome" required placeholder="Digite seu nome">
-                        </div>
-                        <div class="form-group">
-                            <label for="feedbackTipo">Tipo</label>
-                            <select id="feedbackTipo">
-                                <option value="sugestao">Sugestão</option>
-                                <option value="critica">Crítica</option>
-                                <option value="elogio">Elogio</option>
-                                <option value="bug">Reportar Bug</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="feedbackMensagem">Mensagem</label>
-                            <textarea id="feedbackMensagem" rows="4" required placeholder="Compartilhe seu feedback..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Enviar Feedback</button>
-                    </form>
-                </div>
-
-                <div class="feedback-filter">
-                    <button class="filter-btn active" data-tipo="todos">Todos</button>
-                    <button class="filter-btn" data-tipo="sugestao">Sugestões</button>
-                    <button class="filter-btn" data-tipo="critica">Críticas</button>
-                    <button class="filter-btn" data-tipo="elogio">Elogios</button>
-                    <button class="filter-btn" data-tipo="bug">Bugs</button>
-                </div>
-
-                <div class="feedback-feed" id="feedbackFeed">
-                    <div class="feedback-vazio">
-                        <p>Nenhum feedback ainda. Seja o primeiro a compartilhar!</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- RELATÓRIOS -->
         <section class="page-content" id="relatorios">
             <div class="container">
                 <div class="page-header">
                     <h2>Relatórios</h2>
+                    <button class="btn btn-primary" onclick="Mapa.exportarPDF()">📄 Exportar PDF</button>
                 </div>
 
                 <div class="relatorio-cards">
@@ -292,6 +246,16 @@
                     <select id="dependenciaAtividade">
                         <option value="">Nenhuma</option>
                     </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="equipeAtividade">Equipe/Departamento</label>
+                        <input type="text" id="equipeAtividade" placeholder="Ex: Desenvolvimento">
+                    </div>
+                    <div class="form-group">
+                        <label for="responsavelAtividade">Responsável</label>
+                        <input type="text" id="responsavelAtividade" placeholder="Ex: João Silva">
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Salvar</button>
             </form>

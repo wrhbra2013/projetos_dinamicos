@@ -440,6 +440,12 @@ body {
     padding-right: 36px;
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
 .form-actions {
     display: flex;
     gap: 12px;
@@ -666,151 +672,6 @@ body {
     border-color: var(--accent);
 }
 
-.feedback-form {
-    background: var(--secondary);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-}
-
-.feedback-form h3 {
-    margin-bottom: 16px;
-    font-size: 1.1rem;
-}
-
-.feedback-form .form-group {
-    margin-bottom: 14px;
-}
-
-.feedback-filter {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.filter-btn {
-    padding: 8px 14px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--secondary);
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.filter-btn:hover,
-.filter-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.feedback-feed {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.feedback-vazio {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-muted);
-}
-
-.feedback-card {
-    background: var(--secondary);
-    border-radius: var(--border-radius);
-    padding: 16px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    animation: fadeIn 0.25s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.feedback-card.sugestao {
-    border-left-color: var(--planejamento);
-}
-
-.feedback-card.critica {
-    border-left-color: var(--warning);
-}
-
-.feedback-card.elogio {
-    border-left-color: var(--success);
-}
-
-.feedback-card.bug {
-    border-left-color: var(--danger);
-}
-
-.feedback-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    gap: 10px;
-}
-
-.feedback-author {
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.feedback-badge {
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.feedback-badge.sugestao {
-    background: rgba(139, 92, 246, 0.15);
-    color: var(--planejamento);
-}
-
-.feedback-badge.critica {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--warning);
-}
-
-.feedback-badge.elogio {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--success);
-}
-
-.feedback-badge.bug {
-    background: rgba(239, 68, 68, 0.15);
-    color: var(--danger);
-}
-
-.feedback-message {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 10px;
-}
-
-.feedback-date {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-
 .relatorio-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -935,7 +796,6 @@ input[type="radio"] {
 #page-projeto:checked ~ .main #projeto,
 #page-atividade:checked ~ .main #atividade,
 #page-mapa:checked ~ .main #mapa-visual,
-#page-comentarios:checked ~ .main #comentarios,
 #page-relatorio:checked ~ .main #relatorios,
 #page-planos:checked ~ .main #planos {
     display: block;

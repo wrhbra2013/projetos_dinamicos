@@ -235,6 +235,10 @@ const Mapa = {
                         <span>🛠️ ${stackLabel[a.stack] || a.stack}</span>
                         <span>⚡ ${prioridadeLabel[a.prioridade] || a.prioridade}</span>
                     </div>
+                    <div class="atividade-card-meta">
+                        <span>👥 ${this.escapeHtml(a.equipe || '-')}</span>
+                        <span>👤 ${this.escapeHtml(a.responsavel || '-')}</span>
+                    </div>
                     <div class="atividade-card-actions">
                         <select onchange="Mapa.alterarStatusAtividade(${a.id}, this.value)">
                             <option value="planejamento" ${a.status === 'planejamento' ? 'selected' : ''}>Planejamento</option>
@@ -278,6 +282,9 @@ const Mapa = {
             depSelect.value = atividade.dependencia;
         }
 
+        document.getElementById('equipeAtividade').value = atividade.equipe || '';
+        document.getElementById('responsavelAtividade').value = atividade.responsavel || '';
+
         document.getElementById('atividadeModal').classList.add('active');
     },
 
@@ -319,6 +326,8 @@ const Mapa = {
         const stack = document.getElementById('stackAtividade').value;
         const prioridade = document.getElementById('prioridadeAtividade').value;
         const dependencia = document.getElementById('dependenciaAtividade').value;
+        const equipe = document.getElementById('equipeAtividade').value;
+        const responsavel = document.getElementById('responsavelAtividade').value;
         const atividadeId = document.getElementById('atividadeId').value;
 
         if (!nome || !this.projetoAtual) return;
@@ -333,6 +342,8 @@ const Mapa = {
                 atividade.stack = stack;
                 atividade.prioridade = prioridade;
                 atividade.dependencia = dependencia ? parseInt(dependencia) : null;
+                atividade.equipe = equipe;
+                atividade.responsavel = responsavel;
             }
         } else {
             const atividade = {
@@ -343,6 +354,8 @@ const Mapa = {
                 stack,
                 prioridade,
                 dependencia: dependencia ? parseInt(dependencia) : null,
+                equipe,
+                responsavel,
                 status: 'planejamento',
                 created_at: new Date().toISOString()
             };
@@ -647,129 +660,105 @@ const Mapa = {
         `;
     },
 
-    escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-};
-
-const Feedback = {
-    STORAGE_KEY: 'projetos_dinamicos_feedbacks',
-    filtroAtual: 'todos',
-
-    init() {
-        this.setupForm();
-        this.setupFiltros();
-        this.render();
-    },
-
-    getFeedbacks() {
-        const stored = localStorage.getItem(this.STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
-    },
-
-    saveFeedbacks(feedbacks) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(feedbacks));
-        this.render();
-    },
-
-    setupForm() {
-        const form = document.getElementById('formFeedback');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.enviarFeedback();
-            });
-        }
-    },
-
-    setupFiltros() {
-        const botoes = document.querySelectorAll('.filter-btn');
-        botoes.forEach(btn => {
-            btn.addEventListener('click', () => {
-                botoes.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.filtroAtual = btn.dataset.tipo;
-                this.renderFeed();
-            });
-        });
-    },
-
-    enviarFeedback() {
-        const nome = document.getElementById('feedbackNome').value.trim();
-        const tipo = document.getElementById('feedbackTipo').value;
-        const mensagem = document.getElementById('feedbackMensagem').value.trim();
-
-        if (!nome || !mensagem) return;
-
-        const feedbacks = this.getFeedbacks();
-        const novoFeedback = {
-            id: Date.now(),
-            nome,
-            tipo,
-            mensagem,
-            data: new Date().toISOString()
-        };
-
-        feedbacks.unshift(novoFeedback);
-        this.saveFeedbacks(feedbacks);
-
-        document.getElementById('formFeedback').reset();
-        this.mostrarNotificacao('Feedback enviado com sucesso!', 'success');
-    },
-
-    render() {
-        this.renderFeed();
-    },
-
-    renderFeed() {
-        const container = document.getElementById('feedbackFeed');
-        if (!container) return;
-
-        let feedbacks = this.getFeedbacks();
-
-        if (this.filtroAtual !== 'todos') {
-            feedbacks = feedbacks.filter(f => f.tipo === this.filtroAtual);
-        }
-
-        if (feedbacks.length === 0) {
-            container.innerHTML = '<div class="feedback-empty"><p>Nenhum feedback encontrado.</p></div>';
-            return;
-        }
-
-        container.innerHTML = feedbacks.map(feedback => `
-            <div class="feedback-card ${feedback.tipo}">
-                <div class="feedback-header">
-                    <span class="feedback-author">${this.escapeHtml(feedback.nome)}</span>
-                    <span class="feedback-badge ${feedback.tipo}">${this.getTipoLabel(feedback.tipo)}</span>
-                </div>
-                <div class="feedback-message">${this.escapeHtml(feedback.mensagem)}</div>
-                <div class="feedback-date">${this.formatData(feedback.data)}</div>
+    exportarPDF() {
+        const data = this.getData();
+        const now = new Date().toLocaleDateString('pt-BR');
+        
+        let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Relatório de Projetos</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                h1 { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; }
+                h2 { color: #333; margin-top: 30px; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                th { background: #4f46e5; color: white; }
+                .resumo { display: flex; gap: 20px; margin: 20px 0; }
+                .resumo-item { background: #f3f4f6; padding: 15px; border-radius: 8px; }
+                .resumo-item strong { display: block; font-size: 24px; color: #4f46e5; }
+                .projeto { margin-bottom: 30px; page-break-inside: avoid; }
+                .projeto-header { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+                .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+                .badge-planejamento { background: #ede9fe; color: #7c3aed; }
+                .badge-andamento { background: #e0f2fe; color: #0284c7; }
+                .badge-concluido { background: #dcfce7; color: #16a34a; }
+                .progress-bar { background: #e5e7eb; height: 20px; border-radius: 10px; overflow: hidden; }
+                .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #22c55e); }
+                @media print { body { padding: 0; } }
+            </style>
+        </head>
+        <body>
+            <h1>📊 Relatório de Projetos</h1>
+            <p><strong>Data:</strong> ${now}</p>
+            
+            <div class="resumo">
+                <div class="resumo-item"><strong>${data.projetos.length}</strong>Projetos</div>
+                <div class="resumo-item"><strong>${data.atividades.length}</strong>Atividades</div>
+                <div class="resumo-item"><strong>${data.atividades.filter(a => a.status === 'concluido').length}</strong>Concluídas</div>
+                <div class="resumo-item"><strong>${data.atividades.filter(a => a.status === 'andamento').length}</strong>Em Andamento</div>
             </div>
-        `).join('');
-    },
+`;
 
-    getTipoLabel(tipo) {
-        const labels = { sugestao: 'Sugestão', critica: 'Crítica', elogio: 'Elogio', bug: 'Bug' };
-        return labels[tipo] || tipo;
-    },
+        data.projetos.forEach(p => {
+            const atividades = data.atividades.filter(a => a.projeto_id === p.id);
+            const concluidas = atividades.filter(a => a.status === 'concluido').length;
+            const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
 
-    formatData(dataIso) {
-        const data = new Date(dataIso);
-        return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    },
+            html += `
+            <div class="projeto">
+                <div class="projeto-header">
+                    <h2>${p.nome}</h2>
+                    <p>${p.descricao || 'Sem descrição'}</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${pct}%"></div>
+                    </div>
+                    <p><strong>Progresso:</strong> ${pct}% (${concluidas}/${atividades.length} atividades)</p>
+                </div>
+`;
 
-    mostrarNotificacao(mensagem, tipo) {
-        const notif = document.createElement('div');
-        notif.className = 'alert alert-' + tipo;
-        notif.textContent = mensagem;
-        const container = document.querySelector('.feedback-form');
-        if (container) {
-            container.insertBefore(notif, container.firstChild);
-            setTimeout(function() { notif.remove(); }, 3000);
-        }
+            if (atividades.length > 0) {
+                html += `<table>
+                    <thead>
+                        <tr>
+                            <th>Atividade</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Stack</th>
+                            <th>Equipe</th>
+                            <th>Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+`;
+                atividades.forEach(a => {
+                    html += `<tr>
+                        <td>${a.nome}</td>
+                        <td><span class="badge badge-${a.status}">${a.status === 'planejamento' ? 'Planejamento' : a.status === 'andamento' ? 'Em Andamento' : 'Concluído'}</span></td>
+                        <td>${a.prioridade || '-'}</td>
+                        <td>${a.stack || '-'}</td>
+                        <td>${a.equipe || '-'}</td>
+                        <td>${a.responsavel || '-'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            } else {
+                html += `<p style="color:#666">Nenhuma atividade neste projeto.</p>`;
+            }
+
+            html += `</div>`;
+        });
+
+        html += `
+        <p style="margin-top:40px;color:#666;font-size:12px">Gerado por Projetos Dinâmicos</p>
+        </body></html>`;
+
+        const janela = window.open('', '_blank');
+        janela.document.write(html);
+        janela.document.close();
+        janela.print();
     },
 
     escapeHtml(text) {
@@ -783,7 +772,6 @@ const Feedback = {
 document.addEventListener('DOMContentLoaded', function() {
     function initApp() {
         Mapa.init();
-        Feedback.init();
     }
 
     if (document.getElementById('header-placeholder')) {
