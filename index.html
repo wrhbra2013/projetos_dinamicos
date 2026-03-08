@@ -3,55 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Dinâmicos - Dashboard</title>
+    <title>Projetos Dinâmicos - Mapa Visual</title>
     <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/mapa.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <h1 class="logo">Projetos Dinâmicos</h1>
-            <nav class="nav">
-                <a href="index.html" class="nav-link active">Dashboard</a>
-                <a href="relatorio.html" class="nav-link">Relatório</a>
-                <a href="suporte.html" class="nav-link">Suporte</a>
-                <a href="auditoria.html" class="nav-link" title="Auditoria">🔍</a>
-                <button id="themeBtn" class="theme-btn" title="Alternar tema">🌓</button>
-            </nav>
-        </div>
-    </header>
+    <input type="radio" name="page" id="page-dashboard" checked>
+    <input type="radio" name="page" id="page-projeto">
+    <input type="radio" name="page" id="page-atividade">
+    <input type="radio" name="page" id="page-mapa">
+    <input type="radio" name="page" id="page-comentarios">
+    <input type="radio" name="page" id="page-relatorio">
+    <input type="radio" name="page" id="page-planos">
+
+    <div id="header-placeholder"></div>
 
     <main class="main">
-        <div class="container">
-            <div class="page-header">
-                <h2>Projetos Registrados</h2>
-                <button class="btn btn-primary" id="openModalBtn">+ Novo Projeto</button>
-            </div>
+        <!-- DASHBOARD -->
+        <section class="page-content" id="dashboard">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Projetos</h2>
+                    <button class="btn btn-primary" id="openModalBtn">+ Novo Projeto</button>
+                </div>
 
-            <div class="projects-grid" id="projectsGrid">
-            </div>
-
-            <div class="status-board">
-                <div class="status-column">
-                    <h3 class="status-title status-planejamento">Planejamento</h3>
-                    <div class="status-cards" id="planejamentoCards">
+                <div class="progress-overview">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <span>Total de Atividades</span>
+                            <span id="totalAtividades">0</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progressGlobal" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-percent" id="percentGlobal">0% concluído</span>
                     </div>
                 </div>
 
-                <div class="status-column">
-                    <h3 class="status-title status-andamento">Em Andamento</h3>
-                    <div class="status-cards" id="andamentoCards">
+                <div class="projects-grid" id="projectsGrid"></div>
+            </div>
+        </section>
+
+        <!-- DETALHES DO PROJETO -->
+        <section class="page-content" id="projeto">
+            <div class="container">
+                <div class="page-header">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <label for="page-dashboard" class="btn btn-outline" style="cursor: pointer;">← Voltar</label>
+                        <h2 id="projetoTitulo">Projeto</h2>
+                    </div>
+                    <button class="btn btn-primary" id="btnNovaAtividade">+ Nova Atividade</button>
+                </div>
+
+                <div class="progress-overview">
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <span>Progresso do Projeto</span>
+                            <span id="projetoProgresso">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="projetoProgressoBar" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-percent" id="projetoProgressoText">0 de 0 atividades</span>
                     </div>
                 </div>
 
-                <div class="status-column">
-                    <h3 class="status-title status-concluido">Concluído</h3>
-                    <div class="status-cards" id="concluidoCards">
+                <div class="atividades-grid" id="atividadesGrid"></div>
+            </div>
+        </section>
+
+        <!-- MAPA VISUAL -->
+        <section class="page-content" id="mapa-visual">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Mapa Visual de Atividades</h2>
+                    <select id="projetoSelector" class="form-control">
+                        <option value="">Selecione um projeto</option>
+                    </select>
+                </div>
+
+                <div class="mapa-container">
+                    <div class="mapa-canvas" id="mapaCanvas">
+                        <div class="mapa-vazio">
+                            <p>Selecione um projeto para visualizar o mapa de atividades</p>
+                        </div>
+                    </div>
+
+                    <div class="mapa-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot planejamento"></span> Planejamento
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot andamento"></span> Em Andamento
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot concluido"></span> Concluído
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nodes-list" id="nodesList"></div>
+            </div>
+        </section>
+
+        <!-- FEEDBACKS -->
+        <section class="page-content" id="comentarios">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Feedbacks & Sugestões</h2>
+                </div>
+
+                <div class="feedback-form">
+                    <form id="formFeedback">
+                        <div class="form-group">
+                            <label for="feedbackNome">Seu Nome</label>
+                            <input type="text" id="feedbackNome" required placeholder="Digite seu nome">
+                        </div>
+                        <div class="form-group">
+                            <label for="feedbackTipo">Tipo</label>
+                            <select id="feedbackTipo">
+                                <option value="sugestao">Sugestão</option>
+                                <option value="critica">Crítica</option>
+                                <option value="elogio">Elogio</option>
+                                <option value="bug">Reportar Bug</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="feedbackMensagem">Mensagem</label>
+                            <textarea id="feedbackMensagem" rows="4" required placeholder="Compartilhe seu feedback..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Feedback</button>
+                    </form>
+                </div>
+
+                <div class="feedback-filter">
+                    <button class="filter-btn active" data-tipo="todos">Todos</button>
+                    <button class="filter-btn" data-tipo="sugestao">Sugestões</button>
+                    <button class="filter-btn" data-tipo="critica">Críticas</button>
+                    <button class="filter-btn" data-tipo="elogio">Elogios</button>
+                    <button class="filter-btn" data-tipo="bug">Bugs</button>
+                </div>
+
+                <div class="feedback-feed" id="feedbackFeed">
+                    <div class="feedback-vazio">
+                        <p>Nenhum feedback ainda. Seja o primeiro a compartilhar!</p>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- RELATÓRIOS -->
+        <section class="page-content" id="relatorios">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Relatórios</h2>
+                </div>
+
+                <div class="relatorio-cards">
+                    <div class="relatorio-card">
+                        <h3>Progresso por Projeto</h3>
+                        <div id="progressoProjetos"></div>
+                    </div>
+                    <div class="relatorio-card">
+                        <h3>Estatísticas</h3>
+                        <div class="stats-grid" id="statsGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PLANOS -->
+        <section class="page-content" id="planos">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Planos Premium</h2>
+                </div>
+
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h3>Gratuito</h3>
+                            <div class="plan-price">R$ 0<span>/mês</span></div>
+                        </div>
+                        <ul class="plan-features">
+                            <li>Até 3 projetos</li>
+                            <li>Até 10 atividades por projeto</li>
+                            <li>Mapa visual básico</li>
+                            <li>Feedbacks e sugestões</li>
+                        </ul>
+                        <button class="btn btn-outline" disabled>Plano atual</button>
+                    </div>
+
+                    <div class="plan-card featured">
+                        <div class="plan-badge">Mais Popular</div>
+                        <div class="plan-header">
+                            <h3>Pro</h3>
+                            <div class="plan-price">R$ 29<span>/mês</span></div>
+                        </div>
+                        <ul class="plan-features">
+                            <li>Projetos ilimitados</li>
+                            <li>Atividades ilimitadas</li>
+                            <li>Mapa visual completo</li>
+                            <li>Exportação PDF</li>
+                            <li>Relatórios avançados</li>
+                            <li>Suporte prioritário</li>
+                        </ul>
+                        <a href="https://buy.stripe.com/seu-link-pro" target="_blank" class="btn btn-primary">Assinar Pro</a>
+                    </div>
+
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h3>Empresarial</h3>
+                            <div class="plan-price">R$ 99<span>/mês</span></div>
+                        </div>
+                        <ul class="plan-features">
+                            <li>Tudo do Pro</li>
+                            <li>Múltiplos usuários</li>
+                            <li>API de integração</li>
+                            <li>Backup automático</li>
+                            <li>Customizações</li>
+                            <li>Suporte dedicado</li>
+                        </ul>
+                        <a href="https://buy.stripe.com/seu-link-empresa" target="_blank" class="btn btn-secondary">Contato comercial</a>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <!-- MODAL NOVO PROJETO -->
     <div class="modal" id="projetoModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -61,26 +241,101 @@
             <form id="formNovoProjeto">
                 <div class="form-group">
                     <label for="nome">Nome do Projeto</label>
-                    <input type="text" id="nome" name="nome" required>
+                    <input type="text" id="nome" required>
                 </div>
                 <div class="form-group">
                     <label for="descricao">Descrição</label>
-                    <textarea id="descricao" name="descricao" rows="4"></textarea>
+                    <textarea id="descricao" rows="3"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Criar Projeto</button>
+                <button type="submit" class="btn btn-primary">Criar</button>
             </form>
         </div>
     </div>
 
-    <footer class="footer">
-        <p>&copy; 2026 Projetos Dinâmicos. Todos os direitos reservados.</p>
-    </footer>
+    <!-- MODAL NOVA ATIVIDADE -->
+    <div class="modal" id="atividadeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Atividade</h3>
+                <button class="close-btn" onclick="Mapa.fecharModal()">&times;</button>
+            </div>
+            <form id="formAtividade">
+                <input type="hidden" id="atividadeId">
+                <div class="form-group">
+                    <label for="nomeAtividade">Nome</label>
+                    <input type="text" id="nomeAtividade" required>
+                </div>
+                <div class="form-group">
+                    <label for="descAtividade">Descrição</label>
+                    <textarea id="descAtividade" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="stackAtividade">Stack/Tecnologia</label>
+                    <select id="stackAtividade">
+                        <option value="frontend">Frontend</option>
+                        <option value="backend">Backend</option>
+                        <option value="database">Database</option>
+                        <option value="cloud">Cloud</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="prioridadeAtividade">Prioridade</label>
+                    <select id="prioridadeAtividade">
+                        <option value="baixa">Baixa</option>
+                        <option value="media" selected>Média</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dependência (atividade anterior)</label>
+                    <select id="dependenciaAtividade">
+                        <option value="">Nenhuma</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </form>
+        </div>
+    </div>
 
-    <script src="static/js/app.js"></script>
+    <!-- PAINEL DETALHE DO NÓ -->
+    <div class="node-panel" id="nodePanel">
+        <div class="panel-content">
+            <button class="panel-close" onclick="Mapa.fecharPainel()">&times;</button>
+            <div class="panel-header">
+                <h3 id="panelTitulo">Atividade</h3>
+                <span class="badge" id="panelStatus">Planejamento</span>
+            </div>
+            <div class="panel-body">
+                <p id="panelDescricao"></p>
+                <div class="panel-meta">
+                    <span>🛠️ <span id="panelStack"></span></span>
+                    <span>📅 <span id="panelData"></span></span>
+                    <span>⚡ <span id="panelPrioridade"></span></span>
+                </div>
+                <div class="panel-dependencias">
+                    <h4>Dependências</h4>
+                    <div id="panelDependencias"></div>
+                </div>
+            </div>
+            <div class="panel-actions">
+                <select id="panelStatusSelect" onchange="Mapa.alterarStatus(this.value)">
+                    <option value="planejamento">Planejamento</option>
+                    <option value="andamento">Em Andamento</option>
+                    <option value="concluido">Concluído</option>
+                </select>
+                <button class="btn btn-danger" onclick="Mapa.excluirAtividadePainel()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="static/js/components.js"></script>
+    <script src="static/js/mapa.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            App.init();
-            App.renderDashboard();
+            Mapa.init();
         });
     </script>
 </body>

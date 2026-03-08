@@ -1,0 +1,78 @@
+# Tutorial - Configuração Stripe Checkout
+
+## 1. Criar Produtos
+
+1. Acesse o Dashboard da Stripe: https://dashboard.stripe.com
+2. No menu lateral, clique em "Products"
+3. Clique em "Add product" para cada plano:
+
+### Plano Pro
+- Name: Projetos Dinâmicos Pro
+- Description: Plano Pro com recursos ilimitados
+- Pricing: R$ 29,00 por month
+- Currency: BRL
+
+### Plano Empresarial
+- Name: Projetos Dinâmicos Empresarial
+- Description: Plano empresarial com múltiplos usuários
+- Pricing: R$ 99,00 por month
+- Currency: BRL
+
+## 2. Obter Links de Checkout
+
+### Opção A: Checkout Hosted (Sem backend)
+
+1. Na lista de produtos, clique no produto criado
+2. Clique em "Create checkout session"
+3. Configure:
+   - Pricing: Monthly
+   - Payment method: Card
+   - Allow promotion codes: Sim
+4. Clique em "Create"
+5. Copie o link gerado (algo como: https://buy.stripe.com/...)
+
+### Opção B: Usar API (Com backend)
+
+```javascript
+const stripe = require('stripe')('sk_test_XXXXX');
+
+const session = await stripe.checkout.sessions.create({
+  payment_method_types: ['card'],
+  line_items: [{
+    price: 'price_XXXXXXXXXXXXXX', // ID do produto (ex: price_123...)
+    quantity: 1,
+  }],
+  mode: 'subscription',
+  success_url: 'https://seudominio.com/sucesso',
+  cancel_url: 'https://seudominio.com/planos',
+});
+
+console.log(session.url); // Link para redirecionar o usuário
+```
+
+## 3. Atualizar no Código
+
+No arquivo index.html, substitua os links:
+
+```html
+<!-- Linha ~180 -->
+<a href="https://buy.stripe.com/seu-link-pro" target="_blank" class="btn btn-primary">Assinar Pro</a>
+
+<!-- Linha ~193 -->
+<a href="https://buy.stripe.com/seu-link-empresa" target="_blank" class="btn btn-secondary">Contato comercial</a>
+```
+
+Pel links reais do seu Stripe.
+
+## 4. Testes
+
+Use os cartões de teste da Stripe:
+- Número: 4242 4242 4242 4242
+- Validade: qualquer data futura
+- CVC: qualquer 3 dígitos
+
+## 5. Ativar Produção
+
+1. Clique em "Development" → "Live" no dashboard
+2. Obtenha as chaves de produção (pk_live_...)
+3. Substitua os links de teste pelos links de produção
