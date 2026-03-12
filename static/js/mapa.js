@@ -33,25 +33,29 @@ const Mapa = {
         this.render();
     },
 
-    setupTheme() {
-        const themeBtn = document.getElementById('themeBtn');
-        if (themeBtn) {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.remove('light-theme');
-                themeBtn.innerHTML = '🌓';
-            } else {
-                document.body.classList.add('light-theme');
-                themeBtn.innerHTML = '🌙';
-            }
-            themeBtn.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                const isLight = document.body.classList.contains('light-theme');
-                themeBtn.innerHTML = isLight ? '🌙' : '🌓';
-                localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            });
-        }
-    },
+     setupTheme() {
+         const themeBtn = document.getElementById('themeBtn');
+         if (themeBtn) {
+             const savedTheme = localStorage.getItem('theme');
+             const isLight = savedTheme === 'light';
+             if (isLight) {
+                 document.body.classList.add('light-theme');
+                 themeBtn.innerHTML = '🌙';
+             } else {
+                 document.body.classList.remove('light-theme');
+                 themeBtn.innerHTML = '🌓';
+             }
+             themeBtn.setAttribute('aria-pressed', isLight);
+             
+             themeBtn.addEventListener('click', () => {
+                 document.body.classList.toggle('light-theme');
+                 const isLight = document.body.classList.contains('light-theme');
+                 themeBtn.innerHTML = isLight ? '🌙' : '🌓';
+                 themeBtn.setAttribute('aria-pressed', isLight);
+                 localStorage.setItem('theme', isLight ? 'light' : 'dark');
+             });
+         }
+     },
 
     setupModal() {
         const modal = document.getElementById('projetoModal');
@@ -127,25 +131,25 @@ const Mapa = {
             const concluidas = atividades.filter(a => a.status === 'concluido').length;
             const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
 
-            html += `
-                <div class="project-card">
-                    <div class="card-header">
-                        <h3>${this.escapeHtml(p.nome)}</h3>
-                        <button onclick="Mapa.excluirProjeto(${p.id})" class="delete-btn" title="Excluir">🗑️</button>
-                    </div>
-                    <div class="card-body">
-                        <p class="descricao">${this.escapeHtml(p.descricao || '')}</p>
-                        <div class="mini-progress">
-                            <div class="mini-progress-bar" style="width: ${pct}%"></div>
-                        </div>
-                        <small>${concluidas}/${atividades.length} atividades (${pct}%)</small>
-                    </div>
-                    <div class="card-footer" style="display:flex;gap:8px">
-                        <button onclick="Mapa.abriAtividades(${p.id})" class="btn btn-secondary" style="flex:1">+ Atividades</button>
-                        <button onclick="Mapa.mostrarFluxograma(${p.id})" class="btn btn-primary" style="flex:1">Ver Fluxograma</button>
-                    </div>
-                </div>
-            `;
+         html += `
+                 <div class="project-card">
+                     <div class="card-header">
+                         <h3>${this.escapeHtml(p.nome)}</h3>
+                         <button onclick="Mapa.excluirProjeto(${p.id})" class="delete-btn" aria-label="Excluir projeto ${this.escapeHtml(p.nome)}">🗑️</button>
+                     </div>
+                     <div class="card-body">
+                         <p class="descricao">${this.escapeHtml(p.descricao || '')}</p>
+                         <div class="mini-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Progresso do projeto ${this.escapeHtml(p.nome)}: ${pct} por cento concluído">
+                             <div class="mini-progress-bar" style="width: ${pct}%"></div>
+                         </div>
+                         <small>${concluidas}/${atividades.length} atividades (${pct}%)</small>
+                     </div>
+                     <div class="card-footer" style="display:flex;gap:8px">
+                         <button onclick="Mapa.abriAtividades(${p.id})" class="btn btn-secondary" style="flex:1" aria-label="Ver atividades do projeto ${this.escapeHtml(p.nome)}">+ Atividades</button>
+                         <button onclick="Mapa.mostrarFluxograma(${p.id})" class="btn btn-primary" style="flex:1" aria-label="Ver fluxograma do projeto ${this.escapeHtml(p.nome)}">Ver Fluxograma</button>
+                     </div>
+                 </div>
+             `;
         });
 
         html += `

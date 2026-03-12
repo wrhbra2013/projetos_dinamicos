@@ -33,35 +33,35 @@
 
     <main class="main">
         <!-- DASHBOARD -->
-        <section class="page-content" id="dashboard">
+        <section class="page-content" id="dashboard" aria-labelledby="dashboard-heading">
             <div class="container">
                 <div class="page-header">
-                    <h2>Projetos</h2>
-                    <button class="btn btn-primary" id="openModalBtn">+ Novo Projeto</button>
+                    <h2 id="dashboard-heading">Projetos</h2>
+                    <button class="btn btn-primary" id="openModalBtn" aria-label="Adicionar novo projeto">+ Novo Projeto</button>
                 </div>
 
-                <div class="progress-overview">
-                    <div class="progress-card">
-                        <div class="progress-header">
-                            <span>Total de Atividades</span>
-                            <span id="totalAtividades">0</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill" id="progressGlobal" style="width: 0%"></div>
-                        </div>
-                        <span class="progress-percent" id="percentGlobal">0% concluído</span>
-                    </div>
-                </div>
+                 <div class="progress-overview">
+                     <div class="progress-card">
+                         <div class="progress-header">
+                             <span>Total de Atividades</span>
+                             <span id="totalAtividades" aria-live="polite">0</span>
+                         </div>
+                         <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="progressGlobalLabel">
+                             <div class="progress-bar-fill" id="progressGlobal" style="width: 0%"></div>
+                         </div>
+                         <span class="progress-percent" id="percentGlobal" id="progressGlobalLabel">0% concluído</span>
+                     </div>
+                 </div>
 
-                <div class="projects-grid" id="projectsGrid"></div>
+                <div class="projects-grid" id="projectsGrid" aria-label="Lista de projetos"></div>
 
-                <div class="flowcard" id="projectFlowCard" style="display:block">
-                    <div style="display:flex;align-items:center;justify-content:space-between">
-                        <strong id="flowTitle">Fluxograma do Projeto</strong>
-                        <div>
-                            <button id="resetFlow" class="btn-flow">Resetar</button>
-                        </div>
-                    </div>
+                 <div class="flowcard" id="projectFlowCard" style="display:block" aria-labelledby="flowTitle">
+                     <div style="display:flex;align-items:center;justify-content:space-between">
+                         <h3 id="flowTitle">Fluxograma do Projeto</h3>
+                         <div>
+                             <button id="resetFlow" class="btn-flow" aria-label="Resetar fluxograma do projeto">Resetar</button>
+                         </div>
+                     </div>
                     <div id="flowchart">
                         <svg id="flow-svg"></svg>
                         <div class="flow-row" id="flowRow"></div>
@@ -73,28 +73,28 @@
         <!-- DETALHES DO PROJETO -->
         <section class="page-content" id="projeto">
             <div class="container">
-                <div class="page-header">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <label for="page-dashboard" class="btn btn-outline" style="cursor: pointer;">← Voltar</label>
-                        <h2 id="projetoTitulo">Projeto</h2>
-                    </div>
-                    <button class="btn btn-primary" id="btnNovaAtividade">+ Nova Atividade</button>
-                </div>
+                 <div class="page-header">
+                     <div style="display: flex; align-items: center; gap: 16px;">
+                         <button class="btn btn-outline" onclick="document.getElementById('page-dashboard').checked = true;" aria-label="Voltar para o dashboard">← Voltar</button>
+                         <h2 id="projetoTitulo">Projeto</h2>
+                     </div>
+                     <button class="btn btn-primary" id="btnNovaAtividade" aria-label="Adicionar nova atividade">+ Nova Atividade</button>
+                 </div>
 
-                <div class="progress-overview">
-                    <div class="progress-card">
-                        <div class="progress-header">
-                            <span>Progresso do Projeto</span>
-                            <span id="projetoProgresso">0%</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill" id="projetoProgressoBar" style="width: 0%"></div>
-                        </div>
-                        <span class="progress-percent" id="projetoProgressoText">0 de 0 atividades</span>
-                    </div>
-                </div>
+                 <div class="progress-overview">
+                     <div class="progress-card">
+                         <div class="progress-header">
+                             <span>Progresso do Projeto</span>
+                             <span id="projetoProgresso" aria-live="polite">0%</span>
+                         </div>
+                         <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="projetoProgressoLabel">
+                             <div class="progress-bar-fill" id="projetoProgressoBar" style="width: 0%"></div>
+                         </div>
+                         <span class="progress-percent" id="projetoProgressoText" id="projetoProgressoLabel">0 de 0 atividades</span>
+                     </div>
+                 </div>
 
-                <div class="atividades-grid" id="atividadesGrid"></div>
+                 <div class="atividades-grid" id="atividadesGrid" aria-label="Lista de atividades do projeto"></div>
             </div>
         </section>
 

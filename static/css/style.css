@@ -96,25 +96,62 @@ body {
     background-color: rgba(79, 70, 229, 0.08);
 }
 
+/* Dark theme overrides - applied when body does NOT have .light-theme class */
+body:not(.light-theme) {
+    --primary: #0f172a; /* dark blue background */
+    --secondary: #1e293b; /* slightly lighter dark for cards */
+    --accent: #818cf8; /* lighter accent for contrast */
+    --accent-hover: #6366f1;
+    --accent-light: #a5b4fc;
+    --highlight: #f472b6;
+    --text-primary: #f8fafc; /* light text */
+    --text-secondary: #cbd5e1; /* medium-light text */
+    --text-muted: #94a3b8;
+    --success: #34d399; /* greener success */
+    --warning: #fbbf24; /* warmer warning */
+    --danger: #f87171; /* softer danger */
+    --planejamento: #a78bfa; /* lighter purple */
+    --andamento: #38bdf8; /* lighter blue */
+    --concluido: #4ade80; /* lighter green */
+    --card-bg: #1e293b;
+    --border: #334155; /* darker border */
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Theme button - base styles */
 .theme-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--secondary);
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
 }
 
 .theme-btn:hover {
     background: var(--accent);
-    color: white;
+    color: var(--text-primary);
     border-color: var(--accent);
+}
+
+.theme-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.theme-btn:active {
+    transform: scale(0.95);
 }
 
 .main {
@@ -348,8 +385,8 @@ body {
     background: var(--secondary);
     border-radius: 16px;
     padding: 24px;
-    width: 100%;
-    max-width: 480px;
+    width: 90%;
+    max-width: 600px;
     box-shadow: var(--shadow-lg);
     animation: slideIn 0.25s ease;
 }
@@ -360,18 +397,6 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 .modal-content, .modal-content * {
-    -webkit-text-size-adjust: 100%;
-}
-.modal-content input,
-.modal-content select,
-.modal-content textarea {
-    font-size: 16px; /* previne zoom em iOS/Android quando foca */
-}
-.modal-content { max-width: calc(100% - 32px); }
-
-/* Reforçar prevenção de zoom e garantir legibilidade nos inputs do modal */
-.modal-content,
-.modal-content * {
     -webkit-text-size-adjust: 100% !important;
     -ms-text-size-adjust: 100% !important;
     text-size-adjust: 100% !important;
@@ -379,7 +404,117 @@ body {
 .modal-content input,
 .modal-content select,
 .modal-content textarea {
-    font-size: 18px !important; /* força >=16px para evitar zoom automático */
+    font-size: 16px !important; /* previne zoom em iOS/Android quando foca - MÍNIMO 16px */
+}
+
+/* Reforçar prevenção de zoom e garantir legibilidade nos inputs do modal */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    font-size: 18px !important; /* tamanho recomendado para melhor legibilidade */
+}
+
+/* Melhorar layout do modal em telas muito pequenas */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh;
+        border-radius: 0 !important;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) !important;
+        padding: 12px !important; /* fallback for older browsers */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal-header {
+        margin-bottom: 16px !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.5rem !important;
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+    }
+    
+    .close-btn {
+        font-size: 2rem !important;
+        line-height: 1;
+        padding: 4px !important;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 16px !important;
+    }
+    
+    .form-group label {
+        font-weight: 600 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 14px !important;
+        font-size: 1rem !important;
+        min-height: 48px !important;
+        border-width: 1px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .form-group textarea {
+        min-height: 80px !important;
+        resize: vertical;
+    }
+    
+    .form-actions {
+        margin-top: 20px !important;
+        padding-top: 16px !important;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column-reverse; /* Botões em cima para melhor acesso com polegar */
+        gap: 12px !important;
+    }
+    
+    .form-actions .btn {
+        padding: 14px !important;
+        font-size: 1rem !important;
+        height: 52px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* Prevenir zoom em todos os elementos interativos */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* Melhorar experiência de foco */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Garantir que elementos não causem overflow */
+* {
+    word-wrap: break-word;
 }
 
 @keyframes slideIn {
@@ -491,7 +626,133 @@ body {
     border: 1px solid var(--border);
     min-height: 400px;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
+    touch-action: pan-x pan-y; /* Allow panning in both directions */
+    /* Enable smooth scrolling and momentum */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Improve the map canvas to better handle content */
+.mapa-canvas {
+    min-height: 400px;
+    position: relative;
+    /* Ensure the canvas can grow to fit content */
+    min-width: 100%;
+}
+
+/* Add a subtle grid background to the map area for better spatial awareness */
+.mapa-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+/* Improve node styling for better touch targets and visual appeal */
+.node {
+    transition: all 0.2s ease;
+    touch-action: manipulation; /* Prevent double-tap to zoom */
+}
+
+.node:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.node:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Improve connection lines */
+.mapa-connections line {
+    transition: stroke-width 0.2s ease;
+}
+
+.mapa-connections line.concluido {
+    stroke-width: 2;
+}
+
+/* Improve empty state */
+.mapa-vazio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: inherit;
+}
+
+/* Responsive improvements for the map area */
+@media (max-width: 768px) {
+    .mapa-container {
+        min-height: 300px;
+        border-radius: 8px;
+    }
+    
+    .mapa-canvas {
+        min-height: 300px;
+    }
+    
+    .mapa-vazio {
+        height: 300px;
+        font-size: 1rem;
+    }
+    
+    /* Adjust grid background for smaller screens */
+    .mapa-container::before {
+        background-size: 16px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mapa-container {
+        min-height: 250px;
+        border-radius: 8px;
+    }
+    
+    .mapa-canvas {
+        min-height: 250px;
+    }
+    
+    .mapa-vazio {
+        height: 250px;
+        font-size: 0.9rem;
+    }
+    
+    /* Adjust grid background for very small screens */
+    .mapa-container::before {
+        background-size: 12px 12px;
+    }
+    
+    /* Reduce node size slightly for better fit on small screens */
+    .node {
+        width: 140px;
+        height: 80px;
+    }
+    
+    .node-icon {
+        font-size: 1.5rem;
+    }
+    
+    .node-title {
+        font-size: 0.9rem;
+    }
+    
+    .node-meta {
+        font-size: 0.75rem;
+    }
 }
 
 .mapa-canvas {
@@ -838,6 +1099,235 @@ input[type="radio"] {
     .header .nav {
         flex-wrap: wrap;
         justify-content: center;
+        gap: 6px;
+    }
+    
+    .nav-link {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .page-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        max-width: 95%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    .mapa-legend {
+        justify-content: center;
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+    
+    .node-panel {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .relatorio-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .atividades-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    .main {
+        padding: 16px 0;
+    }
+    
+    .page-header {
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        min-height: 48px;
+        border-radius: 8px;
+    }
+    
+    .card-body,
+    .card-header,
+    .card-footer {
+        padding: 16px;
+    }
+    
+    .feedback-form,
+    .feedback-card,
+    .relatorio-card,
+    .progress-card {
+        padding: 16px;
+    }
+    
+    .feedback-filter {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        padding: 8px 12px;
+        font-size: 0.875rem;
+        min-height: 48px;
+        border-radius: 6px;
+    }
+    
+    /* Improve form touch targets on small screens */
+    .modal-content .form-group input,
+    .modal-content .form-group select,
+    .modal-content .form-group textarea {
+        padding: 14px 16px;
+        font-size: 1rem;
+        min-height: 48px;
+        border-radius: 8px;
+    }
+    
+    .modal-content .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* Improve radio button and label spacing */
+    .modal-content input[type="radio"] + label {
+        margin-right: 12px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .modal-content input[type="radio"]:checked + label {
+        background-color: rgba(79, 70, 229, 0.1);
+        border-color: var(--accent);
+    }
+    
+    /* Make cards full width and reduce margins */
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-card {
+        margin-bottom: 12px;
+    }
+    
+    /* Adjust header for very small screens */
+    .header {
+        padding: 12px 0;
+    }
+    
+    .header .container {
+        gap: 8px;
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+    }
+    
+    /* Improve mapa visual on small screens */
+    .mapa-container {
+        min-height: 300px;
+        border-radius: 8px;
+    }
+    
+    .mapa-vazio {
+        height: 300px;
+    }
+    
+    /* Make node panel take full width on small screens */
+    .node-panel {
+        max-width: 100%;
+        width: 100%;
+        box-shadow: none;
+        border-top: 1px solid var(--border);
+    }
+    
+    .node-panel.active {
+        right: 0;
+        box-shadow: none;
+    }
+    
+    /* Adjust form layouts */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* Make buttons full width in forms */
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    /* Reduce card border radius for better fit */
+    .card-border-radius: 8px;
+    
+    /* Improve text scaling */
+    html {
+        font-size: 14px;
+    }
+    
+    /* Ensure inputs have adequate size */
+    input, select, textarea {
+        min-height: 44px;
+    }
+    
+    /* Improve spacing in compact views */
+    .progress-overview {
+        margin-bottom: 20px;
+    }
+    
+    .progress-card {
+        padding: 16px;
+    }
+}
+    
+    .header .nav {
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .nav-link {
@@ -892,6 +1382,70 @@ input[type="radio"] {
     .container {
         padding: 0 16px;
     }
+    
+    .main {
+        padding: 20px 0;
+    }
+    
+    .page-header {
+        margin-bottom: 16px;
+    }
+    
+    .btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        min-height: 44px; /* Área de toque mínima recomendada */
+    }
+    
+    .card-body,
+    .card-header,
+    .card-footer {
+        padding: 12px 16px;
+    }
+    
+    .feedback-form,
+    .feedback-card,
+    .relatorio-card,
+    .progress-card {
+        padding: 16px;
+    }
+    
+    .feedback-filter {
+        gap: 6px;
+    }
+    
+    .filter-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        min-height: 44px;
+    }
+    
+    /* Improve form touch targets on small screens */
+    .modal-content .form-group input,
+    .modal-content .form-group select,
+    .modal-content .form-group textarea {
+        padding: 14px 16px;
+        font-size: 1rem;
+        min-height: 44px;
+    }
+    
+    .modal-content .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* Improve radio button and label spacing */
+    .modal-content input[type="radio"] + label {
+        margin-right: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    
+    .modal-content input[type="radio"]:checked + label {
+        background-color: rgba(79, 70, 229, 0.1);
+        border-color: var(--accent);
+    }
+}
     
     .main {
         padding: 20px 0;
