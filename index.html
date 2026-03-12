@@ -6,6 +6,20 @@
     <title>Projetos Dinâmicos - Mapa Visual</title>
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="static/css/mapa.css">
+    <style>
+    /* Fluxograma simples - CSS puro */
+    .flowcard{border:1px solid #e0e0e0;padding:12px;border-radius:8px;background:#fff;margin-top:16px}
+    #flowchart{position:relative;width:100%;min-height:140px;padding:18px;box-sizing:border-box}
+    .flow-row{display:flex;gap:18px;align-items:center;justify-content:flex-start}
+    .flow-node{position:relative;min-width:120px;padding:10px 14px;background:#f7f9fc;border-radius:8px;border:2px solid #d4e1ff;color:#03396c;font-weight:600;box-shadow:0 2px 6px rgba(3,57,108,0.06);text-align:center}
+    .flow-node.small{min-width:100px;padding:8px}
+    .flow-node .label{display:block}
+    /* container for SVG arrows placed on top */
+    #flow-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto;overflow:visible}
+    #flow-svg path{pointer-events:stroke;cursor:pointer}
+    .btn-flow{margin-left:8px;padding:6px 8px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
+    .projects-grid .project-card{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:8px;border:1px solid #eee;background:#fff}
+    </style>
 </head>
 <body>
     <input type="radio" name="page" id="page-dashboard" checked>
@@ -40,6 +54,19 @@
                 </div>
 
                 <div class="projects-grid" id="projectsGrid"></div>
+
+                <div class="flowcard" id="projectFlowCard" style="display:block">
+                    <div style="display:flex;align-items:center;justify-content:space-between">
+                        <strong id="flowTitle">Fluxograma do Projeto</strong>
+                        <div>
+                            <button id="resetFlow" class="btn-flow">Resetar</button>
+                        </div>
+                    </div>
+                    <div id="flowchart">
+                        <svg id="flow-svg"></svg>
+                        <div class="flow-row" id="flowRow"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -297,6 +324,126 @@
 
     <script src="static/js/components.js"></script>
     <script src="static/js/mapa.js"></script>
+    <script>
+    // Fluxograma simples: cria nós estáticos e desenha linhas SVG entre eles
+    (function(){
+        const defaultSteps = ['Backlog','Planejamento','Desenvolvimento','Testes','Concluído'];
+        let currentProjectId = null;
+
+        function clearFlow(){
+            const row = document.getElementById('flowRow');
+            if(row) row.innerHTML = '';
+            const svg = document.getElementById('flow-svg');
+            if(svg) svg.innerHTML = '';
+        }
+
+        // renderiza fluxograma a partir do projeto (usando armazenamento do Mapa)
+        function renderFlowForProject(projectId){
+            currentProjectId = projectId;
+            clearFlow();
+            const data = window.Mapa ? Mapa.getData() : null;
+            const projeto = data ? data.projetos.find(p => p.id === projectId) : null;
+            const atividades = data ? data.atividades.filter(a => a.projeto_id === projectId).sort((a,b)=>a.id-b.id) : [];
+
+            const title = document.getElementById('flowTitle');
+            if(title) title.textContent = projeto ? ('Fluxograma: ' + projeto.nome) : 'Fluxograma do Projeto';
+
+            const row = document.getElementById('flowRow');
+            if(!row) return;
+
+            // desenha nós (etapas)
+            defaultSteps.forEach((s, i)=>{
+                const node = document.createElement('div');
+                node.className = 'flow-node' + (s.length>10? ' small':'');
+                node.dataset.index = i;
+                node.innerHTML = '<span class="label">'+s+'</span>';
+                row.appendChild(node);
+            });
+
+            // draw connections after browser lays out nodes
+            requestAnimationFrame(()=> drawConnections(atividades));
+        }
+
+        function drawConnections(atividades){
+            const svg = document.getElementById('flow-svg');
+            if(!svg) return;
+            svg.innerHTML = '';
+            const nodes = Array.from(document.querySelectorAll('#flowRow .flow-node'));
+            if(nodes.length<2) return;
+            const container = document.getElementById('flowchart');
+            const cRect = container.getBoundingClientRect();
+
+            // add arrow marker defs once
+            const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+            const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
+            marker.setAttribute('id','arrow');
+            marker.setAttribute('markerWidth','8');
+            marker.setAttribute('markerHeight','8');
+            marker.setAttribute('refX','8');
+            marker.setAttribute('refY','4');
+            marker.setAttribute('orient','auto');
+            const arrowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+            arrowPath.setAttribute('d','M0,0 L8,4 L0,8 z');
+            arrowPath.setAttribute('fill','#9bb7ff');
+            marker.appendChild(arrowPath);
+            defs.appendChild(marker);
+            svg.appendChild(defs);
+
+            nodes.forEach((n,i)=>{
+                if(i===nodes.length-1) return;
+                const a = n.getBoundingClientRect();
+                const b = nodes[i+1].getBoundingClientRect();
+                const startX = a.right - cRect.left;
+                const startY = a.top + a.height/2 - cRect.top;
+                const endX = b.left - cRect.left;
+                const endY = b.top + b.height/2 - cRect.top;
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                const midX = (startX + endX)/2;
+                const d = `M ${startX} ${startY} C ${midX} ${startY} ${midX} ${endY} ${endX} ${endY}`;
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', '#9bb7ff');
+                path.setAttribute('stroke-width','3');
+                path.setAttribute('fill','none');
+                path.setAttribute('marker-end','url(#arrow)');
+
+                // associa atividade (se existir) à conexão
+                const atividade = atividades && atividades[i] ? atividades[i] : null;
+                if (atividade) {
+                    path.dataset.atividadeId = atividade.id;
+                    path.title = atividade.nome;
+                    path.addEventListener('click', (ev)=>{
+                        ev.stopPropagation();
+                        if (window.Mapa) {
+                            Mapa.projetoAtual = currentProjectId;
+                            Mapa.editarAtividade(parseInt(path.dataset.atividadeId));
+                        }
+                    });
+                }
+
+                svg.appendChild(path);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            // expõe função global para ser chamada por Mapa.mostrarFluxograma
+            window.renderFlowForProjectId = renderFlowForProject;
+
+            const resetBtn = document.getElementById('resetFlow');
+            if(resetBtn) resetBtn.addEventListener('click', ()=>{
+                const title = document.getElementById('flowTitle'); if(title) title.textContent = 'Fluxograma do Projeto';
+                clearFlow();
+            });
+
+            window.addEventListener('resize', ()=> requestAnimationFrame(()=>{
+                if (!currentProjectId) return;
+                const data = window.Mapa ? Mapa.getData() : null;
+                const atividades = data ? data.atividades.filter(a => a.projeto_id === currentProjectId).sort((a,b)=>a.id-b.id) : [];
+                drawConnections(atividades);
+            }));
+        });
+    })();
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Mapa.init();

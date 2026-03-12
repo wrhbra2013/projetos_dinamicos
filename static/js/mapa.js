@@ -140,8 +140,9 @@ const Mapa = {
                         </div>
                         <small>${concluidas}/${atividades.length} atividades (${pct}%)</small>
                     </div>
-                    <div class="card-footer">
-                        <button onclick="Mapa.abriAtividades(${p.id})" class="btn btn-secondary" style="width:100%">+ Atividades</button>
+                    <div class="card-footer" style="display:flex;gap:8px">
+                        <button onclick="Mapa.abriAtividades(${p.id})" class="btn btn-secondary" style="flex:1">+ Atividades</button>
+                        <button onclick="Mapa.mostrarFluxograma(${p.id})" class="btn btn-primary" style="flex:1">Ver Fluxograma</button>
                     </div>
                 </div>
             `;
@@ -157,6 +158,14 @@ const Mapa = {
         grid.innerHTML = html;
     },
 
+    mostrarFluxograma(projetoId) {
+        // expõe para o script do dashboard renderizar o fluxograma para este projeto
+        if (typeof window.renderFlowForProjectId === 'function') {
+            window.renderFlowForProjectId(projetoId);
+            document.getElementById('page-dashboard').checked = true;
+        }
+    },
+
     criarProjeto() {
         const nome = document.getElementById('nome').value;
         const descricao = document.getElementById('descricao').value;
@@ -169,7 +178,32 @@ const Mapa = {
             descricao,
             data_criacao: new Date().toISOString()
         };
+
+        // cria o projeto
         data.projetos.push(projeto);
+
+        // Cria atividades iniciais automaticamente: cada conexão do fluxograma vira uma atividade
+        const defaultSteps = ['Backlog','Planejamento','Desenvolvimento','Testes','Concluído'];
+        let prevAtividadeId = null;
+        for (let i = 0; i < defaultSteps.length - 1; i++) {
+            const nomeAtividade = `${defaultSteps[i]} → ${defaultSteps[i+1]}`;
+            const atividade = {
+                id: data.next_atividade_id++,
+                projeto_id: projeto.id,
+                nome: nomeAtividade,
+                descricao: 'Atividade gerada a partir do fluxo do projeto',
+                stack: 'outro',
+                prioridade: 'media',
+                dependencia: prevAtividadeId,
+                equipe: '',
+                responsavel: '',
+                status: 'planejamento',
+                created_at: new Date().toISOString()
+            };
+            data.atividades.push(atividade);
+            prevAtividadeId = atividade.id;
+        }
+
         this.saveData(data);
 
         document.getElementById('nome').value = '';

@@ -354,6 +354,34 @@ body {
     animation: slideIn 0.25s ease;
 }
 
+/* Evita zoom automático em dispositivos móveis ao focar inputs dentro do modal
+   e melhora responsividade do formulário */
+.modal {
+    -webkit-overflow-scrolling: touch;
+}
+.modal-content, .modal-content * {
+    -webkit-text-size-adjust: 100%;
+}
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    font-size: 16px; /* previne zoom em iOS/Android quando foca */
+}
+.modal-content { max-width: calc(100% - 32px); }
+
+/* Reforçar prevenção de zoom e garantir legibilidade nos inputs do modal */
+.modal-content,
+.modal-content * {
+    -webkit-text-size-adjust: 100% !important;
+    -ms-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+}
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    font-size: 18px !important; /* força >=16px para evitar zoom automático */
+}
+
 @keyframes slideIn {
     from {
         transform: translateY(-10px);
