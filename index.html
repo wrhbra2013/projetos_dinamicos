@@ -19,9 +19,18 @@
     #flow-svg path{pointer-events:stroke;cursor:pointer}
     .btn-flow{margin-left:8px;padding:6px 8px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
     .projects-grid .project-card{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:8px;border:1px solid #eee;background:#fff}
+    /* Toggle Acessibilidade */
+    .css-toggle-checkbox{position:absolute;opacity:0;pointer-events:none}
+    .contrast-label{position:fixed;top:15px;right:15px;z-index:9999;cursor:pointer;font-size:28px;background:#fff;border:2px solid #333;border-radius:50%;width:45px;height:45px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+    .contrast-label:hover{transform:scale(1.1)}
+    #contrast-toggle:checked + .contrast-label{background:#000;color:#fff;border-color:#fff}
     </style>
 </head>
 <body>
+    <!-- Toggle Acessibilidade - Alto Contraste -->
+    <input type="checkbox" id="contrast-toggle" class="css-toggle-checkbox">
+    <label for="contrast-toggle" class="contrast-label" aria-label="Alternar alto contraste" title="Alto Contraste">◐</label>
+
     <input type="radio" name="page" id="page-dashboard" checked>
     <input type="radio" name="page" id="page-projeto">
     <input type="radio" name="page" id="page-atividade">
@@ -445,9 +454,25 @@
     })();
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            Mapa.init();
-        });
+        // Toggle Alto Contraste - Acessibilidade
+        const contrastToggle = document.getElementById('contrast-toggle');
+        if (contrastToggle) {
+            contrastToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('high-contrast');
+                    localStorage.setItem('high-contrast', 'true');
+                } else {
+                    document.body.classList.remove('high-contrast');
+                    localStorage.setItem('high-contrast', 'false');
+                }
+            });
+            
+            // Verificar preferência salva
+            if (localStorage.getItem('high-contrast') === 'true') {
+                document.body.classList.add('high-contrast');
+                contrastToggle.checked = true;
+            }
+        }
     </script>
 </body>
 </html>

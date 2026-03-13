@@ -24,6 +24,68 @@
     --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* Tema Alto Contraste - Acessibilidade */
+body.high-contrast {
+    --primary: #000000;
+    --secondary: #1a1a1a;
+    --accent: #ffff00;
+    --accent-light: #ffff66;
+    --accent-hover: #cccc00;
+    --highlight: #ff69b4;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-muted: #cccccc;
+    --success: #00ff00;
+    --warning: #ffff00;
+    --danger: #ff0000;
+    --planejamento: #ff00ff;
+    --andamento: #00ffff;
+    --concluido: #00ff00;
+    --card-bg: #1a1a1a;
+    --border: #ffffff;
+    --shadow: 0 1px 3px rgba(255, 255, 255, 0.2);
+    --shadow-md: 0 4px 12px rgba(255, 255, 255, 0.3);
+    --shadow-lg: 0 10px 25px rgba(255, 255, 255, 0.4);
+}
+
+body.high-contrast a {
+    color: #00ffff;
+    text-decoration: underline;
+}
+
+body.high-contrast a:hover {
+    color: #ffff00;
+}
+
+body.high-contrast button,
+body.high-contrast .btn {
+    border: 2px solid #ffffff !important;
+}
+
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+    border: 2px solid #ffffff !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast .progress-bar-fill {
+    border: 1px solid #ffffff;
+}
+
+body.high-contrast .card,
+body.high-contrast .modal-content,
+body.high-contrast .project-card {
+    border: 2px solid #ffffff;
+}
+
+body.high-contrast .btn-primary {
+    background: #000000 !important;
+    color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+}
+
 * {
     margin: 0;
     padding: 0;
