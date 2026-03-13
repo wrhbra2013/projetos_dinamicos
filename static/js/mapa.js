@@ -67,6 +67,14 @@ const Mapa = {
     },
 
     setupModal() {
+        // Botão Novo Projeto
+        const openModalBtn = document.getElementById('openModalBtn');
+        if (openModalBtn) {
+            openModalBtn.addEventListener('click', () => {
+                document.getElementById('projetoModal').classList.add('active');
+            });
+        }
+        
         const modal = document.getElementById('projetoModal');
         const form = document.getElementById('formNovoProjeto');
         
