@@ -1,101 +1,176 @@
 const Mapa = {
-    STORAGE_KEY: 'projetos_dinamicos_db',
     projetoAtual: null,
     atividadeAtual: null,
+    dataCache: { projetos: [], atividades: [] },
 
-    init() {
-        this.initData();
+    async init() {
+        await DB.init();
+        await this.loadData();
         this.setupTheme();
         this.setupModal();
         this.setupEventListeners();
         this.render();
+        
+        // Recarregar ML
+        if (window.recarregarML) window.recarregarML();
     },
 
-    initData() {
-        const stored = localStorage.getItem(this.STORAGE_KEY);
-        if (!stored) {
-            const initialData = {
-                projetos: [],
-                atividades: [],
-                next_projeto_id: 1,
-                next_atividade_id: 1
-            };
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(initialData));
+    async loadData() {
+        try {
+            const projetos = await DB.getAllProjetos();
+            const atividades = [];
+            
+            for (const projeto of projetos) {
+                const atks = await DB.getAtividadesByProjeto(projeto._id);
+                atks.forEach(a => a.projeto_id = projeto._id);
+                atividades.push(...atks);
+            }
+            
+            this.dataCache = { projetos, atividades };
+        } catch (e) {
+            console.error('Erro ao carregar dados:', e);
+            this.dataCache = { projetos: [], atividades: [] };
         }
     },
 
     getData() {
-        return JSON.parse(localStorage.getItem(this.STORAGE_KEY));
+        return this.dataCache;
     },
 
-    saveData(data) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+    async saveData(data) {
+        this.dataCache = data;
         this.render();
+        
+        if (window.recarregarML) window.recarregarML();
     },
 
-     setupTheme() {
-         const themeBtn = document.getElementById('themeBtn');
-         if (themeBtn) {
-             const savedTheme = localStorage.getItem('theme');
-             const isLight = savedTheme === 'light';
-             if (isLight) {
-                 document.body.classList.add('light-theme');
-                 themeBtn.innerHTML = '🌙';
-             } else {
-                 document.body.classList.remove('light-theme');
-                 themeBtn.innerHTML = '🌓';
-             }
-             themeBtn.setAttribute('aria-pressed', isLight);
-             
-             themeBtn.addEventListener('click', () => {
-                 document.body.classList.toggle('light-theme');
-                 const isLight = document.body.classList.contains('light-theme');
-                 themeBtn.innerHTML = isLight ? '🌙' : '🌓';
-                 themeBtn.setAttribute('aria-pressed', isLight);
-                 localStorage.setItem('theme', isLight ? 'light' : 'dark');
-             });
-         }
-     },
+    setupTheme() {
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            const savedTheme = localStorage.getItem('theme');
+            const isLight = savedTheme === 'light';
+            if (isLight) {
+                document.body.classList.add('light-theme');
+                themeBtn.innerHTML = '🌙';
+            } else {
+                themeBtn.innerHTML = '🌓';
+            }
+            themeBtn.setAttribute('aria-pressed', isLight);
+            
+            themeBtn.addEventListener('click', () => {
+                const isNowLight = document.body.classList.toggle('light-theme');
+                themeBtn.innerHTML = isNowLight ? '🌙' : '🌓';
+                themeBtn.setAttribute('aria-pressed', isNowLight);
+                localStorage.setItem('theme', isNowLight ? 'light' : 'dark');
+            });
+        }
+    },
 
     setupModal() {
         const modal = document.getElementById('projetoModal');
-        const closeBtn = document.querySelector('#projetoModal .close-btn');
-        const openBtn = document.getElementById('openModalBtn');
-
-        if (modal && closeBtn) {
-            closeBtn.onclick = () => modal.classList.remove('active');
-            window.onclick = (e) => {
-                if (e.target == modal) modal.classList.remove('active');
-            };
-        }
-        if (openBtn) openBtn.onclick = () => modal.classList.add('active');
-
         const form = document.getElementById('formNovoProjeto');
-        if (form) {
-            form.addEventListener('submit', (e) => {
+        
+        if (modal && form) {
+            const closeBtn = modal.querySelector('.close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                this.criarProjeto();
+                const nome = document.getElementById('nome').value;
+                const descricao = document.getElementById('descricao').value;
+                
+                const novoProjeto = await DB.createProjeto({
+                    nome,
+                    descricao,
+                    status: 'planejamento'
+                });
+                
+                await this.loadData();
+                
+                modal.classList.remove('active');
+                form.reset();
             });
         }
-
-        const formAtividade = document.getElementById('formAtividade');
-        if (formAtividade) {
-            formAtividade.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.salvarAtividade();
-            });
+        
+        const atividadeModal = document.getElementById('atividadeModal');
+        if (atividadeModal) {
+            const closeBtn = atividadeModal.querySelector('.close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    atividadeModal.classList.remove('active');
+                });
+            }
+            
+            const formAtividade = document.getElementById('formAtividade');
+            if (formAtividade) {
+                formAtividade.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.salvarAtividade();
+                });
+            }
         }
     },
 
-    setupEventListeners() {
-        const selector = document.getElementById('projetoSelector');
-        if (selector) {
-            selector.addEventListener('change', (e) => {
-                this.projetoAtual = e.target.value ? parseInt(e.target.value) : null;
-                this.renderMapa();
+    async salvarAtividade() {
+        const atividadeId = document.getElementById('atividadeId').value;
+        const titulo = document.getElementById('nomeAtividade').value;
+        const descricao = document.getElementById('descAtividade').value;
+        const stack = document.getElementById('stackAtividade')?.value || 'outro';
+        const prioridade = document.getElementById('prioridadeAtividade')?.value || 'media';
+        const dependencia = document.getElementById('dependenciaAtividade')?.value || '';
+        const equipe = document.getElementById('equipeAtividade')?.value || '';
+        const responsavel = document.getElementById('responsavelAtividade')?.value || '';
+        
+        if (atividadeId) {
+            // Atualizar
+            const data = this.getData();
+            const atividade = data.atividades.find(a => a._id === atividadeId || a.id == atividadeId);
+            if (atividade) {
+                await DB.updateAtividade({
+                    _id: atividade._id,
+                    _rev: atividade._rev,
+                    titulo,
+                    descricao,
+                    stack,
+                    prioridade,
+                    dependencia,
+                    equipe,
+                    responsavel,
+                    status: atividade.status,
+                    projeto_id: atividade.projeto_id
+                });
+            }
+        } else {
+            // Criar nova
+            if (!this.projetoAtual) {
+                alert('Selecione um projeto primeiro!');
+                return;
+            }
+            
+            await DB.createAtividade({
+                projeto_id: this.projetoAtual._id,
+                titulo,
+                descricao,
+                stack,
+                prioridade,
+                dependencia,
+                equipe,
+                responsavel,
+                status: 'pendente'
             });
         }
+        
+        await this.loadData();
+        
+        document.getElementById('atividadeModal').classList.remove('active');
+        document.getElementById('formAtividade').reset();
+    },
 
+    setupEventListeners() {
         const btnNovaAtividade = document.getElementById('btnNovaAtividade');
         if (btnNovaAtividade) {
             btnNovaAtividade.addEventListener('click', () => {
@@ -119,7 +194,6 @@ const Mapa = {
         }
     },
 
-    /* ========== PROJETOS ========== */
     renderProjetos() {
         const data = this.getData();
         const grid = document.getElementById('projectsGrid');
@@ -127,676 +201,300 @@ const Mapa = {
 
         let html = '';
         data.projetos.forEach(p => {
-            const atividades = data.atividades.filter(a => a.projeto_id === p.id);
+            const atividades = data.atividades.filter(a => a.projeto_id === p._id);
             const concluidas = atividades.filter(a => a.status === 'concluido').length;
             const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
 
-         html += `
-                 <div class="project-card">
-                     <div class="card-header">
-                         <h3>${this.escapeHtml(p.nome)}</h3>
-                         <button onclick="Mapa.excluirProjeto(${p.id})" class="delete-btn" aria-label="Excluir projeto ${this.escapeHtml(p.nome)}">🗑️</button>
-                     </div>
-                     <div class="card-body">
-                         <p class="descricao">${this.escapeHtml(p.descricao || '')}</p>
-                         <div class="mini-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Progresso do projeto ${this.escapeHtml(p.nome)}: ${pct} por cento concluído">
-                             <div class="mini-progress-bar" style="width: ${pct}%"></div>
-                         </div>
-                         <small>${concluidas}/${atividades.length} atividades (${pct}%)</small>
-                     </div>
-                     <div class="card-footer" style="display:flex;gap:8px">
-                         <button onclick="Mapa.abriAtividades(${p.id})" class="btn btn-secondary" style="flex:1" aria-label="Ver atividades do projeto ${this.escapeHtml(p.nome)}">+ Atividades</button>
-                         <button onclick="Mapa.mostrarFluxograma(${p.id})" class="btn btn-primary" style="flex:1" aria-label="Ver fluxograma do projeto ${this.escapeHtml(p.nome)}">Ver Fluxograma</button>
-                     </div>
-                 </div>
-             `;
-        });
-
-        html += `
-            <div class="project-card add-card" onclick="document.getElementById('projetoModal').classList.add('active')">
-                <div class="add-icon">+</div>
-                <p>Novo Projeto</p>
-            </div>
-        `;
-
-        grid.innerHTML = html;
-    },
-
-    mostrarFluxograma(projetoId) {
-        // expõe para o script do dashboard renderizar o fluxograma para este projeto
-        if (typeof window.renderFlowForProjectId === 'function') {
-            window.renderFlowForProjectId(projetoId);
-            document.getElementById('page-dashboard').checked = true;
-        }
-    },
-
-    criarProjeto() {
-        const nome = document.getElementById('nome').value;
-        const descricao = document.getElementById('descricao').value;
-        if (!nome) return;
-
-        const data = this.getData();
-        const projeto = {
-            id: data.next_projeto_id++,
-            nome,
-            descricao,
-            data_criacao: new Date().toISOString()
-        };
-
-        // cria o projeto
-        data.projetos.push(projeto);
-
-        // Cria atividades iniciais automaticamente: cada conexão do fluxograma vira uma atividade
-        const defaultSteps = ['Backlog','Planejamento','Desenvolvimento','Testes','Concluído'];
-        let prevAtividadeId = null;
-        for (let i = 0; i < defaultSteps.length - 1; i++) {
-            const nomeAtividade = `${defaultSteps[i]} → ${defaultSteps[i+1]}`;
-            const atividade = {
-                id: data.next_atividade_id++,
-                projeto_id: projeto.id,
-                nome: nomeAtividade,
-                descricao: 'Atividade gerada a partir do fluxo do projeto',
-                stack: 'outro',
-                prioridade: 'media',
-                dependencia: prevAtividadeId,
-                equipe: '',
-                responsavel: '',
-                status: 'planejamento',
-                created_at: new Date().toISOString()
-            };
-            data.atividades.push(atividade);
-            prevAtividadeId = atividade.id;
-        }
-
-        this.saveData(data);
-
-        document.getElementById('nome').value = '';
-        document.getElementById('descricao').value = '';
-        document.getElementById('projetoModal').classList.remove('active');
-    },
-
-    excluirProjeto(id) {
-        if (!confirm('Excluir projeto e todas as atividades?')) return;
-        const data = this.getData();
-        data.projetos = data.projetos.filter(p => p.id !== id);
-        data.atividades = data.atividades.filter(a => a.projeto_id !== id);
-        this.saveData(data);
-    },
-
-    /* ========== ATIVIDADES ========== */
-    abriAtividades(projetoId) {
-        this.projetoAtual = projetoId;
-        
-        const data = this.getData();
-        const projeto = data.projetos.find(p => p.id === projetoId);
-        
-        if (projeto) {
-            document.getElementById('projetoTitulo').textContent = projeto.nome;
-            this.renderAtividadesProjeto(projetoId);
-        }
-        
-        document.getElementById('page-projeto').checked = true;
-    },
-
-    renderAtividadesProjeto(projetoId) {
-        const data = this.getData();
-        const atividades = data.atividades.filter(a => a.projeto_id === projetoId);
-        const concluidas = atividades.filter(a => a.status === 'concluido').length;
-        const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
-
-        document.getElementById('projetoProgresso').textContent = pct + '%';
-        document.getElementById('projetoProgressoBar').style.width = pct + '%';
-        document.getElementById('projetoProgressoText').textContent = `${concluidas} de ${atividades.length} atividades`;
-
-        const grid = document.getElementById('atividadesGrid');
-        
-        if (atividades.length === 0) {
-            grid.innerHTML = '<div class="empty-atividades">Nenhuma atividade ainda. Clique em "+ Nova Atividade" para adicionar.</div>';
-            return;
-        }
-
-        let html = '';
-        atividades.forEach(a => {
-            const prioridadeLabel = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
-            const stackLabel = { frontend: 'Frontend', backend: 'Backend', database: 'Database', cloud: 'Cloud', outro: 'Outro' };
-            
             html += `
-                <div class="atividade-card">
-                    <div class="atividade-card-header">
-                        <h4>${this.escapeHtml(a.nome)}</h4>
-                        <span class="badge badge-${a.status}">${a.status === 'planejamento' ? 'Planejamento' : a.status === 'andamento' ? 'Em Andamento' : 'Concluído'}</span>
+                <div class="project-card">
+                    <div class="card-header">
+                        <h3>${this.escapeHtml(p.nome)}</h3>
+                        <button onclick="Mapa.excluirProjeto('${p._id}')" class="delete-btn" aria-label="Excluir projeto">🗑️</button>
                     </div>
-                    <div class="atividade-card-body">
-                        ${this.escapeHtml(a.descricao || 'Sem descrição')}
+                    <p>${this.escapeHtml(p.descricao || '')}</p>
+                    <div class="card-meta">
+                        <span class="badge badge-${p.status}">${this.getStatusLabel(p.status)}</span>
+                        <span>${atividades.length} atividades</span>
                     </div>
-                    <div class="atividade-card-meta">
-                        <span>🛠️ ${stackLabel[a.stack] || a.stack}</span>
-                        <span>⚡ ${prioridadeLabel[a.prioridade] || a.prioridade}</span>
+                    <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}">
+                        <div class="progress-bar-fill" style="width: ${pct}%"></div>
                     </div>
-                    <div class="atividade-card-meta">
-                        <span>👥 ${this.escapeHtml(a.equipe || '-')}</span>
-                        <span>👤 ${this.escapeHtml(a.responsavel || '-')}</span>
-                    </div>
-                    <div class="atividade-card-actions">
-                        <select onchange="Mapa.alterarStatusAtividade(${a.id}, this.value)">
-                            <option value="planejamento" ${a.status === 'planejamento' ? 'selected' : ''}>Planejamento</option>
-                            <option value="andamento" ${a.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
-                            <option value="concluido" ${a.status === 'concluido' ? 'selected' : ''}>Concluído</option>
-                        </select>
-                        <button onclick="Mapa.editarAtividade(${a.id})" class="btn btn-outline" style="padding: 6px 12px;">Editar</button>
-                        <button onclick="Mapa.excluirAtividade(${a.id})" class="btn btn-danger" style="padding: 6px 12px;">Excluir</button>
+                    <div class="card-actions">
+                        <button onclick="Mapa.editarProjeto('${p._id}')" class="btn btn-sm">Editar</button>
+                        <button onclick="Mapa.selecionarProjeto('${p._id}')" class="btn btn-sm btn-primary">Ver Detalhes</button>
                     </div>
                 </div>
             `;
         });
-
-        grid.innerHTML = html;
+        grid.innerHTML = html || '<p class="empty-state">Nenhum projeto. Clique em "+ Novo Projeto" para começar.</p>';
     },
 
-    alterarStatusAtividade(atividadeId, novoStatus) {
-        const data = this.getData();
-        const atividade = data.atividades.find(a => a.id === atividadeId);
-        if (atividade) {
-            atividade.status = novoStatus;
-            this.saveData(data);
+    getStatusLabel(status) {
+        const labels = {
+            'planejamento': 'Planejamento',
+            'andamento': 'Em Andamento',
+            'concluido': 'Concluído',
+            'pendente': 'Pendente'
+        };
+        return labels[status] || status;
+    },
+
+    async excluirProjeto(id) {
+        if (!confirm('Excluir este projeto e todas as atividades?')) return;
+        
+        await DB.deleteProjeto(id);
+        await this.loadData();
+        
+        if (this.projetoAtual?._id === id) {
+            this.projetoAtual = null;
         }
     },
 
-    editarAtividade(atividadeId) {
+    editarProjeto(id) {
         const data = this.getData();
-        const atividade = data.atividades.find(a => a.id === atividadeId);
+        const projeto = data.projetos.find(p => p._id === id);
+        if (!projeto) return;
+
+        document.getElementById('nome').value = projeto.nome;
+        document.getElementById('descricao').value = projeto.descricao || '';
+        
+        document.getElementById('projetoModal').classList.add('active');
+        
+        const form = document.getElementById('formNovoProjeto');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            projeto.nome = document.getElementById('nome').value;
+            projeto.descricao = document.getElementById('descricao').value;
+            
+            await DB.updateProjeto(projeto);
+            await this.loadData();
+            
+            document.getElementById('projetoModal').classList.remove('active');
+            form.reset();
+        };
+    },
+
+    selecionarProjeto(id) {
+        const data = this.getData();
+        this.projetoAtual = data.projetos.find(p => p._id === id);
+        document.getElementById('page-projeto').checked = true;
+        this.render();
+        this.renderAtividadesProjeto(this.projetoAtual);
+    },
+
+    renderAtividadesProjeto(projeto) {
+        if (!projeto) return;
+        
+        document.getElementById('projetoTitulo').textContent = projeto.nome;
+        
+        const data = this.getData();
+        const atividades = data.atividades.filter(a => a.projeto_id === projeto._id);
+        
+        const grid = document.getElementById('atividadesGrid');
+        if (!grid) return;
+        
+        let html = '';
+        atividades.forEach(a => {
+            const statusClass = a.status === 'concluido' ? 'success' : a.status === 'andamento' ? 'warning' : 'secondary';
+            html += `
+                <div class="atividade-card" onclick="Mapa.abrirAtividade('${a._id}')">
+                    <div class="atividade-header">
+                        <span class="badge badge-${statusClass}">${this.getStatusLabel(a.status)}</span>
+                        ${a.prioridade ? `<span class="prioridade prioridade-${a.prioridade}">⚡ ${a.prioridade}</span>` : ''}
+                    </div>
+                    <h4>${this.escapeHtml(a.titulo)}</h4>
+                    <p>${this.escapeHtml(a.descricao || '').substring(0, 80)}${a.descricao?.length > 80 ? '...' : ''}</p>
+                    <div class="atividade-meta">
+                        ${a.stack ? `<span class="stack-badge">${a.stack}</span>` : ''}
+                        ${a.responsavel ? `<span>👤 ${this.escapeHtml(a.responsavel)}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        grid.innerHTML = html || '<p class="empty-state">Nenhuma atividade. Clique em "+ Nova Atividade".</p>';
+        
+        const concluidas = atividades.filter(a => a.status === 'concluido').length;
+        const total = atividades.length;
+        const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+        
+        document.getElementById('projetoProgressoBar').style.width = pct + '%';
+        document.getElementById('projetoProgressoText').textContent = `${concluidas} de ${total} atividades`;
+    },
+
+    abrirAtividade(id) {
+        const data = this.getData();
+        const atividade = data.atividades.find(a => a._id === id);
         if (!atividade) return;
 
-        document.getElementById('atividadeId').value = atividade.id;
-        document.getElementById('nomeAtividade').value = atividade.nome;
+        this.atividadeAtual = atividade;
+        
+        document.getElementById('atividadeId').value = atividade._id;
+        document.getElementById('nomeAtividade').value = atividade.titulo;
         document.getElementById('descAtividade').value = atividade.descricao || '';
-        document.getElementById('stackAtividade').value = atividade.stack || 'frontend';
-        document.getElementById('prioridadeAtividade').value = atividade.prioridade || 'media';
         
-        this.atualizarDependencias();
-        
-        const depSelect = document.getElementById('dependenciaAtividade');
-        if (atividade.dependencia) {
-            depSelect.value = atividade.dependencia;
+        const stackSelect = document.getElementById('stackAtividade');
+        if (stackSelect) {
+            stackSelect.value = atividade.stack || 'outro';
         }
-
-        document.getElementById('equipeAtividade').value = atividade.equipe || '';
-        document.getElementById('responsavelAtividade').value = atividade.responsavel || '';
-
+        
+        this.atualizarDependencias(atividade.dependencia);
+        
         document.getElementById('atividadeModal').classList.add('active');
     },
 
-    excluirAtividade(atividadeId) {
-        if (!confirm('Tem certeza que deseja excluir esta atividade?')) return;
+    async excluirAtividade(id) {
+        if (!confirm('Excluir esta atividade?')) return;
         
-        const data = this.getData();
-        
-        data.atividades.forEach(a => {
-            if (a.dependencia === atividadeId) {
-                a.dependencia = null;
-            }
-        });
-        
-        data.atividades = data.atividades.filter(a => a.id !== atividadeId);
-        this.saveData(data);
-        this.renderAtividadesProjeto(this.projetoAtual);
-        this.renderProgressoGlobal();
-        this.renderProjetos();
+        await DB.deleteAtividade(id);
+        await this.loadData();
     },
 
-    atualizarDependencias() {
+    atualizarDependencias(selectedId = '') {
+        const data = this.getData();
         if (!this.projetoAtual) return;
         
-        const data = this.getData();
-        const atividades = data.atividades.filter(a => a.projeto_id === this.projetoAtual);
-        
         const select = document.getElementById('dependenciaAtividade');
+        if (!select) return;
+        
+        const atividades = data.atividades.filter(a => a.projeto_id === this.projetoAtual._id);
+        
         let html = '<option value="">Nenhuma</option>';
         atividades.forEach(a => {
-            html += `<option value="${a.id}">${this.escapeHtml(a.nome)}</option>`;
+            const selected = (a._id === selectedId || a.id == selectedId) ? 'selected' : '';
+            html += `<option value="${a._id}" ${selected}>${this.escapeHtml(a.titulo)}</option>`;
         });
+        
         select.innerHTML = html;
     },
 
-    salvarAtividade() {
-        const nome = document.getElementById('nomeAtividade').value;
-        const descricao = document.getElementById('descAtividade').value;
-        const stack = document.getElementById('stackAtividade').value;
-        const prioridade = document.getElementById('prioridadeAtividade').value;
-        const dependencia = document.getElementById('dependenciaAtividade').value;
-        const equipe = document.getElementById('equipeAtividade').value;
-        const responsavel = document.getElementById('responsavelAtividade').value;
-        const atividadeId = document.getElementById('atividadeId').value;
-
-        if (!nome || !this.projetoAtual) return;
-
-        const data = this.getData();
-
-        if (atividadeId) {
-            const atividade = data.atividades.find(a => a.id === parseInt(atividadeId));
-            if (atividade) {
-                atividade.nome = nome;
-                atividade.descricao = descricao;
-                atividade.stack = stack;
-                atividade.prioridade = prioridade;
-                atividade.dependencia = dependencia ? parseInt(dependencia) : null;
-                atividade.equipe = equipe;
-                atividade.responsavel = responsavel;
-            }
-        } else {
-            const atividade = {
-                id: data.next_atividade_id++,
-                projeto_id: this.projetoAtual,
-                nome,
-                descricao,
-                stack,
-                prioridade,
-                dependencia: dependencia ? parseInt(dependencia) : null,
-                equipe,
-                responsavel,
-                status: 'planejamento',
-                created_at: new Date().toISOString()
-            };
-            data.atividades.push(atividade);
-        }
-
-        this.saveData(data);
-        this.fecharModal();
-    },
-
-    abrirAtividade(atividadeId) {
-        const data = this.getData();
-        const atividade = data.atividades.find(a => a.id === atividadeId);
-        if (!atividade) return;
-
-        this.atividadeAtual = atividadeId;
-
-        document.getElementById('panelTitulo').textContent = atividade.nome;
-        document.getElementById('panelDescricao').textContent = atividade.descricao || 'Sem descrição';
-        document.getElementById('panelStack').textContent = atividade.stack || 'Não definido';
-        document.getElementById('panelPrioridade').textContent = atividade.prioridade || 'Média';
-        
-        const dataFormatada = atividade.created_at ? new Date(atividade.created_at).toLocaleDateString('pt-BR') : '-';
-        document.getElementById('panelData').textContent = dataFormatada;
-
-        const statusBadge = document.getElementById('panelStatus');
-        statusBadge.textContent = atividade.status === 'concluido' ? 'Concluído' : 
-                                   atividade.status === 'andamento' ? 'Em Andamento' : 'Planejamento';
-        statusBadge.className = 'badge badge-' + atividade.status;
-
-        document.getElementById('panelStatusSelect').value = atividade.status;
-
-        const depsContainer = document.getElementById('panelDependencias');
-        if (atividade.dependencia) {
-            const dep = data.atividades.find(a => a.id === atividade.dependencia);
-            if (dep) {
-                depsContainer.innerHTML = `
-                    <div class="panel-dependencia-item ${dep.status === 'concluido' ? 'concluida' : ''}">
-                        ${this.escapeHtml(dep.nome)} - ${dep.status}
-                    </div>
-                `;
-            }
-        } else {
-            depsContainer.innerHTML = '<small style="color:var(--text-secondary)">Sem dependências</small>';
-        }
-
-        document.getElementById('nodePanel').classList.add('active');
-    },
-
-    alterarStatus(novoStatus) {
-        if (!this.atividadeAtual) return;
-        
-        const data = this.getData();
-        const atividade = data.atividades.find(a => a.id === this.atividadeAtual);
-        if (atividade) {
-            atividade.status = novoStatus;
-            this.saveData(data);
-            
-            document.getElementById('panelStatus').textContent = 
-                novoStatus === 'concluido' ? 'Concluído' : 
-                novoStatus === 'andamento' ? 'Em Andamento' : 'Planejamento';
-            document.getElementById('panelStatus').className = 'badge badge-' + novoStatus;
-        }
-    },
-
-    excluirAtividadePainel() {
-        if (!this.atividadeAtual) return;
-        if (!confirm('Excluir esta atividade?')) return;
-
-        const data = this.getData();
-        data.atividades = data.atividades.filter(a => a.id !== this.atividadeAtual);
-        
-        data.atividades.forEach(a => {
-            if (a.dependencia === this.atividadeAtual) {
-                a.dependencia = null;
-            }
-        });
-
-        this.saveData(data);
-        this.fecharPainel();
-        this.render();
-    },
-
-    fecharModal() {
-        document.getElementById('atividadeModal').classList.remove('active');
-        document.getElementById('formAtividade').reset();
-        document.getElementById('atividadeId').value = '';
-        
-        if (this.projetoAtual) {
-            this.renderAtividadesProjeto(this.projetoAtual);
-            this.renderProgressoGlobal();
-            this.renderProjetos();
-        }
-    },
-
-    fecharPainel() {
-        document.getElementById('nodePanel').classList.remove('active');
-        this.atividadeAtual = null;
-    },
-
-    /* ========== MAPA VISUAL ========== */
-    renderSelectorProjetos() {
-        const data = this.getData();
-        const selector = document.getElementById('projetoSelector');
-        if (!selector) return;
-
-        let html = '<option value="">Selecione um projeto</option>';
-        data.projetos.forEach(p => {
-            html += `<option value="${p.id}">${this.escapeHtml(p.nome)}</option>`;
-        });
-        selector.innerHTML = html;
-
-        if (this.projetoAtual) {
-            selector.value = this.projetoAtual;
-        }
-    },
-
-    renderMapa() {
-        const canvas = document.getElementById('mapaCanvas');
-        const list = document.getElementById('nodesList');
-        
-        if (!this.projetoAtual) {
-            canvas.innerHTML = '<div class="mapa-vazio"><p>Selecione um projeto para visualizar o mapa</p></div>';
-            list.innerHTML = '';
-            return;
-        }
-
-        const data = this.getData();
-        const atividades = data.atividades
-            .filter(a => a.projeto_id === this.projetoAtual)
-            .sort((a, b) => a.id - b.id);
-
-        if (atividades.length === 0) {
-            canvas.innerHTML = '<div class="mapa-vazio"><p>Nenhuma atividade neste projeto</p></div>';
-            list.innerHTML = '';
-            return;
-        }
-
-        this.renderNodes(atividades, canvas);
-        this.renderNodesList(atividades, list);
-    },
-
-    renderNodes(atividades, container) {
-        let html = '<div class="mapa-connections"><svg>';
-        
-        const nodePositions = this.calcularPosicoes(atividades);
-        
-        atividades.forEach(a => {
-            const pos = nodePositions[a.id];
-            const icon = this.getIconForStack(a.stack);
-            const priorityClass = a.prioridade || 'baixa';
-            const blocked = a.dependencia && !this.isDependenciaConcluida(a.dependencia);
-
-            html += `
-                <div class="node ${a.status} ${blocked ? 'bloqueado' : ''}" 
-                     style="left: ${pos.x}px; top: ${pos.y}px"
-                     onclick="Mapa.abrirAtividade(${a.id})">
-                    <span class="node-priority ${priorityClass}"></span>
-                    <div class="node-icon">${icon}</div>
-                    <div class="node-title">${this.escapeHtml(a.nome)}</div>
-                    <div class="node-meta">${a.stack}</div>
-                </div>
-            `;
-
-            if (a.dependencia) {
-                const depPos = nodePositions[a.dependencia];
-                if (depPos) {
-                    const depAtividade = atividades.find(act => act.id === a.dependencia);
-                    const lineClass = depAtividade && depAtividade.status === 'concluido' ? 'concluido' : '';
-                    html += `<line x1="${depPos.x + 80}" y1="${depPos.y + 40}" x2="${pos.x + 80}" y2="${pos.y + 40}" class="${lineClass}" />`;
-                }
-            }
-        });
-
-        html += '</svg></div>';
-        container.innerHTML = html;
-    },
-
-    calcularPosicoes(atividades) {
-        const positions = {};
-        const cols = 4;
-        const nodeWidth = 160;
-        const nodeHeight = 100;
-        const gapX = 60;
-        const gapY = 80;
-
-        atividades.forEach((a, index) => {
-            const col = index % cols;
-            const row = Math.floor(index / cols);
-            positions[a.id] = {
-                x: col * (nodeWidth + gapX) + 40,
-                y: row * (nodeHeight + gapY) + 20
-            };
-        });
-
-        return positions;
-    },
-
-    isDependenciaConcluida(dependenciaId) {
-        const data = this.getData();
-        const dep = data.atividades.find(a => a.id === dependenciaId);
-        return dep && dep.status === 'concluido';
-    },
-
-    getIconForStack(stack) {
-        const icons = {
-            frontend: '🎨',
-            backend: '⚙️',
-            database: '💾',
-            cloud: '☁️',
-            outro: '📦'
-        };
-        return icons[stack] || '📦';
-    },
-
-    renderNodesList(atividades, container) {
-        let html = '';
-        atividades.forEach(a => {
-            const icon = this.getIconForStack(a.stack);
-            html += `
-                <div class="node-card ${a.status}" onclick="Mapa.abrirAtividade(${a.id})">
-                    <div class="node-card-title">${icon} ${this.escapeHtml(a.nome)}</div>
-                    <div class="node-card-meta">
-                        <span>${a.prioridade}</span>
-                        <span>${a.status}</span>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    },
-
-    /* ========== PROGRESSO ========== */
     renderProgressoGlobal() {
         const data = this.getData();
         const total = data.atividades.length;
         const concluidas = data.atividades.filter(a => a.status === 'concluido').length;
         const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
-
+        
         document.getElementById('totalAtividades').textContent = total;
-        document.getElementById('progressGlobal').style.width = pct + '%';
         document.getElementById('percentGlobal').textContent = pct + '% concluído';
+        
+        const progressBar = document.getElementById('progressGlobal');
+        if (progressBar) {
+            progressBar.style.width = pct + '%';
+            progressBar.setAttribute('aria-valuenow', pct);
+        }
+    },
+
+    renderSelectorProjetos() {
+        const data = this.getData();
+        const select = document.getElementById('projetoSelector');
+        if (!select) return;
+        
+        let html = '<option value="">Selecione um projeto</option>';
+        data.projetos.forEach(p => {
+            html += `<option value="${p._id}">${this.escapeHtml(p.nome)}</option>`;
+        });
+        
+        select.innerHTML = html;
+        select.onchange = (e) => {
+            const id = e.target.value;
+            if (id) {
+                const projeto = data.projetos.find(p => p._id === id);
+                if (projeto) {
+                    document.getElementById('page-mapa').checked = true;
+                    this.renderMapaForProjeto(projeto);
+                }
+            }
+        };
+    },
+
+    renderMapa() {
+        const select = document.getElementById('projetoSelector');
+        const currentValue = select?.value;
+        
+        if (currentValue) {
+            const data = this.getData();
+            const projeto = data.projetos.find(p => p._id === currentValue);
+            if (projeto) {
+                this.renderMapaForProjeto(projeto);
+                return;
+            }
+        }
+        
+        const canvas = document.getElementById('mapaCanvas');
+        if (canvas) {
+            canvas.innerHTML = '<div class="mapa-vazio"><p>Selecione um projeto para visualizar o mapa</p></div>';
+        }
+    },
+
+    renderMapaForProjeto(projeto) {
+        const data = this.getData();
+        const atividades = data.atividades.filter(a => a.projeto_id === projeto._id);
+        
+        const canvas = document.getElementById('mapaCanvas');
+        if (!canvas) return;
+        
+        if (atividades.length === 0) {
+            canvas.innerHTML = '<div class="mapa-vazio"><p>Este projeto ainda não tem atividades.</p></div>';
+            return;
+        }
+        
+        const nodesList = document.getElementById('nodesList');
+        if (nodesList) {
+            let html = '<div class="nodes-grid">';
+            atividades.forEach(a => {
+                const statusClass = a.status === 'concluido' ? 'success' : a.status === 'andamento' ? 'warning' : 'secondary';
+                html += `
+                    <div class="node-item node-${statusClass}" onclick="Mapa.abrirAtividade('${a._id}')">
+                        <span class="node-title">${this.escapeHtml(a.titulo)}</span>
+                        <span class="node-status">${this.getStatusLabel(a.status)}</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            nodesList.innerHTML = html;
+        }
     },
 
     renderRelatorios() {
-        this.renderProgressoProjetos();
-        this.renderStats();
-    },
-
-    renderProgressoProjetos() {
-        const container = document.getElementById('progressoProjetos');
         const data = this.getData();
-
-        let html = '';
-        data.projetos.forEach(p => {
-            const atividades = data.atividades.filter(a => a.projeto_id === p.id);
-            const concluidas = atividades.filter(a => a.status === 'concluido').length;
-            const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
-
-            html += `
-                <div class="projeto-progress">
-                    <div class="projeto-progress-header">
-                        <span class="projeto-progress-name">${this.escapeHtml(p.nome)}</span>
-                        <span class="projeto-progress-percent">${pct}%</span>
-                    </div>
-                    <div class="projeto-progress-bar">
-                        <div class="projeto-progress-fill" style="width: ${pct}%"></div>
-                    </div>
-                    <small style="color: var(--text-secondary)">${concluidas}/${atividades.length} atividades</small>
-                </div>
-            `;
-        });
-
-        container.innerHTML = html || '<p style="color:var(--text-secondary)">Nenhum projeto cadastrado</p>';
-    },
-
-    renderStats() {
-        const data = this.getData();
-        const total = data.atividades.length;
-        const concluidas = data.atividades.filter(a => a.status === 'concluido').length;
-        const andamento = data.atividades.filter(a => a.status === 'andamento').length;
-        const planejamento = data.atividades.filter(a => a.status === 'planejamento').length;
-
-        const container = document.getElementById('statsGrid');
-        container.innerHTML = `
-            <div class="stat-item">
-                <div class="stat-value">${data.projetos.length}</div>
-                <div class="stat-label">Projetos</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${total}</div>
-                <div class="stat-label">Total Atividades</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" style="color:var(--success)">${concluidas}</div>
-                <div class="stat-label">Concluídas</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" style="color:var(--andamento)">${andamento}</div>
-                <div class="stat-label">Em Andamento</div>
-            </div>
-        `;
-    },
-
-    exportarPDF() {
-        const data = this.getData();
-        const now = new Date().toLocaleDateString('pt-BR');
         
-        let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Relatório de Projetos</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                h1 { color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; }
-                h2 { color: #333; margin-top: 30px; }
-                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                th { background: #4f46e5; color: white; }
-                .resumo { display: flex; gap: 20px; margin: 20px 0; }
-                .resumo-item { background: #f3f4f6; padding: 15px; border-radius: 8px; }
-                .resumo-item strong { display: block; font-size: 24px; color: #4f46e5; }
-                .projeto { margin-bottom: 30px; page-break-inside: avoid; }
-                .projeto-header { background: #e0e7ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-                .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-                .badge-planejamento { background: #ede9fe; color: #7c3aed; }
-                .badge-andamento { background: #e0f2fe; color: #0284c7; }
-                .badge-concluido { background: #dcfce7; color: #16a34a; }
-                .progress-bar { background: #e5e7eb; height: 20px; border-radius: 10px; overflow: hidden; }
-                .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #22c55e); }
-                @media print { body { padding: 0; } }
-            </style>
-        </head>
-        <body>
-            <h1>📊 Relatório de Projetos</h1>
-            <p><strong>Data:</strong> ${now}</p>
-            
-            <div class="resumo">
-                <div class="resumo-item"><strong>${data.projetos.length}</strong>Projetos</div>
-                <div class="resumo-item"><strong>${data.atividades.length}</strong>Atividades</div>
-                <div class="resumo-item"><strong>${data.atividades.filter(a => a.status === 'concluido').length}</strong>Concluídas</div>
-                <div class="resumo-item"><strong>${data.atividades.filter(a => a.status === 'andamento').length}</strong>Em Andamento</div>
-            </div>
-`;
-
-        data.projetos.forEach(p => {
-            const atividades = data.atividades.filter(a => a.projeto_id === p.id);
-            const concluidas = atividades.filter(a => a.status === 'concluido').length;
-            const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
-
-            html += `
-            <div class="projeto">
-                <div class="projeto-header">
-                    <h2>${p.nome}</h2>
-                    <p>${p.descricao || 'Sem descrição'}</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${pct}%"></div>
+        const progressoContainer = document.getElementById('progressoProjetos');
+        if (progressoContainer) {
+            let html = '';
+            data.projetos.forEach(p => {
+                const atks = data.atividades.filter(a => a.projeto_id === p._id);
+                const concluidas = atks.filter(a => a.status === 'concluido').length;
+                const pct = atks.length > 0 ? Math.round((concluidas / atks.length) * 100) : 0;
+                
+                html += `
+                    <div class="relatorio-item">
+                        <div class="relatorio-item-header">
+                            <span>${this.escapeHtml(p.nome)}</span>
+                            <span>${pct}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${pct}%"></div>
+                        </div>
                     </div>
-                    <p><strong>Progresso:</strong> ${pct}% (${concluidas}/${atividades.length} atividades)</p>
-                </div>
-`;
-
-            if (atividades.length > 0) {
-                html += `<table>
-                    <thead>
-                        <tr>
-                            <th>Atividade</th>
-                            <th>Status</th>
-                            <th>Prioridade</th>
-                            <th>Stack</th>
-                            <th>Equipe</th>
-                            <th>Responsável</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-`;
-                atividades.forEach(a => {
-                    html += `<tr>
-                        <td>${a.nome}</td>
-                        <td><span class="badge badge-${a.status}">${a.status === 'planejamento' ? 'Planejamento' : a.status === 'andamento' ? 'Em Andamento' : 'Concluído'}</span></td>
-                        <td>${a.prioridade || '-'}</td>
-                        <td>${a.stack || '-'}</td>
-                        <td>${a.equipe || '-'}</td>
-                        <td>${a.responsavel || '-'}</td>
-                    </tr>`;
-                });
-                html += `</tbody></table>`;
-            } else {
-                html += `<p style="color:#666">Nenhuma atividade neste projeto.</p>`;
-            }
-
-            html += `</div>`;
-        });
-
-        html += `
-        <p style="margin-top:40px;color:#666;font-size:12px">Gerado por Projetos Dinâmicos</p>
-        </body></html>`;
-
-        const janela = window.open('', '_blank');
-        janela.document.write(html);
-        janela.document.close();
-        janela.print();
+                `;
+            });
+            progressoContainer.innerHTML = html || '<p>Nenhum projeto</p>';
+        }
+        
+        const statsGrid = document.getElementById('statsGrid');
+        if (statsGrid) {
+            const total = data.atividades.length;
+            const concluidas = data.atividades.filter(a => a.status === 'concluido').length;
+            const andamento = data.atividades.filter(a => a.status === 'andamento').length;
+            const planejamento = data.atividades.filter(a => a.status === 'pendente').length;
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card"><span class="stat-value">${data.projetos.length}</span><span class="stat-label">Projetos</span></div>
+                <div class="stat-card"><span class="stat-value">${total}</span><span class="stat-label">Atividades</span></div>
+                <div class="stat-card"><span class="stat-value">${concluidas}</span><span class="stat-label">Concluídas</span></div>
+                <div class="stat-card"><span class="stat-value">${andamento}</span><span class="stat-label">Em Andamento</span></div>
+            `;
+        }
     },
 
     escapeHtml(text) {
@@ -804,17 +502,55 @@ const Mapa = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    abrirPainel(atividade) {
+        const panel = document.getElementById('nodePanel');
+        if (!panel || !atividade) return;
+
+        panel.classList.add('active');
+        document.getElementById('panelTitulo').textContent = atividade.titulo;
+        document.getElementById('panelDescricao').textContent = atividade.descricao || 'Sem descrição';
+        
+        const statusBadge = document.getElementById('panelStatus');
+        statusBadge.textContent = this.getStatusLabel(atividade.status);
+        statusBadge.className = 'badge badge-' + (atividade.status === 'concluido' ? 'success' : atividade.status === 'andamento' ? 'warning' : 'secondary');
+        
+        document.getElementById('panelStack').textContent = atividade.stack || '-';
+        document.getElementById('panelData').textContent = atividade.created_at ? new Date(atividade.created_at).toLocaleDateString('pt-BR') : '-';
+        document.getElementById('panelPrioridade').textContent = atividade.prioridade || '-';
+    },
+
+    fecharPainel() {
+        document.getElementById('nodePanel').classList.remove('active');
+    },
+
+    async atualizarStatus(id, status) {
+        const data = this.getData();
+        const atividade = data.atividades.find(a => a._id === id);
+        if (!atividade) return;
+
+        await DB.updateAtividade({ ...atividade, status });
+        await this.loadData();
+        this.fecharPainel();
+    },
+
+    excluirAtividadePainel() {
+        if (this.atividadeAtual) {
+            this.excluirAtividade(this.atividadeAtual._id);
+            this.fecharPainel();
+        }
+    },
+
+    fecharModal() {
+        document.getElementById('atividadeModal').classList.remove('active');
+    },
+
+    exportarPDF() {
+        alert('Exportar PDF em desenvolvimento!');
     }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-    function initApp() {
-        Mapa.init();
-    }
-
-    if (document.getElementById('header-placeholder')) {
-        document.addEventListener('componentsLoaded', initApp);
-    } else {
-        initApp();
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    Mapa.init();
 });

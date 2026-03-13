@@ -24,7 +24,34 @@
     .contrast-label{position:fixed;top:15px;right:15px;z-index:9999;cursor:pointer;font-size:28px;background:#fff;border:2px solid #333;border-radius:50%;width:45px;height:45px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
     .contrast-label:hover{transform:scale(1.1)}
     #contrast-toggle:checked + .contrast-label{background:#000;color:#fff;border-color:#fff}
+    /* Autocomplete */
+    .autocomplete-wrapper{position:relative;display:inline-block;width:100%;max-width:300px}
+    .autocomplete-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card-bg);color:var(--text-primary)}
+    .autocomplete-input:focus{outline:none;border-color:var(--accent)}
+    .autocomplete-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card-bg);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:var(--shadow-md);display:none}
+    .autocomplete-dropdown.show{display:block}
+    .autocomplete-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s}
+    .autocomplete-item:last-child{border-bottom:none}
+    .autocomplete-item:hover{background:var(--accent-light);color:var(--secondary)}
+    .autocomplete-item .item-title{font-weight:600;font-size:14px}
+    .autocomplete-item .item-subtitle{font-size:12px;color:var(--text-muted)}
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7); }
+        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+    }
+    /* ML Suggestions */
+    .ml-suggestions{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px;padding:16px;margin-top:12px;border:1px solid #bae6fd}
+    .ml-suggestions h4{color:#0369a1;margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:8px}
+    .ml-suggestions h4::before{content:"🤖"}
+    .suggestion-tags{display:flex;flex-wrap:wrap;gap:8px}
+    .suggestion-tag{background:#fff;border:1px solid #0ea5e9;color:#0369a1;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+    .suggestion-tag:hover{background:#0ea5e9;color:#fff;transform:translateY(-2px)}
+    .suggestion-tag .confidence{background:rgba(0,0,0,0.1);padding:2px 6px;border-radius:10px;font-size:10px}
+    .ml-loading{color:#64748b;font-size:12px;font-style:italic}
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/pouchdb@8.0.1/dist/pouchdb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@1.3.3/dist/universal-sentence-encoder.min.js"></script>
 </head>
 <body>
     <!-- Toggle Acessibilidade - Alto Contraste -->
@@ -67,7 +94,12 @@
                  <div class="flowcard" id="projectFlowCard" style="display:block" aria-labelledby="flowTitle">
                      <div style="display:flex;align-items:center;justify-content:space-between">
                          <h3 id="flowTitle">Fluxograma do Projeto</h3>
-                         <div>
+                         <div style="display:flex;gap:10px;align-items:center">
+                             <!-- Autocomplete de Atividades -->
+                             <div class="autocomplete-wrapper">
+                                 <input type="text" id="atividadeAutocomplete" class="autocomplete-input" placeholder="Buscar atividade..." aria-label="Buscar atividade no fluxograma">
+                                 <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                             </div>
                              <button id="resetFlow" class="btn-flow" aria-label="Resetar fluxograma do projeto">Resetar</button>
                          </div>
                      </div>
@@ -255,6 +287,12 @@
                     <label for="nomeAtividade">Nome</label>
                     <input type="text" id="nomeAtividade" required>
                 </div>
+                <!-- Sugestões ML -->
+                <div class="ml-suggestions" id="mlSuggestions" style="display:none;">
+                    <h4>Sugestões baseadas em IA</h4>
+                    <div class="suggestion-tags" id="suggestionTags"></div>
+                    <div class="ml-loading" id="mlLoading">Analisando padrões...</div>
+                </div>
                 <div class="form-group">
                     <label for="descAtividade">Descrição</label>
                     <textarea id="descAtividade" rows="2"></textarea>
@@ -331,6 +369,7 @@
 
     <div id="footer-placeholder"></div>
 
+    <script src="static/js/db.js"></script>
     <script src="static/js/components.js"></script>
     <script src="static/js/mapa.js"></script>
     <script>
@@ -452,6 +491,27 @@
             }));
         });
     })();
+
+    // Função global para recarregar dados ML
+    window.recarregarML = async function() {
+        if (typeof AtividadeML !== 'undefined' && AtividadeML.isReady) {
+            await AtividadeML.treinarModelo();
+            console.log('ML recarregado com novos dados');
+        }
+        await carregarAtividades();
+    };
+
+    // Recarregar dados quando o usuário navegar entre páginas
+    document.querySelectorAll('input[name="page"]').forEach(radio => {
+        radio.addEventListener('change', async () => {
+            await carregarAtividades();
+        });
+    });
+
+    // Verificar e recarregar ML a cada 30 segundos
+    setInterval(async () => {
+        await carregarAtividades();
+    }, 30000);
     </script>
     <script>
         // Toggle Alto Contraste - Acessibilidade
@@ -473,6 +533,265 @@
                 contrastToggle.checked = true;
             }
         }
+
+const API_URL = 'http://localhost:5000/api';
+        let todasAtividades = [];
+        let useApi = false;
+        // Carregar atividades do PouchDB
+        async function carregarAtividades() {
+            try {
+                const projetos = await DB.getAllProjetos();
+                todasAtividades = [];
+                for (const projeto of projetos) {
+                    try {
+                        const atks = await DB.getAtividadesByProjeto(projeto._id);
+                        atks.forEach(atk => {
+                            todasAtividades.push({
+                                id: atk._id,
+                                titulo: atk.titulo,
+                                descricao: atk.descricao || '',
+                                projeto: projeto.nome,
+                                status: atk.status
+                            });
+                        });
+                    } catch (e) {}
+                }
+            } catch (err) {
+                console.log('Erro ao carregar atividades:', err);
+            }
+        }
+
+        function filtrarAtividades(termo) {
+            if (!termo) return [];
+            return todasAtividades.filter(atk => 
+                atk.titulo.toLowerCase().includes(termo.toLowerCase()) ||
+                atk.projeto.toLowerCase().includes(termo.toLowerCase())
+            ).slice(0, 10);
+        }
+
+        function mostrarDropdown(itens) {
+            if (itens.length === 0) {
+                autocompleteDropdown.classList.remove('show');
+                return;
+            }
+            autocompleteDropdown.innerHTML = itens.map(atk => `
+                <div class="autocomplete-item" data-id="${atk.id}" data-titulo="${atk.titulo}">
+                    <div class="item-title">${atk.titulo}</div>
+                    <div class="item-subtitle">${atk.projeto} - ${atk.status}</div>
+                </div>
+            `).join('');
+            autocompleteDropdown.classList.add('show');
+        }
+
+        if (atividadeInput) {
+            atividadeInput.addEventListener('input', async function() {
+                await carregarAtividades();
+                const termo = this.value.trim();
+                const itens = filtrarAtividades(termo);
+                mostrarDropdown(itens);
+            });
+
+            atividadeInput.addEventListener('focus', async function() {
+                await carregarAtividades();
+                const termo = this.value.trim();
+                const itens = filtrarAtividades(termo);
+                mostrarDropdown(itens);
+            });
+
+            autocompleteDropdown.addEventListener('click', function(e) {
+                const item = e.target.closest('.autocomplete-item');
+                if (item) {
+                    const titulo = item.dataset.titulo;
+                    atividadeInput.value = titulo;
+                    autocompleteDropdown.classList.remove('show');
+                    
+                    // Rolar até a atividade no fluxograma
+                    if (window.Mapa) {
+                        const atividadeId = parseInt(item.dataset.id);
+                        const nodes = document.querySelectorAll('.flow-node');
+                        nodes.forEach(node => {
+                            if (node.textContent.includes(titulo)) {
+                                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                node.style.animation = 'pulse 0.5s ease 3';
+                            }
+                        });
+                    }
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!atividadeInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                    autocompleteDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // ========== ML SUGGESTIONS SYSTEM ==========
+        const AtividadeML = {
+            model: null,
+            useModel: null,
+            embeddings: [],
+            atividadesData: [],
+            isReady: false,
+
+            async init() {
+                try {
+                    // Carregar Universal Sentence Encoder
+                    this.useModel = await use.load();
+                    this.isReady = true;
+                    console.log('ML Model loaded successfully');
+                    await this.treinarModelo();
+                } catch (err) {
+                    console.warn('ML não disponível, usando fallback:', err);
+                    this.isReady = false;
+                }
+            },
+
+            async treinarModelo() {
+                // Buscar dados do PouchDB
+                this.atividadesData = [];
+                
+                try {
+                    const projetos = await DB.getAllProjetos();
+                    
+                    for (const projeto of projetos) {
+                        try {
+                            const atividades = await DB.getAtividadesByProjeto(projeto._id);
+                            atividades.forEach(atk => {
+                                this.atividadesData.push({
+                                    titulo: atk.titulo || '',
+                                    descricao: atk.descricao || '',
+                                    stack: atk.stack || '',
+                                    projeto: projeto.nome || '',
+                                    textoCompleto: `${atk.titulo || ''} ${atk.descricao || ''} ${projeto.nome || ''}`
+                                });
+                            });
+                        } catch (e) {}
+                    }
+                } catch (err) {
+                    console.log('Erro ao carregar dados para ML:', err);
+                }
+
+                if (this.atividadesData.length > 0 && this.useModel) {
+                    const textos = this.atividadesData.map(a => a.textoCompleto);
+                    this.embeddings = await this.useModel.embed(textos);
+                    console.log(`ML treinado com ${this.atividadesData.length} atividades`);
+                }
+            },
+
+            async sugerir(textoProjeto, nomeProjeto) {
+                if (!this.isReady || this.atividadesData.length < 3) {
+                    return this.sugestoesFallback(nomeProjeto);
+                }
+
+                const textoEntrada = `${textoProjeto || ''} ${nomeProjeto || ''}`;
+                const inputEmbedding = await this.useModel.embed([textoEntrada]);
+
+                //计算相似度
+                const similarities = [];
+                for (let i = 0; i < this.embeddings.shape[0]; i++) {
+                    const emb = this.embeddings.slice([i, 0], [1, this.embeddings.shape[1]]);
+                    const sim = this.calcularSimilaridade(inputEmbedding, emb);
+                    similarities.push({
+                        index: i,
+                        similarity: sim,
+                        ...this.atividadesData[i]
+                    });
+                }
+
+                inputEmbedding.dispose();
+                
+                //返回前5个最相似的
+                const top5 = similarities
+                    .sort((a, b) => b.similarity - a.similarity)
+                    .slice(0, 5);
+
+                return top5.map(s => ({
+                    titulo: s.titulo,
+                    stack: s.stack,
+                    confidence: Math.round(s.similarity * 100)
+                }));
+            },
+
+            calcularSimilaridade(a, b) {
+                const aData = a.dataSync();
+                const bData = b.dataSync();
+                let dotProduct = 0;
+                let normA = 0;
+                let normB = 0;
+                for (let i = 0; i < aData.length; i++) {
+                    dotProduct += aData[i] * bData[i];
+                    normA += aData[i] * aData[i];
+                    normB += bData[i] * bData[i];
+                }
+                return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB) + 0.0001);
+            },
+
+            sugestoesFallback(projetoNome) {
+                const sugestoesComuns = [
+                    { titulo: 'Definir requisitos', stack: 'gestao', confidence: 85 },
+                    { titulo: 'Criar protótipos', stack: 'design', confidence: 80 },
+                    { titulo: 'Setup ambiente desenvolvimento', stack: 'backend', confidence: 75 },
+                    { titulo: 'Implementar API', stack: 'backend', confidence: 70 },
+                    { titulo: 'Criar界面', stack: 'frontend', confidence: 70 },
+                    { titulo: 'Configurar banco de dados', stack: 'database', confidence: 65 },
+                    { titulo: 'Implementar testes', stack: 'qa', confidence: 60 },
+                    { titulo: 'Deploy produção', stack: 'cloud', confidence: 55 }
+                ];
+                return sugestoesComuns.slice(0, 4);
+            }
+        };
+
+        // Inicializar ML quando a página carregar
+        AtividadeML.init();
+
+        // Event listeners para o formulário de atividade
+        const descAtividadeInput = document.getElementById('descAtividade');
+        const mlSuggestions = document.getElementById('mlSuggestions');
+        const suggestionTags = document.getElementById('suggestionTags');
+        const mlLoading = document.getElementById('mlLoading');
+
+        if (descAtividadeInput) {
+            let timeout = null;
+            descAtividadeInput.addEventListener('input', async function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    const descricao = this.value;
+                    const nomeInput = document.getElementById('nomeAtividade');
+                    const nome = nomeInput ? nomeInput.value : '';
+                    
+                    if (descricao.length > 3 || nome.length > 3) {
+                        mlSuggestions.style.display = 'block';
+                        mlLoading.style.display = 'block';
+                        suggestionTags.innerHTML = '';
+
+                        const sugestoes = await AtividadeML.sugerir(descricao, nome);
+                        
+                        mlLoading.style.display = 'none';
+                        suggestionTags.innerHTML = sugestoes.map(s => `
+                            <span class="suggestion-tag" onclick="aplicarSugestao('${s.titulo}', '${s.stack || ''}')">
+                                ${s.titulo}
+                                <span class="confidence">${s.confidence}%</span>
+                            </span>
+                        `).join('');
+                    }
+                }, 800);
+            });
+        }
+
+        function aplicarSugestao(titulo, stack) {
+            const nomeInput = document.getElementById('nomeAtividade');
+            const stackSelect = document.getElementById('stackAtividade');
+            
+            if (nomeInput) nomeInput.value = titulo;
+            if (stackSelect && stack) {
+                const option = Array.from(stackSelect.options).find(opt => 
+                    opt.value.toLowerCase().includes(stack.toLowerCase())
+                );
+                if (option) stackSelect.value = option.value;
+            }
+        }
+        window.aplicarSugestao = aplicarSugestao;
     </script>
 </body>
 </html>
