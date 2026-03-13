@@ -2,11 +2,14 @@ const Mapa = {
     projetoAtual: null,
     atividadeAtual: null,
     dataCache: { projetos: [], atividades: [] },
+    mlCorrelations: [],
 
     async init() {
+        console.log('Iniciando Mapa...');
         await DB.init();
+        console.log('DB inicializado');
         await this.loadData();
-        this.setupTheme();
+        console.log('Dados carregados:', this.dataCache);
         this.setupModal();
         this.setupEventListeners();
         this.render();
@@ -18,6 +21,7 @@ const Mapa = {
     async loadData() {
         try {
             const projetos = await DB.getAllProjetos();
+            console.log('Projetos do DB:', projetos);
             const atividades = [];
             
             for (const projeto of projetos) {
@@ -27,6 +31,7 @@ const Mapa = {
             }
             
             this.dataCache = { projetos, atividades };
+            console.log('DataCache atualizado:', this.dataCache);
         } catch (e) {
             console.error('Erro ao carregar dados:', e);
             this.dataCache = { projetos: [], atividades: [] };
@@ -42,28 +47,6 @@ const Mapa = {
         this.render();
         
         if (window.recarregarML) window.recarregarML();
-    },
-
-    setupTheme() {
-        const themeBtn = document.getElementById('themeBtn');
-        if (themeBtn) {
-            const savedTheme = localStorage.getItem('theme');
-            const isLight = savedTheme === 'light';
-            if (isLight) {
-                document.body.classList.add('light-theme');
-                themeBtn.innerHTML = '🌙';
-            } else {
-                themeBtn.innerHTML = '🌓';
-            }
-            themeBtn.setAttribute('aria-pressed', isLight);
-            
-            themeBtn.addEventListener('click', () => {
-                const isNowLight = document.body.classList.toggle('light-theme');
-                themeBtn.innerHTML = isNowLight ? '🌙' : '🌓';
-                themeBtn.setAttribute('aria-pressed', isNowLight);
-                localStorage.setItem('theme', isNowLight ? 'light' : 'dark');
-            });
-        }
     },
 
     setupModal() {
@@ -295,6 +278,9 @@ const Mapa = {
         
         document.getElementById('projetoTitulo').textContent = projeto.nome;
         
+        // Renderizar fluxograma do projeto
+        this.renderProjetoFluxo(projeto);
+        
         const data = this.getData();
         const atividades = data.atividades.filter(a => a.projeto_id === projeto._id);
         
@@ -446,21 +432,160 @@ const Mapa = {
             return;
         }
         
+        const showML = document.getElementById('mlCorrelations')?.checked;
+        const threshold = parseInt(document.getElementById('mlThreshold')?.value || 50) / 100;
+        
+        let html = '<div class="nodes-grid" style="position: relative;">';
+        
+        // Draw ML correlation lines if enabled
+        if (showML && this.mlCorrelations.length > 0) {
+            html += '<svg id="mlCorrSvg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></svg>';
+        }
+        
+        atividades.forEach((a, idx) => {
+            const statusClass = a.status === 'concluido' ? 'success' : a.status === 'andamento' ? 'warning' : 'secondary';
+            html += `
+                <div class="node-item node-${statusClass}" onclick="Mapa.abrirAtividade('${a._id}')" data-atividade-id="${a._id}" style="position: relative; z-index: 2;">
+                    <span class="node-title">${this.escapeHtml(a.titulo)}</span>
+                    <span class="node-status">${this.getStatusLabel(a.status)}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
         const nodesList = document.getElementById('nodesList');
         if (nodesList) {
-            let html = '<div class="nodes-grid">';
-            atividades.forEach(a => {
-                const statusClass = a.status === 'concluido' ? 'success' : a.status === 'andamento' ? 'warning' : 'secondary';
-                html += `
-                    <div class="node-item node-${statusClass}" onclick="Mapa.abrirAtividade('${a._id}')">
-                        <span class="node-title">${this.escapeHtml(a.titulo)}</span>
-                        <span class="node-status">${this.getStatusLabel(a.status)}</span>
-                    </div>
-                `;
-            });
-            html += '</div>';
             nodesList.innerHTML = html;
         }
+        
+        // Draw ML correlations after rendering nodes
+        if (showML && this.mlCorrelations.length > 0) {
+            setTimeout(() => this.desenharCorrelaoes(atividades, threshold), 100);
+        }
+        
+        // Show ML legend
+        const mlLegend = document.getElementById('mlLegend');
+        if (mlLegend) {
+            mlLegend.style.display = showML ? 'flex' : 'none';
+        }
+    },
+    
+    desenharCorrelaoes(atividades, threshold) {
+        const svg = document.getElementById('mlCorrSvg');
+        if (!svg) return;
+        
+        svg.innerHTML = '';
+        
+        const nodes = document.querySelectorAll('[data-atividade-id]');
+        const nodeRects = {};
+        nodes.forEach(node => {
+            const id = node.dataset.atividadeId;
+            const rect = node.getBoundingClientRect();
+            const container = svg.getBoundingClientRect();
+            nodeRects[id] = {
+                x: rect.left - container.left + rect.width / 2,
+                y: rect.top - container.top + rect.height / 2
+            };
+        });
+        
+        // Filter and draw correlations above threshold
+        this.mlCorrelations.forEach(corr => {
+            if (corr.similarity >= threshold) {
+                const from = nodeRects[corr.from];
+                const to = nodeRects[corr.to];
+                
+                if (from && to) {
+                    const opacity = 0.3 + (corr.similarity * 0.7);
+                    const lineWidth = 1 + (corr.similarity * 3);
+                    
+                    svg.innerHTML += `
+                        <line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" 
+                            stroke="#9333ea" stroke-width="${lineWidth}" stroke-opacity="${opacity}" 
+                            stroke-dasharray="${corr.similarity < 0.7 ? '5,5' : ''}"/>
+                        <text x="${(from.x + to.x)/2}" y="${(from.y + to.y)/2 - 5}" 
+                            fill="#9333ea" font-size="10" text-anchor="middle">${Math.round(corr.similarity * 100)}%</text>
+                    `;
+                }
+            }
+        });
+    },
+    
+    async calcularCorrelaes() {
+        const loading = document.getElementById('mlLoading');
+        const btn = document.getElementById('btnCalcularML');
+        
+        if (loading) loading.style.display = 'block';
+        if (btn) btn.disabled = true;
+        
+        try {
+            // Get all activities
+            const atividades = this.dataCache.atividades;
+            
+            if (atividades.length < 2) {
+                alert('Necesite pelo menos 2 atividades para calcular correlações.');
+                return;
+            }
+            
+            // Check if ML model is available
+            if (typeof AtividadeML !== 'undefined' && AtividadeML.isReady && AtividadeML.useModel) {
+                // Calculate embeddings for all activities
+                const textos = atividades.map(a => `${a.titulo || ''} ${a.descricao || ''}`);
+                const embeddings = await AtividadeML.useModel.embed(textos);
+                
+                this.mlCorrelations = [];
+                
+                // Calculate pairwise similarity
+                for (let i = 0; i < atividades.length; i++) {
+                    for (let j = i + 1; j < atividades.length; j++) {
+                        const embI = embeddings.slice([i, 0], [1, embeddings.shape[1]]);
+                        const embJ = embeddings.slice([j, 0], [1, embeddings.shape[1]]);
+                        
+                        const sim = this.calcularSimilaridade(embI, embJ);
+                        
+                        if (sim > 0.3) {
+                            this.mlCorrelations.push({
+                                from: atividades[i]._id,
+                                to: atividades[j]._id,
+                                similarity: sim
+                            });
+                        }
+                    }
+                }
+                
+                embeddings.dispose();
+                console.log('Correlações calculadas:', this.mlCorrelations.length);
+                
+                // Show results
+                const showML = document.getElementById('mlCorrelations');
+                if (showML) showML.checked = true;
+                
+                this.renderMapa();
+                
+                alert(`Calculadas ${this.mlCorrelations.length} correlações entre atividades!`);
+            } else {
+                alert('Modelo de IA não está disponível. Continue adicionando atividades para treinar o modelo.');
+            }
+        } catch (e) {
+            console.error('Erro ao calcular correlações:', e);
+            alert('Erro ao calcular correlações: ' + e.message);
+        } finally {
+            if (loading) loading.style.display = 'none';
+            if (btn) btn.disabled = false;
+        }
+    },
+    
+    calcularSimilaridade(a, b) {
+        const aData = a.dataSync();
+        const bData = b.dataSync();
+        let dotProduct = 0;
+        let normA = 0;
+        let normB = 0;
+        for (let i = 0; i < aData.length; i++) {
+            dotProduct += aData[i] * bData[i];
+            normA += aData[i] * aData[i];
+            normB += bData[i] * bData[i];
+        }
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB) + 0.0001);
     },
 
     renderRelatorios() {
@@ -512,6 +637,133 @@ const Mapa = {
         return div.innerHTML;
     },
 
+    // ========== FLUXOGRAMA DO PROJETO ==========
+    renderProjetoFluxo(projeto) {
+        const data = this.getData();
+        const atividades = data.atividades.filter(a => a.projeto_id === projeto._id);
+        
+        // Definir estágios do projeto
+        const stages = [
+            { id: 'ideia', name: 'Ideia', icon: '💡', status: 'ideia' },
+            { id: 'planejamento', name: 'Planejamento', icon: '📋', status: 'planejamento' },
+            { id: 'desenvolvimento', name: 'Desenvolvimento', icon: '⚙️', status: 'andamento' },
+            { id: 'testes', name: 'Testes', icon: '🧪', status: 'testes' },
+            { id: 'conclusao', name: 'Conclusão', icon: '✅', status: 'conclusao' },
+            { id: 'relatorio', name: 'Relatório', icon: '📄', status: 'concluido' }
+        ];
+        
+        // Contar atividades por estágio
+        const atividadePorStatus = {
+            'ideia': atividades.filter(a => a.status === 'pendente').length,
+            'planejamento': atividades.filter(a => a.status === 'planejamento').length,
+            'andamento': atividades.filter(a => a.status === 'andamento').length,
+            'testes': atividades.filter(a => a.status === 'testes').length,
+            'conclusao': atividades.filter(a => a.status === 'concluido').length,
+            'concluido': atividades.filter(a => a.status === 'relatorio').length
+        };
+        
+        const total = atividades.length;
+        const concluidas = atividades.filter(a => a.status === 'concluido').length;
+        const progresso = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+        
+        // Determinar estágio atual
+        let currentStage = 0;
+        if (progresso >= 100) currentStage = stages.length - 1;
+        else if (progresso >= 80) currentStage = 4;
+        else if (progresso >= 60) currentStage = 3;
+        else if (progresso >= 40) currentStage = 2;
+        else if (progresso >= 20) currentStage = 1;
+        
+        let html = '';
+        stages.forEach((stage, idx) => {
+            const isCompleted = idx < currentStage;
+            const isActive = idx === currentStage;
+            const count = atividadePorStatus[stage.status] || 0;
+            
+            html += `
+                <div class="flow-stage">
+                    <div class="flow-stage-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" 
+                         onclick="Mapa.filtrarPorEstagio('${stage.id}')">
+                        <div class="stage-icon">${stage.icon}</div>
+                        <div class="stage-name">${stage.name}</div>
+                        <div class="stage-count">${count} atividade${count !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        const container = document.getElementById('flowStages');
+        if (container) {
+            container.innerHTML = html;
+        }
+        
+        // Renderizar atividades filtradas por estágio
+        this.renderAtividadesPorEstagio(projeto, atividades);
+    },
+    
+    renderAtividadesPorEstagio(projeto, todasAtividades) {
+        const grid = document.getElementById('atividadesGrid');
+        if (!grid) return;
+        
+        // Agrupar atividades por status
+        const porStatus = {
+            'pendente': todasAtividades.filter(a => a.status === 'pendente'),
+            'planejamento': todasAtividades.filter(a => a.status === 'planejamento'),
+            'andamento': todasAtividades.filter(a => a.status === 'andamento'),
+            'testes': todasAtividades.filter(a => a.status === 'testes'),
+            'concluido': todasAtividades.filter(a => a.status === 'concluido')
+        };
+        
+        let html = '<div class="atividades-por-estagio">';
+        
+        // Mostrar atividades de cada estágio
+        Object.entries(porStatus).forEach(([status, atks]) => {
+            if (atks.length > 0) {
+                const statusLabel = {
+                    'pendente': '💡 Ideia',
+                    'planejamento': '📋 Planejamento', 
+                    'andamento': '⚙️ Desenvolvimento',
+                    'testes': '🧪 Testes',
+                    'concluido': '✅ Concluído'
+                }[status];
+                
+                const statusClass = status === 'concluido' ? 'success' : status === 'andamento' ? 'warning' : 'secondary';
+                
+                html += `
+                    <div class="estagio-grupo" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 8px; color: var(--text-secondary);">${statusLabel}</h4>
+                        <div class="atividades-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;">
+                `;
+                
+                atks.forEach(a => {
+                    html += `
+                        <div class="atividade-card" onclick="Mapa.abrirAtividade('${a._id}')">
+                            <div class="atividade-header">
+                                <span class="badge badge-${statusClass}">${this.getStatusLabel(a.status)}</span>
+                                ${a.prioridade ? `<span class="prioridade prioridade-${a.prioridade}">⚡ ${a.prioridade}</span>` : ''}
+                            </div>
+                            <h4>${this.escapeHtml(a.titulo)}</h4>
+                            <p>${this.escapeHtml(a.descricao || '').substring(0, 60)}${a.descricao?.length > 60 ? '...' : ''}</p>
+                            <div class="atividade-meta">
+                                ${a.stack ? `<span class="stack-badge">${a.stack}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            }
+        });
+        
+        html += '</div>';
+        grid.innerHTML = html || '<p class="empty-state">Nenhuma atividade. Clique em "+ Nova Atividade".</p>';
+    },
+    
+    filtrarPorEstagio(estagioId) {
+        // O filtro já é feito automaticamente pelo renderProjetoFluxo
+        console.log('Filtrar por estágio:', estagioId);
+    },
+
     abrirPainel(atividade) {
         const panel = document.getElementById('nodePanel');
         if (!panel || !atividade) return;
@@ -559,6 +811,8 @@ const Mapa = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    Mapa.init();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM carregado, iniciando...');
+    await Mapa.init();
+    console.log('Mapa iniciado com sucesso');
 });

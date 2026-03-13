@@ -1,4 +1,5 @@
 :root {
+    /* Tema Claro (Padrão) */
     --primary: #f8fafc;
     --secondary: #ffffff;
     --accent: #4f46e5;
@@ -24,66 +25,86 @@
     --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Tema Alto Contraste - Acessibilidade */
-body.high-contrast {
-    --primary: #000000;
-    --secondary: #1a1a1a;
-    --accent: #ffff00;
-    --accent-light: #ffff66;
-    --accent-hover: #cccc00;
-    --highlight: #ff69b4;
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --text-muted: #cccccc;
-    --success: #00ff00;
-    --warning: #ffff00;
-    --danger: #ff0000;
-    --planejamento: #ff00ff;
-    --andamento: #00ffff;
-    --concluido: #00ff00;
-    --card-bg: #1a1a1a;
-    --border: #ffffff;
-    --shadow: 0 1px 3px rgba(255, 255, 255, 0.2);
-    --shadow-md: 0 4px 12px rgba(255, 255, 255, 0.3);
-    --shadow-lg: 0 10px 25px rgba(255, 255, 255, 0.4);
+body {
+    background-color: var(--primary);
+    color: var(--text-primary);
 }
 
-body.high-contrast a {
-    color: #00ffff;
-    text-decoration: underline;
+.modal-content,
+.card,
+.project-card,
+.atividade-card,
+.node-item,
+.flow-stage-node,
+.estagio-grupo,
+.ml-map-controls {
+    background-color: var(--card-bg);
+    border-color: var(--border);
 }
 
-body.high-contrast a:hover {
-    color: #ffff00;
+input,
+textarea,
+select {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    color: var(--text-primary);
 }
 
-body.high-contrast button,
-body.high-contrast .btn {
-    border: 2px solid #ffffff !important;
+.page-content,
+.container {
+    background-color: var(--primary);
 }
 
-body.high-contrast input,
-body.high-contrast select,
-body.high-contrast textarea {
-    border: 2px solid #ffffff !important;
-    background: #000000 !important;
-    color: #ffffff !important;
+h1, h2, h3, h4 {
+    color: var(--text-primary);
 }
 
-body.high-contrast .progress-bar-fill {
-    border: 1px solid #ffffff;
+.btn {
+    border-color: var(--border);
+    color: var(--text-primary);
 }
 
-body.high-contrast .card,
-body.high-contrast .modal-content,
-body.high-contrast .project-card {
-    border: 2px solid #ffffff;
+.progress-bar-container {
+    background-color: var(--border);
 }
 
-body.high-contrast .btn-primary {
-    background: #000000 !important;
-    color: #ffff00 !important;
-    border: 2px solid #ffff00 !important;
+.mapa-canvas,
+.mapa-container {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+}
+}
+
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4 {
+    color: var(--text-primary);
+}
+
+body.dark-theme .project-card p,
+body.dark-theme .atividade-card p {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .btn {
+    border-color: var(--border);
+}
+
+body.dark-theme .progress-bar-container {
+    background-color: var(--border);
+}
+
+body.dark-theme .mapa-canvas,
+body.dark-theme .mapa-container {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+}
+
+body.dark-theme .mapa-canvas,
+body.dark-theme .mapa-container {
+    background-color: var(--card-bg);
+    border-color: var(--border);
 }
 
 * {

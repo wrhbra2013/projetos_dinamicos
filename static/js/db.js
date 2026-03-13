@@ -4,13 +4,24 @@ const DB = {
     useApi: false,
 
     async init() {
-        // Inicializa PouchDB
-        this.db = new PouchDB('projetos_dinamicos');
-        
-        // Verifica se há dados na nuvem (CouchDB)
-        await this.checkSync();
-        
-        return this.db;
+        try {
+            // Verificar se PouchDB está disponível
+            if (typeof PouchDB === 'undefined') {
+                console.error('PouchDB não está carregado!');
+                return null;
+            }
+            
+            // Inicializa PouchDB
+            this.db = new PouchDB('projetos_dinamicos');
+            console.log('PouchDB inicializado, banco:', this.db.name);
+            
+            // Verifica se há dados na nuvem (CouchDB)
+            await this.checkSync();
+            
+            return this.db;
+        } catch (e) {
+            console.error('Erro ao inicializar PouchDB:', e);
+        }
     },
 
     async checkSync() {
@@ -27,7 +38,9 @@ const DB = {
                 startkey: 'projeto_',
                 endkey: 'projeto_\ufff0'
             });
-            return result.rows.map(row => row.doc);
+            const projetos = result.rows.map(row => row.doc);
+            console.log('Projetos encontrados:', projetos.length);
+            return projetos;
         } catch (e) {
             console.error('Erro ao buscar projetos:', e);
             return [];
@@ -35,18 +48,25 @@ const DB = {
     },
 
     async createProjeto(projeto) {
-        const doc = {
-            _id: 'projeto_' + Date.now(),
-            type: 'projeto',
-            nome: projeto.nome,
-            descricao: projeto.descricao || '',
-            status: projeto.status || 'planejamento',
-            created_at: new Date().toISOString(),
-            atividades: []
-        };
-        const result = await this.db.put(doc);
-        doc._rev = result.rev;
-        return doc;
+        try {
+            const doc = {
+                _id: 'projeto_' + Date.now(),
+                type: 'projeto',
+                nome: projeto.nome,
+                descricao: projeto.descricao || '',
+                status: projeto.status || 'planejamento',
+                created_at: new Date().toISOString(),
+                atividades: []
+            };
+            console.log('Criando projeto:', doc);
+            const result = await this.db.put(doc);
+            doc._rev = result.rev;
+            console.log('Projeto criado com sucesso:', doc);
+            return doc;
+        } catch (e) {
+            console.error('Erro ao criar projeto:', e);
+            throw e;
+        }
     },
 
     async updateProjeto(projeto) {
