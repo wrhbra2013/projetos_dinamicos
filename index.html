@@ -76,12 +76,11 @@
     .flow-activity-link.active{border-color:var(--accent);background:var(--accent-light)}
     </style>
     <script src="https://cdn.jsdelivr.net/npm/pouchdb@8.0.1/dist/pouchdb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pouchdb-adapter-localstorage@8.0.1/dist/pouchdb.adapter-localstorage.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@1.3.3/dist/universal-sentence-encoder.min.js"></script>
 </head>
 <body>
-    <script src="static/js/theme.js"></script>
-    <script>if(localStorage.getItem('theme')==='dark')document.body.classList.add('dark-theme');</script>
 
     <input type="radio" name="page" id="page-dashboard" checked>
     <input type="radio" name="page" id="page-projeto">
@@ -89,6 +88,8 @@
     <input type="radio" name="page" id="page-mapa">
     <input type="radio" name="page" id="page-relatorio">
     <input type="radio" name="page" id="page-planos">
+    <input type="radio" name="page" id="page-kanban">
+    <input type="radio" name="page" id="page-timeline">
 
     <div id="header-placeholder"></div>
 
@@ -245,6 +246,45 @@
                         <div class="stats-grid" id="statsGrid"></div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- KANBAN -->
+        <section class="page-content" id="kanban">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Kanban</h2>
+                    <select id="kanbanProjeto" class="kanban-select" onchange="Kanban.render()">
+                        <option value="">Selecione um projeto</option>
+                    </select>
+                </div>
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="kanban-column">
+                        <h3>📋 Backlog</h3>
+                        <div class="kanban-tasks" data-status="pendente"></div>
+                    </div>
+                    <div class="kanban-column">
+                        <h3>🚀 Em Andamento</h3>
+                        <div class="kanban-tasks" data-status="andamento"></div>
+                    </div>
+                    <div class="kanban-column">
+                        <h3>✅ Concluído</h3>
+                        <div class="kanban-tasks" data-status="concluido"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMELINE -->
+        <section class="page-content" id="timeline">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Timeline</h2>
+                    <select id="timelineProjeto" class="kanban-select" onchange="Timeline.render()">
+                        <option value="">Selecione um projeto</option>
+                    </select>
+                </div>
+                <div class="timeline-container" id="timelineContainer"></div>
             </div>
         </section>
 
@@ -423,9 +463,17 @@
 
     <div id="footer-placeholder"></div>
 
-    <script src="static/js/theme.js"></script>
     <script src="static/js/db.js"></script>
+    <script src="static/js/export.js"></script>
+    <script src="static/js/keyboard.js"></script>
+    <script src="static/js/kanban.js"></script>
+    <script src="static/js/timeline.js"></script>
+    <script src="static/js/performance.js"></script>
     <script src="static/js/components.js"></script>
+    <script>
+        loadComponents();
+    </script>
+    <script src="static/js/theme.js"></script>
     <script src="static/js/mapa.js"></script>
     <script>
     // Fluxograma simples: cria nós estáticos e desenha linhas SVG entre eles
@@ -823,6 +871,5 @@ const API_URL = 'http://localhost:5000/api';
         }
         window.aplicarSugestao = aplicarSugestao;
     </script>
-    <script src="static/js/theme.js"></script>
 </body>
 </html>

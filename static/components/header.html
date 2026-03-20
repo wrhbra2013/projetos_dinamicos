@@ -3,11 +3,16 @@
         <h1 class="logo">Projetos Dinâmicos</h1>
         <nav class="nav">
             <label for="page-dashboard" class="nav-link">Dashboard</label>
+            <label for="page-kanban" class="nav-link">Kanban</label>
             <label for="page-mapa" class="nav-link">Mapa Visual</label>
+            <label for="page-timeline" class="nav-link">Timeline</label>
             <label for="page-relatorio" class="nav-link">Relatórios</label>
             <a href="https://wa.me/5514981305888?text=Olá, preciso de suporte no Projetos Dinamicos." target="_blank" class="nav-link" title="Suporte">Suporte</a>
             
+            <button id="exportBtn" class="nav-btn" title="Exportar dados">📤</button>
+            <button id="importBtn" class="nav-btn" title="Importar dados">📥</button>
             <button id="themeBtn" class="theme-btn" title="Alternar tema">🌓</button>
+            <input type="file" id="importFile" accept=".json" style="display:none">
         </nav>
     </div>
 </header>

@@ -15,6 +15,23 @@ const DB = {
             this.db = new PouchDB('projetos_dinamicos');
             console.log('PouchDB inicializado, banco:', this.db.name);
             
+            // Escuta mudanças locais (com debounce para evitar loops)
+            let updating = false;
+            this.db.changes({
+                since: 'now',
+                live: true
+            }).on('change', function() {
+                if (updating) return;
+                updating = true;
+                console.log('Dados alterados, atualizando UI...');
+                setTimeout(() => {
+                    if (window.Mapa && typeof Mapa.loadData === 'function') {
+                        Mapa.loadData();
+                    }
+                    updating = false;
+                }, 100);
+            });
+            
             // Verifica se há dados na nuvem (CouchDB)
             await this.checkSync();
             
@@ -166,18 +183,28 @@ const DB = {
             console.error('Erro ao buscar todas atividades:', e);
             return [];
         }
+    },
+
+    async getAllData() {
+        const projetos = await this.getAllProjetos();
+        const atividades = await this.getAllAtividades();
+        return { projetos, atividades, exportedAt: new Date().toISOString() };
     }
 };
 
 // Escuta mudanças em outras abas
 if (typeof window !== 'undefined') {
-    DB.db && DB.db.changes({
-        since: 'now',
-        live: true
-    }).on('change', function() {
-        console.log('Dados alterados em outra aba, recarregando...');
-        if (window.Mapa && typeof Mapa.loadData === 'function') {
-            Mapa.loadData();
+    let storageUpdating = false;
+    window.addEventListener('storage', function(e) {
+        if (e.key && e.key.includes('pouchdb') && !storageUpdating) {
+            storageUpdating = true;
+            console.log('Dados alterados em outra aba, recarregando...');
+            setTimeout(() => {
+                if (window.Mapa && typeof Mapa.loadData === 'function') {
+                    Mapa.loadData();
+                }
+                storageUpdating = false;
+            }, 100);
         }
     });
 }
