@@ -90,6 +90,8 @@
     <input type="radio" name="page" id="page-planos">
     <input type="radio" name="page" id="page-kanban">
     <input type="radio" name="page" id="page-timeline">
+    <input type="radio" name="page" id="page-insights">
+    <input type="radio" name="page" id="page-wizard">
 
     <div id="header-placeholder"></div>
 
@@ -99,7 +101,7 @@
             <div class="container">
                 <div class="page-header">
                     <h2 id="dashboard-heading">Projetos</h2>
-                    <button class="btn btn-primary" id="openModalBtn" aria-label="Adicionar novo projeto">+ Novo Projeto</button>
+                    <button class="btn btn-primary" onclick="document.getElementById('page-wizard').checked=true;Wizard.init()" aria-label="Criar novo projeto">+ Novo Projeto</button>
                 </div>
 
                  <div class="progress-overview">
@@ -311,6 +313,189 @@
                 </div>
             </div>
         </section>
+
+        <!-- INSIGHTS & ANALYTICS -->
+        <section class="page-content" id="insights">
+            <div class="container">
+                <div class="page-header">
+                    <h2>📊 Insights & Analytics</h2>
+                    <button class="btn btn-primary" onclick="Insights.load()">🔄 Atualizar</button>
+                </div>
+
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">📈</span>
+                            <h3>Estatísticas Gerais</h3>
+                        </div>
+                        <div class="insight-stats" id="insightStats"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">🎯</span>
+                            <h3>Velocity</h3>
+                        </div>
+                        <div class="insight-stats" id="insightVelocity"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">🔥</span>
+                            <h3>Burndown</h3>
+                        </div>
+                        <div class="burndown-chart" id="burndownChart"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">⚠️</span>
+                            <h3>Riscos Identificados</h3>
+                        </div>
+                        <div class="riscos-list" id="riscosList"></div>
+                    </div>
+
+                    <div class="insight-card full-width">
+                        <div class="insight-header">
+                            <span class="insight-icon">💡</span>
+                            <h3>Recomendações</h3>
+                        </div>
+                        <div class="recomendacoes-list" id="recomendacoesList"></div>
+                    </div>
+
+                    <div class="insight-card full-width">
+                        <div class="insight-header">
+                            <span class="insight-icon">🔮</span>
+                            <h3>Previsão de Conclusão</h3>
+                        </div>
+                        <div class="predict-content" id="predictContent"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WIZARD DE PROJETOS -->
+        <section class="page-content" id="wizard">
+            <div class="container">
+                <div class="page-header">
+                    <h2>🚀 Criar Novo Projeto</h2>
+                </div>
+
+                <div class="wizard-container">
+                    <div class="wizard-steps">
+                        <div class="wizard-step active" data-step="1">
+                            <span class="step-number">1</span>
+                            <span class="step-title">Template</span>
+                        </div>
+                        <div class="wizard-step" data-step="2">
+                            <span class="step-number">2</span>
+                            <span class="step-title">Informações</span>
+                        </div>
+                        <div class="wizard-step" data-step="3">
+                            <span class="step-number">3</span>
+                            <span class="step-title">Escopo</span>
+                        </div>
+                        <div class="wizard-step" data-step="4">
+                            <span class="step-number">4</span>
+                            <span class="step-title">Equipe</span>
+                        </div>
+                        <div class="wizard-step" data-step="5">
+                            <span class="step-number">5</span>
+                            <span class="step-title">Revisão</span>
+                        </div>
+                    </div>
+
+                    <div class="wizard-content">
+                        <!-- Step 1: Template -->
+                        <div class="wizard-panel active" data-panel="1">
+                            <h3>Selecione um Template</h3>
+                            <p class="wizard-desc">Escolha um modelo base para seu projeto</p>
+                            <div class="templates-grid" id="templatesGrid"></div>
+                        </div>
+
+                        <!-- Step 2: Informações -->
+                        <div class="wizard-panel" data-panel="2">
+                            <h3>Informações do Projeto</h3>
+                            <div class="form-group">
+                                <label>Nome do Projeto</label>
+                                <input type="text" id="wizardNome" class="form-control" placeholder="Ex: Sistema de Gestão">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição</label>
+                                <textarea id="wizardDescricao" class="form-control" rows="3" placeholder="Descreva o objetivo do projeto..."></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Data de Início</label>
+                                    <input type="date" id="wizardDataInicio" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Data Prevista de Término</label>
+                                    <input type="date" id="wizardDataFim" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Orçamento Estimado (R$)</label>
+                                <input type="number" id="wizardOrcamento" class="form-control" placeholder="0,00">
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Escopo -->
+                        <div class="wizard-panel" data-panel="3">
+                            <h3>Definir Escopo</h3>
+                            <div class="form-group">
+                                <label>O que está incluído no projeto?</label>
+                                <textarea id="wizardEscopoInclui" class="form-control" rows="3" placeholder="Liste as entregas e funcionalidades..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>O que NÃO está incluído?</label>
+                                <textarea id="wizardEscopoNaoInclui" class="form-control" rows="3" placeholder="Liste o que está fora do escopo..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Stakeholders (partes interessadas)</label>
+                                <input type="text" id="wizardStakeholders" class="form-control" placeholder="Ex: Diretoria, Cliente, Equipe de TI">
+                            </div>
+                            <div class="viabilidade-box" id="viabilidadeBox">
+                                <h4>📊 Análise de Viabilidade</h4>
+                                <div id="viabilidadeContent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Equipe -->
+                        <div class="wizard-panel" data-panel="4">
+                            <h3>Definir Equipe</h3>
+                            <div class="form-group">
+                                <label>Membros da Equipe</label>
+                                <input type="text" id="wizardEquipe" class="form-control" placeholder="Nomes separados por vírgula">
+                            </div>
+                            <div class="form-group">
+                                <label>Responsável pelo Projeto</label>
+                                <input type="text" id="wizardResponsavel" class="form-control" placeholder="Nome do gerente de projeto">
+                            </div>
+                            <div class="atividades-preview">
+                                <h4>Atividades do Template</h4>
+                                <div id="atividadesPreview"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5: Revisão -->
+                        <div class="wizard-panel" data-panel="5">
+                            <h3>Revisão Final</h3>
+                            <div class="resumo-projeto" id="resumoProjeto"></div>
+                            <div class="wizard-actions">
+                                <button class="btn btn-secondary" onclick="Wizard.voltar()">Voltar</button>
+                                <button class="btn btn-primary" onclick="Wizard.criarProjeto()">Criar Projeto</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-nav">
+                        <button class="btn btn-outline" id="wizardPrev" onclick="Wizard.voltar()" disabled>← Anterior</button>
+                        <button class="btn btn-primary" id="wizardNext" onclick="Wizard.proximo()">Próximo →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- MODAL NOVO PROJETO -->
@@ -429,6 +614,7 @@
 
     <div id="footer-placeholder"></div>
 
+    <script src="static/js/api-client.js"></script>
     <script src="static/js/db.js"></script>
     <script src="static/js/storage.js"></script>
     <script src="static/js/export.js"></script>
@@ -436,6 +622,8 @@
     <script src="static/js/kanban.js"></script>
     <script src="static/js/timeline.js"></script>
     <script src="static/js/performance.js"></script>
+    <script src="static/js/insights.js"></script>
+    <script src="static/js/wizard.js"></script>
     <script src="static/js/components.js"></script>
     <script>
         loadComponents();
