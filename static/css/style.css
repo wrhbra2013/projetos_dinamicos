@@ -96,7 +96,6 @@ h1, h2, h3, h4 {
     background-color: var(--card-bg);
     border-color: var(--border);
 }
-}
 
 body.dark-theme h1,
 body.dark-theme h2,
@@ -1387,7 +1386,9 @@ input[type="radio"] {
     }
     
     /* Reduce card border radius for better fit */
-    .card-border-radius: 8px;
+    .card-border-radius {
+        border-radius: 8px;
+    }
     
     /* Improve text scaling */
     html {
@@ -1407,7 +1408,6 @@ input[type="radio"] {
     .progress-card {
         padding: 16px;
     }
-}
     
     .header .nav {
         flex-wrap: wrap;
