@@ -10,11 +10,22 @@ const ProjectDashboard = {
   },
 
   async loadData() {
-    try {
-      const response = await fetch('./data/project-management.json');
-      this.data = await response.json();
-    } catch (e) {
-      console.warn('Dados de gerenciamento não disponíveis:', e);
+    const projetos = JSON.parse(localStorage.getItem('pd_projetos') || '[]');
+    const atividades = JSON.parse(localStorage.getItem('pd_atividades') || '[]');
+    
+    if (projetos.length > 0) {
+      this.data = {
+        projeto: projetos[0],
+        atividades: atividades.filter(a => a.projeto_id === projetos[0].id),
+        charter: {
+          nome: projetos[0].nome,
+          descricao: projetos[0].descricao,
+          status: projetos[0].status,
+          data_inicio: projetos[0].data_inicio,
+          data_fim: projetos[0].data_fim
+        }
+      };
+    } else {
       this.data = null;
     }
   },
@@ -42,7 +53,6 @@ const ProjectDashboard = {
   render() {
     if (!this.data) return;
     this.renderHeader();
-    this.renderCharter();
     this.renderEAP();
     this.renderCronograma();
     this.renderRiscos();

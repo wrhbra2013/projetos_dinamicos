@@ -197,10 +197,10 @@ const Mapa = {
             const pct = atividades.length > 0 ? Math.round((concluidas / atividades.length) * 100) : 0;
 
             html += `
-                <div class="project-card">
+                <div class="project-card" onclick="Mapa.editarProjeto('${p._id}')" style="cursor:pointer">
                     <div class="card-header">
                         <h3>${this.escapeHtml(p.nome)}</h3>
-                        <button onclick="Mapa.excluirProjeto('${p._id}')" class="delete-btn" aria-label="Excluir projeto">🗑️</button>
+                        <button onclick="event.stopPropagation();Mapa.excluirProjeto('${p._id}')" class="delete-btn" aria-label="Excluir projeto">🗑️</button>
                     </div>
                     <p>${this.escapeHtml(p.descricao || '')}</p>
                     <div class="card-meta">
@@ -210,7 +210,7 @@ const Mapa = {
                     <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}">
                         <div class="progress-bar-fill" style="width: ${pct}%"></div>
                     </div>
-                    <div class="card-actions">
+                    <div class="card-actions" onclick="event.stopPropagation()">
                         <button onclick="Mapa.editarProjeto('${p._id}')" class="btn btn-sm">Editar</button>
                         <button onclick="Mapa.selecionarProjeto('${p._id}')" class="btn btn-sm btn-primary">Ver Detalhes</button>
                     </div>
