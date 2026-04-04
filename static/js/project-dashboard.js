@@ -57,7 +57,12 @@ const ProjectDashboard = {
       section = document.createElement('section');
       section.id = 'project-dashboard';
       section.className = 'dashboard-section';
-      document.querySelector('.main-content').appendChild(section);
+      const main = document.querySelector('.main');
+      if (main) {
+        main.appendChild(section);
+      } else {
+        document.body.appendChild(section);
+      }
     }
     section.innerHTML = `
       <div class="dashboard-header">
@@ -111,6 +116,15 @@ const ProjectDashboard = {
 
   createDashboardContent() {
     const section = document.getElementById('project-dashboard');
+    if (!section) {
+        console.warn('Elemento #project-dashboard não encontrado');
+        const main = document.querySelector('.main');
+        if (!main) return null;
+        const container = document.createElement('div');
+        container.id = 'project-dashboard';
+        main.appendChild(container);
+        return container;
+    }
     const container = document.createElement('div');
     container.id = 'dashboard-content';
     section.appendChild(container);

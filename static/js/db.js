@@ -1,5 +1,9 @@
-// ========== PouchDB Database ==========
-const DB = {
+// ========== PouchDB Database (Legacy - não usado) ==========
+// Este arquivo está deprecado. Use api-client.js que tem localStorage + fallback API PHP
+console.log('db.js carregado (deprecado)');
+
+// O código abaixo não é mais usado - mantido apenas para referência
+// O sistema agora usa api-client.js com localStorage como armazenamento principal
     db: null,
     useApi: false,
 
