@@ -17,6 +17,7 @@ const HEADER_HTML = `<header class="header">
                     <label for="page-timeline" class="nav-link">Timeline</label>
                     <label for="page-insights" class="nav-link" onclick="Insights.init()">Insights</label>
                     <label for="page-relatorio" class="nav-link">Relatórios</label>
+                    <label for="page-downloads" class="nav-link">Downloads</label>
                     <label for="page-planos" class="nav-link">Planos</label>
                     <label for="page-wizard" class="nav-link" onclick="Wizard.init()">Novo Projeto</label>
                     <button class="nav-link nav-icon" onclick="ProjectDashboard.init()" title="Gerenciamento do Projeto">GP</button>

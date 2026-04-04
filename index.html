@@ -90,6 +90,7 @@
     <input type="radio" name="page" id="page-timeline">
     <input type="radio" name="page" id="page-insights">
     <input type="radio" name="page" id="page-wizard">
+    <input type="radio" name="page" id="page-downloads">
 
     <div id="header-placeholder"></div>
 
@@ -490,6 +491,37 @@
                     <div class="wizard-nav">
                         <button class="btn btn-outline" id="wizardPrev" onclick="Wizard.voltar()" disabled>← Anterior</button>
                         <button class="btn btn-primary" id="wizardNext" onclick="Wizard.proximo()">Próximo →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOWNLOADS -->
+        <section class="page-content" id="downloads">
+            <div class="container">
+                <div class="page-header">
+                    <h2>Downloads</h2>
+                </div>
+                <div class="downloads-grid">
+                    <div class="download-card">
+                        <h3>📱 Aplicativo Mobile</h3>
+                        <p>Baixe nosso aplicativo para gerenciamento de projetos em qualquer lugar.</p>
+                        <a href="releases/app-release.apk" class="btn btn-primary">Baixar APK</a>
+                    </div>
+                    <div class="download-card">
+                        <h3>📊 Planilha de Projetos</h3>
+                        <p>Template de planilha para controle de projetos no Excel/Google Sheets.</p>
+                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
+                    </div>
+                    <div class="download-card">
+                        <h3>📋 Template Kanban</h3>
+                        <p>Modelo de quadro Kanban para impressão ou uso digital.</p>
+                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
+                    </div>
+                    <div class="download-card">
+                        <h3>📝 Checklists</h3>
+                        <p>Conjunto de checklists para várias fases do projeto.</p>
+                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
                     </div>
                 </div>
             </div>

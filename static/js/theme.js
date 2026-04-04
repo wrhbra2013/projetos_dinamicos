@@ -1,8 +1,13 @@
 const Theme = {
     KEY: 'pd-theme',
+    themes: ['light', 'dark', 'alto-contraste'],
+    currentIndex: 0,
 
     init() {
-        this.apply(localStorage.getItem(this.KEY) || 'light');
+        const saved = localStorage.getItem(this.KEY) || 'light';
+        this.currentIndex = this.themes.indexOf(saved);
+        if (this.currentIndex === -1) this.currentIndex = 0;
+        this.apply(this.themes[this.currentIndex]);
         this.bindEvents();
     },
 
@@ -13,15 +18,14 @@ const Theme = {
     },
 
     toggle() {
-        const current = document.documentElement.getAttribute('data-theme') || 'light';
-        this.apply(current === 'light' ? 'dark' : 'light');
+        this.currentIndex = (this.currentIndex + 1) % this.themes.length;
+        this.apply(this.themes[this.currentIndex]);
     },
 
     updateButton(theme) {
         const btn = document.getElementById('themeBtn');
         if (btn) {
-            btn.textContent = theme === 'dark' ? '☀️' : '🌓';
-            btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+            btn.setAttribute('aria-pressed', theme === 'dark' || theme === 'alto-contraste' ? 'true' : 'false');
         }
     },
 
