@@ -4,8 +4,7 @@
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:8000",
-    "distDir": "../dist",
-    "devtools": true
+    "distDir": "../dist"
   },
   "package": {
     "productName": "Projetos Dinâmicos",
@@ -16,8 +15,7 @@
       "all": false,
       "shell": {
         "all": false,
-        "open": true,
-        "spawn": true
+        "open": true
       }
     },
     "bundle": {
@@ -25,10 +23,10 @@
       "category": "Productivity",
       "copyright": "2024",
       "deb": {
-        "depends": ["php", "php-sqlite3"]
+        "depends": []
       },
       "rpm": {
-        "depends": ["php", "php-sqlite3"]
+        "depends": []
       },
       "externalBin": [],
       "icon": [
@@ -49,7 +47,7 @@
       },
       "resources": [],
       "shortDescription": "Gerenciador de projetos",
-      "targets": ["nsis", "msi", "deb", "rpm", "dmg", "app"],
+      "targets": "all",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",

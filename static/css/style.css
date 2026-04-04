@@ -1478,7 +1478,7 @@ input[type="radio"] {
     .btn {
         padding: 8px 14px;
         font-size: 0.85rem;
-        min-height: 44px; /* Área de toque mínima recomendada */
+        min-height: 44px;
     }
     
     .card-body,
@@ -1504,7 +1504,6 @@ input[type="radio"] {
         min-height: 44px;
     }
     
-    /* Improve form touch targets on small screens */
     .modal-content .form-group input,
     .modal-content .form-group select,
     .modal-content .form-group textarea {
@@ -1517,7 +1516,6 @@ input[type="radio"] {
         margin-bottom: 20px;
     }
     
-    /* Improve radio button and label spacing */
     .modal-content input[type="radio"] + label {
         margin-right: 12px;
         padding: 8px 12px;
@@ -1530,41 +1528,40 @@ input[type="radio"] {
         border-color: var(--accent);
     }
 }
-    
-    .main {
-        padding: 20px 0;
-    }
-    
-    .page-header {
-        margin-bottom: 16px;
-    }
-    
-    .btn {
-        padding: 8px 14px;
-        font-size: 0.85rem;
-    }
-    
-    .card-body,
-    .card-header,
-    .card-footer {
-        padding: 12px 16px;
-    }
-    
-    .feedback-form,
-    .feedback-card,
-    .relatorio-card,
-    .progress-card {
-        padding: 16px;
-    }
-    
-    .feedback-filter {
-        gap: 6px;
-    }
-    
-    .filter-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-    }
+
+.main {
+    padding: 20px 0;
+}
+
+.page-header {
+    margin-bottom: 16px;
+}
+
+.btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+}
+
+.card-body,
+.card-header,
+.card-footer {
+    padding: 12px 16px;
+}
+
+.feedback-form,
+.feedback-card,
+.relatorio-card,
+.progress-card {
+    padding: 16px;
+}
+
+.feedback-filter {
+    gap: 6px;
+}
+
+.filter-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
 }
 
 /* PLANOS */
@@ -2419,4 +2416,376 @@ input[type="radio"] {
     gap: 12px;
     justify-content: flex-end;
     margin-top: 24px;
+}
+
+/* Dashboard de Gerenciamento de Projetos */
+.dashboard-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.dashboard-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.dashboard-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tab-btn:hover {
+    background: var(--accent-light);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.dashboard-card {
+    background: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.dashboard-card h3 {
+    margin-top: 0;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+}
+
+.dashboard-card h4 {
+    margin-top: 20px;
+    color: var(--text-primary);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.info-item span {
+    color: var(--text-primary);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid var(--border);
+}
+
+.data-table th {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
+
+.data-table tr:nth-child(even) {
+    background: var(--secondary);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+}
+
+.metric-highlight {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 24px;
+    background: var(--accent);
+    border-radius: 8px;
+    color: white;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+}
+
+.critical-path {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px;
+    background: var(--warning);
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.cp-task {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.risk-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.risk-matrix th,
+.risk-matrix td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.risk-matrix th {
+    background: var(--text-secondary);
+    color: white;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.metric-box {
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.metric-box h5 {
+    margin-top: 0;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.positive {
+    color: var(--success);
+}
+
+.negative {
+    color: var(--danger);
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: var(--secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.ev-explanation {
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.ev-explanation h5 {
+    margin-top: 0;
+    color: var(--accent);
+}
+
+.timeline-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 20px 0;
+    padding-left: 20px;
+    border-left: 3px solid var(--accent);
+}
+
+.milestone {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.milestone-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.milestone.concluido .milestone-marker {
+    background: var(--success);
+}
+
+.milestone.em_andamento .milestone-marker {
+    background: var(--warning);
+}
+
+.milestone.pendente .milestone-marker {
+    background: var(--text-muted);
+}
+
+.milestone-content {
+    flex: 1;
+}
+
+.milestone-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.milestone-name {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.milestone-deliverable {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.raci-table th,
+.raci-table td {
+    text-align: center;
+}
+
+.raci-r { background: #dbeafe; color: #1e40af; font-weight: 700; }
+.raci-a { background: #fef3c7; color: #92400e; font-weight: 700; }
+.raci-c { background: #d1fae5; color: #065f46; font-weight: 700; }
+.raci-i { background: #f3f4f6; color: #6b7280; }
+
+.raci-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--secondary);
+    border-radius: 8px;
+}
+
+.eap-fase {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
 }
