@@ -155,24 +155,52 @@ body {
 .header {
     background-color: var(--secondary);
     border-bottom: 1px solid var(--border);
-    padding: 14px 0;
+    padding: 12px 0;
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: var(--shadow);
 }
 
-.header .container {
+.header .header-container {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 20px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.header-left { flex-shrink: 0; }
+
+.header-center { flex: 1; min-width: 0; }
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .header .nav {
     display: flex;
     align-items: center;
     gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-light) transparent;
+}
+
+.header .nav::-webkit-scrollbar { height: 4px; }
+.header .nav::-webkit-scrollbar-track { background: transparent; }
+.header .nav::-webkit-scrollbar-thumb { background: var(--accent-light); border-radius: 2px; }
+
+.header .nav-scroll {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0;
 }
 
 .logo {
