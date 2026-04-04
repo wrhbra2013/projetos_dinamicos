@@ -1,22 +1,25 @@
 const HEADER_HTML = `<header class="header">
     <div class="header-container">
         <div class="header-left">
-            <h1 class="logo">Projetos Dinâmicos</h1>
+            <div class="logo-area">
+                <h1 class="logo">Projetos Dinâmicos</h1>
+                <span class="logo-tagline">Gestão de Projetos</span>
+            </div>
         </div>
         
         <div class="header-center">
             <nav class="nav-menu" id="navMenu">
                 <div class="nav-scroll">
-                    <label for="page-dashboard" class="nav-link">📊 Dashboard</label>
-                    <label for="page-projeto" class="nav-link">📁 Projetos</label>
-                    <label for="page-kanban" class="nav-link">📋 Kanban</label>
-                    <label for="page-mapa" class="nav-link">🗺️ Mapa Visual</label>
-                    <label for="page-timeline" class="nav-link">📅 Timeline</label>
-                    <label for="page-insights" class="nav-link" onclick="Insights.init()">📈 Insights</label>
-                    <label for="page-relatorio" class="nav-link">📄 Relatórios</label>
-                    <label for="page-planos" class="nav-link">💎 Planos</label>
-                    <label for="page-wizard" class="nav-link" onclick="Wizard.init()">🚀 Novo Projeto</label>
-                    <button class="nav-link nav-icon" onclick="ProjectDashboard.init()" title="Gerenciamento do Projeto">⚙️ GP</button>
+                    <label for="page-dashboard" class="nav-link">Dashboard</label>
+                    <label for="page-projeto" class="nav-link">Projetos</label>
+                    <label for="page-kanban" class="nav-link">Kanban</label>
+                    <label for="page-mapa" class="nav-link">Mapa Visual</label>
+                    <label for="page-timeline" class="nav-link">Timeline</label>
+                    <label for="page-insights" class="nav-link" onclick="Insights.init()">Insights</label>
+                    <label for="page-relatorio" class="nav-link">Relatórios</label>
+                    <label for="page-planos" class="nav-link">Planos</label>
+                    <label for="page-wizard" class="nav-link" onclick="Wizard.init()">Novo Projeto</label>
+                    <button class="nav-link nav-icon" onclick="ProjectDashboard.init()" title="Gerenciamento do Projeto">GP</button>
                 </div>
             </nav>
         </div>
@@ -32,28 +35,28 @@ const HEADER_HTML = `<header class="header">
             
             <div class="menu-dropdown" id="menuDropdown">
                 <a href="https://wa.me/5514981305888?text=Olá, preciso de suporte no Projetos Dinamicos." target="_blank" class="dropdown-item">
-                    <span class="dropdown-icon">💬</span> Suporte
+                    Suporte
                 </a>
                 <button class="dropdown-item" onclick="document.getElementById('importFile').click()">
-                    <span class="dropdown-icon">📥</span> Importar
+                    Importar
                 </button>
                 <button class="dropdown-item" onclick="exportData()">
-                    <span class="dropdown-icon">📤</span> Exportar
+                    Exportar
                 </button>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" onclick="toggleTheme()">
-                    <span class="dropdown-icon">🌓</span> Tema
+                    Tema
                 </button>
                 <button class="dropdown-item" onclick="showAbout()">
-                    <span class="dropdown-icon">ℹ️</span> Sobre
+                    Sobre
                 </button>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" onclick="clearAllData()">
-                    <span class="dropdown-icon">🗑️</span> Limpar Dados
+                    Limpar Dados
                 </button>
             </div>
             
-            <button class="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌓</button>
+            <button class="theme-btn" onclick="toggleTheme()" title="Alternar tema"></button>
             <input type="file" id="importFile" accept=".json" style="display:none">
         </div>
     </div>
@@ -72,6 +75,27 @@ const HEADER_HTML = `<header class="header">
 }
 
 .header-left { flex-shrink: 0; }
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.logo-tagline {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
 .header-center { flex: 1; min-width: 0; }
 
