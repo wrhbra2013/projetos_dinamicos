@@ -5,15 +5,16 @@ echo "  BUILD SCRIPT - Projetos Dinâmicos"
 echo "========================================="
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-RELEASES_DIR="$PROJECT_DIR/releases"
+RELEASES_DIR="$PROJECT_DIR/../releases"
+ROOT_DIR="$PROJECT_DIR/.."
 
 mkdir -p "$RELEASES_DIR"
 
 echo ""
 echo "1️⃣  Limpando builds anteriores..."
 rm -rf "$RELEASES_DIR"/*
-rm -rf dist/
-rm -rf src-tauri/target/release/bundle/
+rm -rf "$ROOT_DIR/dist/"
+rm -rf "$ROOT_DIR/tauri/target/release/bundle/"
 
 echo ""
 echo "2️⃣  Build Frontend (Vite)..."

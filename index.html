@@ -2,1305 +2,233 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Dinâmicos - Mapa Visual</title>
-    <link rel="stylesheet" href="static/css/style.css">
-    <link rel="stylesheet" href="static/css/mapa.css">
-    <style>
-    /* Fluxograma simples - CSS puro */
-    .flowcard{background:var(--card-bg);border:1px solid var(--border);padding:12px;border-radius:8px;margin-top:16px}
-    #flowchart{position:relative;width:100%;min-height:140px;padding:18px;box-sizing:border-box;background:var(--card-bg)}
-    .flow-row{display:flex;gap:18px;align-items:center;justify-content:flex-start}
-    .flow-node{position:relative;min-width:120px;padding:10px 14px;background:var(--card-bg);border:2px solid var(--border);border-radius:8px;color:var(--text-primary);font-weight:600;box-shadow:var(--shadow);text-align:center}
-    .flow-node.small{min-width:100px;padding:8px}
-    .flow-node .label{display:block}
-    /* container for SVG arrows placed on top */
-    #flow-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto;overflow:visible}
-    #flow-svg path{pointer-events:stroke;cursor:pointer}
-    .btn-flow{background:var(--card-bg);border:1px solid var(--border);padding:6px 8px;border-radius:6px;cursor:pointer}
-    /* Autocomplete */
-    .autocomplete-wrapper{position:relative;display:inline-block;width:100%;max-width:300px}
-    .autocomplete-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card-bg);color:var(--text-primary)}
-    .autocomplete-input:focus{outline:none;border-color:var(--accent)}
-    .autocomplete-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card-bg);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:var(--shadow-md);display:none}
-    .autocomplete-dropdown.show{display:block}
-    .autocomplete-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s}
-    .autocomplete-item:last-child{border-bottom:none}
-    .autocomplete-item:hover{background:var(--accent-light);color:var(--secondary)}
-    .autocomplete-item .item-title{font-weight:600;font-size:14px}
-    .autocomplete-item .item-subtitle{font-size:12px;color:var(--text-muted)}
-    /* Modal */
-    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;z-index:9999;align-items:center;justify-content:center}
-    .modal.active{display:flex}
-    .modal-content{background:var(--card-bg);padding:24px;border-radius:12px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .modal-header h3{margin:0}
-    .close-btn{background:none;border:none;font-size:24px;cursor:pointer;padding:0;line-height:1}
-    .form-group{margin-bottom:16px}
-    .form-group label{display:block;margin-bottom:6px;font-weight:600}
-    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card-bg);color:var(--text-primary)}
-    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7); }
-        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-    }
-    /* ML Suggestions */
-    .ml-suggestions{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
-    .ml-suggestions h4{color:var(--accent);margin-bottom:12px;font-size:14px;display:flex;align-items:center;gap:8px}
-    .ml-suggestions h4::before{content:"🤖"}
-    .suggestion-tags{display:flex;flex-wrap:wrap;gap:8px}
-    .suggestion-tag{background:var(--card-bg);border:1px solid var(--accent);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
-    .suggestion-tag:hover{background:var(--accent);color:var(--secondary);transform:translateY(-2px)}
-    .suggestion-tag .confidence{background:rgba(0,0,0,0.1);padding:2px 6px;border-radius:10px;font-size:10px}
-    .ml-loading{color:var(--text-muted);font-size:12px;font-style:italic}
-    .nodes-grid{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:16px;background:var(--primary)}
-    .node-item{position:relative;padding:12px;background:var(--card-bg);border:2px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.2s}
-    .node-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-    /* Fluxograma do Projeto */
-    .project-flowchart{background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:var(--shadow)}
-    .flow-stages{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;overflow-x:auto;padding:16px;position:relative;z-index:2;background:var(--card-bg)}
-    .flow-stage{flex:1;min-width:120px;text-align:center;position:relative}
-    .flow-stage-node{padding:16px 12px;background:var(--card-bg);border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.3s;position:relative}
-    .flow-stage-node:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-    .flow-stage-node.active{border-color:var(--accent);background:var(--accent-light)}
-    .flow-stage-node.completed{border-color:var(--success);background:var(--success)}
-    .flow-stage-node .stage-icon{font-size:28px;margin-bottom:8px}
-    .flow-stage-node .stage-name{font-weight:600;font-size:13px;color:var(--text-primary)}
-    .flow-stage-node .stage-count{font-size:11px;color:var(--text-muted);margin-top:4px}
-    .flow-stage-connector{position:absolute;top:50%;right:-50%;width:100%;height:2px;background:var(--border);z-index:1}
-    .flow-stage-connector.completed{background:var(--success)}
-    .flow-stage-connector.active{background:var(--accent)}
-    .flow-svg{position:absolute;top:0;left:0;width:100%;height:200px;pointer-events:none}
-    .flow-activity-link{display:block;padding:8px;margin:8px 0;background:var(--card-bg);border-radius:8px;border:1px dashed var(--border);font-size:12px;color:var(--text-secondary);cursor:pointer}
-    .flow-activity-link:hover{background:var(--primary);border-color:var(--accent)}
-    .flow-activity-link.active{border-color:var(--accent);background:var(--accent-light)}
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@1.3.3/dist/universal-sentence-encoder.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CodeTrain - Plataforma de Treinamento em Programação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/training.css">
 </head>
 <body>
+    <input type="radio" name="page" id="page-login" checked>
+    <input type="radio" name="page" id="page-dashboard">
+    <input type="radio" name="page" id="page-exercises">
+    <input type="radio" name="page" id="page-progress">
 
-    <input type="radio" name="page" id="page-dashboard" checked>
-    <input type="radio" name="page" id="page-projeto">
-    <input type="radio" name="page" id="page-atividade">
-    <input type="radio" name="page" id="page-mapa">
-    <input type="radio" name="page" id="page-relatorio">
-    <input type="radio" name="page" id="page-planos">
-    <input type="radio" name="page" id="page-kanban">
-    <input type="radio" name="page" id="page-timeline">
-    <input type="radio" name="page" id="page-insights">
-    <input type="radio" name="page" id="page-wizard">
-    <input type="radio" name="page" id="page-downloads">
-
-    <div id="header-placeholder"></div>
+    <header class="header">
+        <div class="logo">
+            <span>💻</span>
+            <span>CodeTrain</span>
+        </div>
+        <div id="header-actions" class="user-info" style="display: none;">
+            <span id="user-name">Usuário</span>
+            <div class="user-avatar" id="user-avatar">U</div>
+            <button class="btn btn-outline btn-sm" id="logout-btn">Sair</button>
+        </div>
+    </header>
 
     <main class="main">
-        <!-- DASHBOARD -->
-        <section class="page-content" id="dashboard" aria-labelledby="dashboard-heading">
-            <div class="container">
-                <div class="page-header">
-                    <h2 id="dashboard-heading">Projetos</h2>
-                    <button class="btn btn-primary" onclick="document.getElementById('page-wizard').checked=true;Wizard.init()" aria-label="Criar novo projeto">+ Novo Projeto</button>
+        <!-- LOGIN PAGE -->
+        <section class="page-content" id="login">
+            <div class="login-container">
+                <div class="login-card">
+                    <h1>🚀 CodeTrain</h1>
+                    <p>Plataforma de Treinamento em Programação</p>
+                    
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-name">Seu Nome</label>
+                            <input type="text" id="login-name" placeholder="Digite seu nome" required autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Começar a Treinar</button>
+                    </form>
+
+                    <div class="divider">ou continue como visitante</div>
+                    
+                    <p style="font-size: 14px; color: var(--text-muted);">
+                        5 linguagens • 75 exercícios • Dashboard de progresso
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD PAGE -->
+        <section class="page-content" id="dashboard">
+            <div class="stats-grid" id="dashboard-stats"></div>
+            
+            <div class="card" style="margin-bottom: 24px;">
+                <h3 style="margin-bottom: 20px;">📚 Escolha uma Linguagem</h3>
+                <div class="language-grid" id="dashboard-languages"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">🕐 Atividade Recente</h3>
+                <div class="activity-list" id="activity-list"></div>
+            </div>
+        </section>
+
+        <!-- EXERCISES PAGE -->
+        <section class="page-content" id="exercises">
+            <button class="back-btn" id="btn-back">
+                ← Voltar às Linguagens
+            </button>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;" id="exercises-container">
+                <div class="card">
+                    <div class="exercise-list" id="exercise-list"></div>
                 </div>
 
-                 <div class="progress-overview">
-                     <div class="progress-card">
-                         <div class="progress-header">
-                             <span>Total de Atividades</span>
-                             <span id="totalAtividades" aria-live="polite">0</span>
-                         </div>
-                         <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="progressGlobalLabel">
-                             <div class="progress-bar-fill" id="progressGlobal" style="width: 0%"></div>
-                         </div>
-                         <span class="progress-percent" id="percentGlobal" id="progressGlobalLabel">0% concluído</span>
-                     </div>
-                 </div>
-
-                <div class="projects-grid" id="projectsGrid" aria-label="Lista de projetos"></div>
-
-                 <div class="flowcard" id="projectFlowCard" style="display:block" aria-labelledby="flowTitle">
-                     <div style="display:flex;align-items:center;justify-content:space-between">
-                         <h3 id="flowTitle">Fluxograma do Projeto</h3>
-                         <div style="display:flex;gap:10px;align-items:center">
-                             <!-- Autocomplete de Atividades -->
-                             <div class="autocomplete-wrapper">
-                                 <input type="text" id="atividadeAutocomplete" class="autocomplete-input" placeholder="Buscar atividade..." aria-label="Buscar atividade no fluxograma">
-                                 <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
-                             </div>
-                             <button id="resetFlow" class="btn-flow" aria-label="Resetar fluxograma do projeto">Resetar</button>
-                         </div>
-                     </div>
-                    <div id="flowchart">
-                        <svg id="flow-svg"></svg>
-                        <div class="flow-row" id="flowRow"></div>
+                <div class="exercise-editor" id="exercise-editor" style="display: none;">
+                    <div class="editor-header">
+                        <div class="editor-title">
+                            <span id="exercise-title">Exercício</span>
+                            <span id="language-badge" class="language-badge"></span>
+                            <span id="exercise-difficulty" class="exercise-difficulty"></span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn btn-outline btn-sm" id="btn-show-solution">👁️ Solução</button>
+                            <button class="btn btn-success btn-sm" id="btn-mark-complete">✓ Concluir</button>
+                            <button class="expand-code-btn" id="expand-fullscreen" title="Tela Cheia">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                                </svg>
+                                <span>Tela Cheia</span>
+                            </button>
+                        </div>
+                    </div>
+                    <p id="exercise-desc" style="padding: 12px 16px; background: var(--secondary); border-bottom: 1px solid var(--border); font-size: 14px;"></p>
+                    <div class="editor-content">
+                        <div class="code-panel">
+                            <textarea id="code-editor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+                        </div>
+                        <div class="output-panel">
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">SAÍDA:</div>
+                            <div id="output" class="output-content">Execute o código para ver o resultado...</div>
+                        </div>
+                    </div>
+                    <div class="code-output">
+                        <span class="language-badge" id="language-badge-2"></span>
+                        <button class="btn btn-primary" id="btn-run">▶️ Executar</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- DETALHES DO PROJETO -->
-        <section class="page-content" id="projeto">
-            <div class="container">
-                 <div class="page-header">
-                     <div style="display: flex; align-items: center; gap: 16px;">
-                         <button class="btn btn-outline" onclick="document.getElementById('page-dashboard').checked = true;" aria-label="Voltar para o dashboard">← Voltar</button>
-                         <h2 id="projetoTitulo">Projeto</h2>
-                     </div>
-                     <button class="btn btn-primary" id="btnNovaAtividade" aria-label="Adicionar nova atividade">+ Nova Atividade</button>
-                 </div>
-
-                 <!-- Fluxograma do Projeto -->
-                 <div class="project-flowchart" id="projectFlowchart">
-                     <h3 style="margin-bottom: 16px;">📊 Fluxo do Projeto</h3>
-                     <div class="flow-stages" id="flowStages">
-                         <!-- Estágios serão renderizados via JS -->
-                     </div>
-                     <svg id="flowSvg" class="flow-svg"></svg>
-                 </div>
-
-                 <div class="progress-overview" style="margin-top: 24px;">
-                     <div class="progress-card">
-                         <div class="progress-header">
-                             <span>Progresso do Projeto</span>
-                             <span id="projetoProgresso" aria-live="polite">0%</span>
-                         </div>
-                         <div class="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="projetoProgressoLabel">
-                             <div class="progress-bar-fill" id="projetoProgressoBar" style="width: 0%"></div>
-                         </div>
-                         <span class="progress-percent" id="projetoProgressoText" id="projetoProgressoLabel">0 de 0 atividades</span>
-                     </div>
-                 </div>
-
-                 <div class="atividades-grid" id="atividadesGrid" aria-label="Lista de atividades do projeto"></div>
-            </div>
-        </section>
-
-        <!-- MAPA VISUAL -->
-        <section class="page-content" id="mapa-visual">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Mapa Visual de Atividades</h2>
-                    <select id="projetoSelector" class="form-control">
-                        <option value="">Selecione um projeto</option>
-                    </select>
-                </div>
-
-                <!-- ML Correlation Controls -->
-                <div class="ml-map-controls" style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="mlCorrelations" onchange="Mapa.renderMapa()">
-                            <strong>Mostrar correlações IA</strong>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            Limite similarity:
-                            <input type="range" id="mlThreshold" min="0" max="100" value="50" onchange="document.getElementById('mlThresholdVal').textContent = this.value + '%'; Mapa.renderMapa()">
-                            <span id="mlThresholdVal">50%</span>
-                        </label>
-                        <button class="btn btn-sm" onclick="Mapa.calcularCorrelaes()" id="btnCalcularML">🔄 Calcular Correlações</button>
-                    </div>
-                    <div id="mlLoading" class="ml-loading" style="display: none; margin-top: 8px;">🤖 Calculando correlações com IA...</div>
-                </div>
-
-                <div class="mapa-container">
-                    <div class="mapa-canvas" id="mapaCanvas">
-                        <div class="mapa-vazio">
-                            <p>Selecione um projeto para visualizar o mapa de atividades</p>
-                        </div>
-                    </div>
-
-                    <div class="mapa-legend">
-                        <div class="legend-item">
-                            <span class="legend-dot planejamento"></span> Planejamento
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot andamento"></span> Em Andamento
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot concluido"></span> Concluído
-                        </div>
-                        <div class="legend-item" id="mlLegend" style="display: none;">
-                            <span class="legend-dot" style="background: #9333ea;"></span> IA Correlação
-                        </div>
-                    </div>
-                </div>
-
-                <div class="nodes-list" id="nodesList"></div>
-            </div>
-        </section>
-
-        <!-- RELATÓRIOS -->
-        <section class="page-content" id="relatorios">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Relatórios</h2>
-                    <button class="btn btn-primary" onclick="Mapa.exportarPDF()">📄 Exportar PDF</button>
-                </div>
-
-                <div class="relatorio-cards">
-                    <div class="relatorio-card">
-                        <h3>Progresso por Projeto</h3>
-                        <div id="progressoProjetos"></div>
-                    </div>
-                    <div class="relatorio-card">
-                        <h3>Estatísticas</h3>
-                        <div class="stats-grid" id="statsGrid"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- KANBAN -->
-        <section class="page-content" id="kanban">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Kanban</h2>
-                    <select id="kanbanProjeto" class="kanban-select" onchange="Kanban.render()">
-                        <option value="">Selecione um projeto</option>
-                    </select>
-                </div>
-                <div class="kanban-board" id="kanbanBoard">
-                    <div class="kanban-column">
-                        <h3>📋 Backlog</h3>
-                        <div class="kanban-tasks" data-status="pendente"></div>
-                    </div>
-                    <div class="kanban-column">
-                        <h3>🚀 Em Andamento</h3>
-                        <div class="kanban-tasks" data-status="andamento"></div>
-                    </div>
-                    <div class="kanban-column">
-                        <h3>✅ Concluído</h3>
-                        <div class="kanban-tasks" data-status="concluido"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TIMELINE -->
-        <section class="page-content" id="timeline">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Timeline</h2>
-                    <select id="timelineProjeto" class="kanban-select" onchange="Timeline.render()">
-                        <option value="">Selecione um projeto</option>
-                    </select>
-                </div>
-                <div class="timeline-container" id="timelineContainer"></div>
-            </div>
-        </section>
-
-        <!-- PLANOS -->
-        <section class="page-content" id="planos">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Planos Premium</h2>
-                    <button class="btn btn-outline" onclick="Planos.atualizarPlanoDisplay()">🔄 Atualizar</button>
-                </div>
-
-                <div id="planoAtual" style="margin-bottom: 24px; padding: 16px; background: var(--accent-light); border-radius: 8px; display: none;">
-                    <strong>Seu plano atual:</strong> <span id="planoAtualNome"></span>
-                    <span id="planoStatus" style="margin-left: 12px; padding: 4px 8px; border-radius: 4px; font-size: 12px;"></span>
-                </div>
-
-                <div class="plans-grid" id="plansGrid">
-                    <!-- Renderizado via JS -->
-                </div>
-
-                <div style="margin-top: 32px; padding: 20px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
-                    <h3 style="margin-bottom: 16px;">📋 Minhas Assinaturas</h3>
-                    <div id="assinaturasLista"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- INSIGHTS & ANALYTICS -->
-        <section class="page-content" id="insights">
-            <div class="container">
-                <div class="page-header">
-                    <h2>📊 Insights & Analytics</h2>
-                    <button class="btn btn-primary" onclick="Insights.load()">🔄 Atualizar</button>
-                </div>
-
-                <div class="insights-grid">
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <span class="insight-icon">📈</span>
-                            <h3>Estatísticas Gerais</h3>
-                        </div>
-                        <div class="insight-stats" id="insightStats"></div>
-                    </div>
-
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <span class="insight-icon">🎯</span>
-                            <h3>Velocity</h3>
-                        </div>
-                        <div class="insight-stats" id="insightVelocity"></div>
-                    </div>
-
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <span class="insight-icon">🔥</span>
-                            <h3>Burndown</h3>
-                        </div>
-                        <div class="burndown-chart" id="burndownChart"></div>
-                    </div>
-
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <span class="insight-icon">⚠️</span>
-                            <h3>Riscos Identificados</h3>
-                        </div>
-                        <div class="riscos-list" id="riscosList"></div>
-                    </div>
-
-                    <div class="insight-card full-width">
-                        <div class="insight-header">
-                            <span class="insight-icon">💡</span>
-                            <h3>Recomendações</h3>
-                        </div>
-                        <div class="recomendacoes-list" id="recomendacoesList"></div>
-                    </div>
-
-                    <div class="insight-card full-width">
-                        <div class="insight-header">
-                            <span class="insight-icon">🔮</span>
-                            <h3>Previsão de Conclusão</h3>
-                        </div>
-                        <div class="predict-content" id="predictContent"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- WIZARD DE PROJETOS -->
-        <section class="page-content" id="wizard">
-            <div class="container">
-                <div class="page-header">
-                    <h2>🚀 Criar Novo Projeto</h2>
-                </div>
-
-                <div class="wizard-container">
-                    <div class="wizard-steps">
-                        <div class="wizard-step active" data-step="1">
-                            <span class="step-number">1</span>
-                            <span class="step-title">Template</span>
-                        </div>
-                        <div class="wizard-step" data-step="2">
-                            <span class="step-number">2</span>
-                            <span class="step-title">Informações</span>
-                        </div>
-                        <div class="wizard-step" data-step="3">
-                            <span class="step-number">3</span>
-                            <span class="step-title">Escopo</span>
-                        </div>
-                        <div class="wizard-step" data-step="4">
-                            <span class="step-number">4</span>
-                            <span class="step-title">Equipe</span>
-                        </div>
-                        <div class="wizard-step" data-step="5">
-                            <span class="step-number">5</span>
-                            <span class="step-title">Revisão</span>
-                        </div>
-                    </div>
-
-                    <div class="wizard-content">
-                        <!-- Step 1: Template -->
-                        <div class="wizard-panel active" data-panel="1">
-                            <h3>Selecione um Template</h3>
-                            <p class="wizard-desc">Escolha um modelo base para seu projeto</p>
-                            <div class="templates-grid" id="templatesGrid"></div>
-                        </div>
-
-                        <!-- Step 2: Informações -->
-                        <div class="wizard-panel" data-panel="2">
-                            <h3>Informações do Projeto</h3>
-                            <div class="form-group">
-                                <label>Nome do Projeto</label>
-                                <input type="text" id="wizardNome" class="form-control" placeholder="Ex: Sistema de Gestão">
-                            </div>
-                            <div class="form-group">
-                                <label>Descrição</label>
-                                <textarea id="wizardDescricao" class="form-control" rows="3" placeholder="Descreva o objetivo do projeto..."></textarea>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Data de Início</label>
-                                    <input type="date" id="wizardDataInicio" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label>Data Prevista de Término</label>
-                                    <input type="date" id="wizardDataFim" class="form-control">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Orçamento Estimado (R$)</label>
-                                <input type="number" id="wizardOrcamento" class="form-control" placeholder="0,00">
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Escopo -->
-                        <div class="wizard-panel" data-panel="3">
-                            <h3>Definir Escopo</h3>
-                            <div class="form-group">
-                                <label>O que está incluído no projeto?</label>
-                                <textarea id="wizardEscopoInclui" class="form-control" rows="3" placeholder="Liste as entregas e funcionalidades..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>O que NÃO está incluído?</label>
-                                <textarea id="wizardEscopoNaoInclui" class="form-control" rows="3" placeholder="Liste o que está fora do escopo..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Stakeholders (partes interessadas)</label>
-                                <input type="text" id="wizardStakeholders" class="form-control" placeholder="Ex: Diretoria, Cliente, Equipe de TI">
-                            </div>
-                            <div class="viabilidade-box" id="viabilidadeBox">
-                                <h4>📊 Análise de Viabilidade</h4>
-                                <div id="viabilidadeContent"></div>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Equipe -->
-                        <div class="wizard-panel" data-panel="4">
-                            <h3>Definir Equipe</h3>
-                            <div class="form-group">
-                                <label>Membros da Equipe</label>
-                                <input type="text" id="wizardEquipe" class="form-control" placeholder="Nomes separados por vírgula">
-                            </div>
-                            <div class="form-group">
-                                <label>Responsável pelo Projeto</label>
-                                <input type="text" id="wizardResponsavel" class="form-control" placeholder="Nome do gerente de projeto">
-                            </div>
-                            <div class="atividades-preview">
-                                <h4>Atividades do Template</h4>
-                                <div id="atividadesPreview"></div>
-                            </div>
-                        </div>
-
-                        <!-- Step 5: Revisão -->
-                        <div class="wizard-panel" data-panel="5">
-                            <h3>Revisão Final</h3>
-                            <div class="resumo-projeto" id="resumoProjeto"></div>
-                            <div class="wizard-actions">
-                                <button class="btn btn-secondary" onclick="Wizard.voltar()">Voltar</button>
-                                <button class="btn btn-primary" onclick="Wizard.criarProjeto()">Criar Projeto</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="wizard-nav">
-                        <button class="btn btn-outline" id="wizardPrev" onclick="Wizard.voltar()" disabled>← Anterior</button>
-                        <button class="btn btn-primary" id="wizardNext" onclick="Wizard.proximo()">Próximo →</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- DOWNLOADS -->
-        <section class="page-content" id="downloads">
-            <div class="container">
-                <div class="page-header">
-                    <h2>Downloads</h2>
-                </div>
-                <div class="downloads-grid">
-                    <div class="download-card">
-                        <h3>📱 Aplicativo Mobile</h3>
-                        <p>Baixe nosso aplicativo para gerenciamento de projetos em qualquer lugar.</p>
-                        <a href="releases/app-release.apk" class="btn btn-primary">Baixar APK</a>
-                    </div>
-                    <div class="download-card">
-                        <h3>📊 Planilha de Projetos</h3>
-                        <p>Template de planilha para controle de projetos no Excel/Google Sheets.</p>
-                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
-                    </div>
-                    <div class="download-card">
-                        <h3>📋 Template Kanban</h3>
-                        <p>Modelo de quadro Kanban para impressão ou uso digital.</p>
-                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
-                    </div>
-                    <div class="download-card">
-                        <h3>📝 Checklists</h3>
-                        <p>Conjunto de checklists para várias fases do projeto.</p>
-                        <button class="btn btn-primary" onclick="alert('Em breve!')">Em Breve</button>
-                    </div>
-                </div>
+        <!-- PROGRESS PAGE -->
+        <section class="page-content" id="progress">
+            <div class="card" id="progress-chart"></div>
+            
+            <div class="card" style="margin-top: 24px;">
+                <div id="progress-achievements"></div>
             </div>
         </section>
     </main>
 
-    <!-- MODAL NOVO PROJETO -->
-    <div class="modal" id="projetoModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Novo Projeto</h3>
-                <button class="close-btn">&times;</button>
+    <!-- Fullscreen Editor Overlay -->
+    <div id="fullscreen-container">
+        <div class="fullscreen-editor" id="fullscreen-editor">
+            <div class="editor-header">
+                <div class="exercise-info-fullscreen">
+                    <span class="exercise-title" id="fs-exercise-title"></span>
+                    <span class="language-badge" id="fs-language-badge"></span>
+                    <span class="exercise-difficulty" id="fs-exercise-difficulty"></span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-outline btn-sm" id="btn-solution-fullscreen">👁️ Solução</button>
+                    <button class="btn btn-success btn-sm" id="btn-complete-fullscreen">✓ Concluir</button>
+                </div>
             </div>
-            <form id="formNovoProjeto">
-                <div class="form-group">
-                    <label for="nome">Nome do Projeto</label>
-                    <input type="text" id="nome" required>
+            <p id="fs-exercise-desc" style="padding: 12px 16px; background: var(--secondary); border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-secondary);"></p>
+            <div class="editor-body">
+                <div class="code-panel">
+                    <textarea id="fs-code-editor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <textarea id="descricao" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Criar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL NOVA ATIVIDADE -->
-    <div class="modal" id="atividadeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Nova Atividade</h3>
-                <button class="close-btn" onclick="Mapa.fecharModal()">&times;</button>
-            </div>
-            <form id="formAtividade">
-                <input type="hidden" id="atividadeId">
-                <div class="form-group">
-                    <label for="nomeAtividade">Nome</label>
-                    <input type="text" id="nomeAtividade" required>
-                </div>
-                <!-- Sugestões ML -->
-                <div class="ml-suggestions" id="mlSuggestions" style="display:none;">
-                    <h4>Sugestões baseadas em IA</h4>
-                    <div class="suggestion-tags" id="suggestionTags"></div>
-                    <div class="ml-loading" id="mlLoading">Analisando padrões...</div>
-                </div>
-                <div class="form-group">
-                    <label for="descAtividade">Descrição</label>
-                    <textarea id="descAtividade" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="stackAtividade">Stack/Tecnologia</label>
-                    <select id="stackAtividade">
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="database">Database</option>
-                        <option value="cloud">Cloud</option>
-                        <option value="outro">Outro</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="prioridadeAtividade">Prioridade</label>
-                    <select id="prioridadeAtividade">
-                        <option value="baixa">Baixa</option>
-                        <option value="media" selected>Média</option>
-                        <option value="alta">Alta</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Dependência (atividade anterior)</label>
-                    <select id="dependenciaAtividade">
-                        <option value="">Nenhuma</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="equipeAtividade">Equipe/Departamento</label>
-                        <input type="text" id="equipeAtividade" placeholder="Ex: Desenvolvimento">
+                <div class="output-section">
+                    <div class="output-header">
+                        <span style="font-weight: 600;">📤 Saída</span>
+                        <button class="btn btn-primary btn-sm" id="btn-run-fullscreen">▶️ Executar (Ctrl+Enter)</button>
                     </div>
-                    <div class="form-group">
-                        <label for="responsavelAtividade">Responsável</label>
-                        <input type="text" id="responsavelAtividade" placeholder="Ex: João Silva">
-                    </div>
+                    <div id="output-fullscreen" class="output-content">Execute o código para ver o resultado...</div>
                 </div>
-                <button type="submit" class="btn btn-primary">Salvar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- PAINEL DETALHE DO NÓ -->
-    <div class="node-panel" id="nodePanel">
-        <div class="panel-content">
-            <button class="panel-close" onclick="Mapa.fecharPainel()">&times;</button>
-            <div class="panel-header">
-                <h3 id="panelTitulo">Atividade</h3>
-                <span class="badge" id="panelStatus">Planejamento</span>
-            </div>
-            <div class="panel-body">
-                <p id="panelDescricao"></p>
-                <div class="panel-meta">
-                    <span>🛠️ <span id="panelStack"></span></span>
-                    <span>📅 <span id="panelData"></span></span>
-                    <span>⚡ <span id="panelPrioridade"></span></span>
-                </div>
-                <div class="panel-dependencias">
-                    <h4>Dependências</h4>
-                    <div id="panelDependencias"></div>
-                </div>
-            </div>
-            <div class="panel-actions">
-                <select id="panelStatusSelect" onchange="Mapa.alterarStatus(this.value)">
-                    <option value="planejamento">Planejamento</option>
-                    <option value="andamento">Em Andamento</option>
-                    <option value="concluido">Concluído</option>
-                </select>
-                <button class="btn btn-danger" onclick="Mapa.excluirAtividadePainel()">Excluir</button>
             </div>
         </div>
     </div>
 
-    <div id="footer-placeholder"></div>
+    <!-- Exit Fullscreen Button -->
+    <button id="exit-fullscreen-btn" class="exit-fullscreen-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+        Sair da Tela Cheia
+    </button>
 
-    <script src="static/js/api-client.js"></script>
-    <script src="static/js/db.js"></script>
-    <script src="static/js/storage.js"></script>
-    <script src="static/js/export.js"></script>
-    <script src="static/js/keyboard.js"></script>
-    <script src="static/js/kanban.js"></script>
-    <script src="static/js/timeline.js"></script>
-    <script src="static/js/performance.js"></script>
-    <script src="static/js/insights.js"></script>
-    <script src="static/js/wizard.js"></script>
-    <script src="static/js/project-dashboard.js"></script>
-    <script src="static/js/components.js"></script>
+    <script src="static/js/training.js"></script>
     <script>
-        loadComponents();
-    </script>
-    <script src="static/js/theme.js"></script>
-    <script src="static/js/mapa.js"></script>
-    <script>
-    // Fluxograma simples: cria nós estáticos e desenha linhas SVG entre eles
-    (function(){
-        const defaultSteps = ['Backlog','Planejamento','Desenvolvimento','Testes','Concluído'];
-        let currentProjectId = null;
-
-        function clearFlow(){
-            const row = document.getElementById('flowRow');
-            if(row) row.innerHTML = '';
-            const svg = document.getElementById('flow-svg');
-            if(svg) svg.innerHTML = '';
-        }
-
-        // renderiza fluxograma a partir do projeto (usando armazenamento do Mapa)
-        function renderFlowForProject(projectId){
-            currentProjectId = projectId;
-            clearFlow();
-            const data = window.Mapa ? Mapa.getData() : null;
-            const projeto = data ? data.projetos.find(p => p.id === projectId) : null;
-            const atividades = data ? data.atividades.filter(a => a.projeto_id === projectId).sort((a,b)=>a.id-b.id) : [];
-
-            const title = document.getElementById('flowTitle');
-            if(title) title.textContent = projeto ? ('Fluxograma: ' + projeto.nome) : 'Fluxograma do Projeto';
-
-            const row = document.getElementById('flowRow');
-            if(!row) return;
-
-            // desenha nós (etapas)
-            defaultSteps.forEach((s, i)=>{
-                const node = document.createElement('div');
-                node.className = 'flow-node' + (s.length>10? ' small':'');
-                node.dataset.index = i;
-                node.innerHTML = '<span class="label">'+s+'</span>';
-                row.appendChild(node);
-            });
-
-            // draw connections after browser lays out nodes
-            requestAnimationFrame(()=> drawConnections(atividades));
-        }
-
-        function drawConnections(atividades){
-            const svg = document.getElementById('flow-svg');
-            if(!svg) return;
-            svg.innerHTML = '';
-            const nodes = Array.from(document.querySelectorAll('#flowRow .flow-node'));
-            if(nodes.length<2) return;
-            const container = document.getElementById('flowchart');
-            const cRect = container.getBoundingClientRect();
-
-            // add arrow marker defs once
-            const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-            const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
-            marker.setAttribute('id','arrow');
-            marker.setAttribute('markerWidth','8');
-            marker.setAttribute('markerHeight','8');
-            marker.setAttribute('refX','8');
-            marker.setAttribute('refY','4');
-            marker.setAttribute('orient','auto');
-            const arrowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
-            arrowPath.setAttribute('d','M0,0 L8,4 L0,8 z');
-            arrowPath.setAttribute('fill','#9bb7ff');
-            marker.appendChild(arrowPath);
-            defs.appendChild(marker);
-            svg.appendChild(defs);
-
-            nodes.forEach((n,i)=>{
-                if(i===nodes.length-1) return;
-                const a = n.getBoundingClientRect();
-                const b = nodes[i+1].getBoundingClientRect();
-                const startX = a.right - cRect.left;
-                const startY = a.top + a.height/2 - cRect.top;
-                const endX = b.left - cRect.left;
-                const endY = b.top + b.height/2 - cRect.top;
-
-                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-                const midX = (startX + endX)/2;
-                const d = `M ${startX} ${startY} C ${midX} ${startY} ${midX} ${endY} ${endX} ${endY}`;
-                path.setAttribute('d', d);
-                path.setAttribute('stroke', '#9bb7ff');
-                path.setAttribute('stroke-width','3');
-                path.setAttribute('fill','none');
-                path.setAttribute('marker-end','url(#arrow)');
-
-                // associa atividade (se existir) à conexão
-                const atividade = atividades && atividades[i] ? atividades[i] : null;
-                if (atividade) {
-                    path.dataset.atividadeId = atividade.id;
-                    path.title = atividade.nome;
-                    path.addEventListener('click', (ev)=>{
-                        ev.stopPropagation();
-                        if (window.Mapa) {
-                            Mapa.projetoAtual = currentProjectId;
-                            Mapa.editarAtividade(parseInt(path.dataset.atividadeId));
-                        }
-                    });
-                }
-
-                svg.appendChild(path);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', ()=>{
-            // expõe função global para ser chamada por Mapa.mostrarFluxograma
-            window.renderFlowForProjectId = renderFlowForProject;
-
-            const resetBtn = document.getElementById('resetFlow');
-            if(resetBtn) resetBtn.addEventListener('click', ()=>{
-                const title = document.getElementById('flowTitle'); if(title) title.textContent = 'Fluxograma do Projeto';
-                clearFlow();
-            });
-
-            window.addEventListener('resize', ()=> requestAnimationFrame(()=>{
-                if (!currentProjectId) return;
-                const data = window.Mapa ? Mapa.getData() : null;
-                const atividades = data ? data.atividades.filter(a => a.projeto_id === currentProjectId).sort((a,b)=>a.id-b.id) : [];
-                drawConnections(atividades);
-            }));
-        });
-    })();
-
-    // ========== ML SUGGESTIONS SYSTEM ==========
-    const AtividadeML = {
-        model: null,
-        useModel: null,
-        embeddings: [],
-        atividadesData: [],
-        isReady: false,
-
-        async init() {
-            try {
-                this.useModel = await use.load();
-                this.isReady = true;
-                console.log('ML Model loaded successfully');
-                await this.treinarModelo();
-            } catch (err) {
-                console.warn('ML não disponível, usando fallback:', err);
-                this.isReady = false;
-            }
-        },
-
-        async treinarModelo() {
-            this.atividadesData = [];
-            try {
-                const projetos = await DB.getAllProjetos();
-                for (const projeto of projetos) {
-                    try {
-                        const atividades = await DB.getAtividadesByProjeto(projeto._id);
-                        atividades.forEach(atk => {
-                            this.atividadesData.push({
-                                titulo: atk.titulo || '',
-                                descricao: atk.descricao || '',
-                                stack: atk.stack || '',
-                                projeto: projeto.nome || '',
-                                textoCompleto: `${atk.titulo || ''} ${atk.descricao || ''} ${projeto.nome || ''}`
-                            });
-                        });
-                    } catch (e) {}
-                }
-            } catch (err) {
-                console.log('Erro ao carregar dados para ML:', err);
-            }
-
-            if (this.atividadesData.length > 0 && this.useModel) {
-                const textos = this.atividadesData.map(a => a.textoCompleto);
-                this.embeddings = await this.useModel.embed(textos);
-                console.log(`ML treinado com ${this.atividadesData.length} atividades`);
-            }
-        },
-
-        async sugerir(textoProjeto, nomeProjeto) {
-            if (!this.isReady || this.atividadesData.length < 3) {
-                return this.sugestoesFallback(nomeProjeto);
-            }
-
-            const textoEntrada = `${textoProjeto || ''} ${nomeProjeto || ''}`;
-            const inputEmbedding = await this.useModel.embed([textoEntrada]);
-
-            const similarities = [];
-            for (let i = 0; i < this.embeddings.shape[0]; i++) {
-                const emb = this.embeddings.slice([i, 0], [1, this.embeddings.shape[1]]);
-                const sim = this.calcularSimilaridade(inputEmbedding, emb);
-                similarities.push({
-                    index: i,
-                    similarity: sim,
-                    ...this.atividadesData[i]
-                });
-            }
-
-            inputEmbedding.dispose();
+        // Override renderExerciseEditor to sync with fullscreen
+        const originalRender = App.renderExerciseEditor.bind(App);
+        App.renderExerciseEditor = function() {
+            originalRender();
             
-            const top5 = similarities
-                .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, 5);
-
-            return top5.map(s => ({
-                titulo: s.titulo,
-                stack: s.stack,
-                confidence: Math.round(s.similarity * 100)
-            }));
-        },
-
-        calcularSimilaridade(a, b) {
-            const aData = a.dataSync();
-            const bData = b.dataSync();
-            let dotProduct = 0;
-            let normA = 0;
-            let normB = 0;
-            for (let i = 0; i < aData.length; i++) {
-                dotProduct += aData[i] * bData[i];
-                normA += aData[i] * aData[i];
-                normB += bData[i] * bData[i];
-            }
-            return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB) + 0.0001);
-        },
-
-        sugestoesFallback(projetoNome) {
-            const sugestoesComuns = [
-                { titulo: 'Definir requisitos', stack: 'gestao', confidence: 85 },
-                { titulo: 'Criar protótipos', stack: 'design', confidence: 80 },
-                { titulo: 'Setup ambiente desenvolvimento', stack: 'backend', confidence: 75 },
-                { titulo: 'Implementar API', stack: 'backend', confidence: 70 },
-                { titulo: 'Criar interface', stack: 'frontend', confidence: 70 },
-                { titulo: 'Configurar banco de dados', stack: 'database', confidence: 65 },
-                { titulo: 'Implementar testes', stack: 'qa', confidence: 60 },
-                { titulo: 'Deploy produção', stack: 'cloud', confidence: 55 }
-            ];
-            return sugestoesComuns.slice(0, 4);
-        }
-    };
-
-    // Inicializar ML
-    AtividadeML.init();
-    window.AtividadeML = AtividadeML;
-
-    // Função global para recarregar dados ML
-    window.recarregarML = async function() {
-        if (typeof AtividadeML !== 'undefined' && AtividadeML.isReady) {
-            await AtividadeML.treinarModelo();
-            console.log('ML recarregado com novos dados');
-        }
-        await carregarAtividades();
-    };
-
-    // Recarregar dados quando o usuário navegar entre páginas
-    document.querySelectorAll('input[name="page"]').forEach(radio => {
-        radio.addEventListener('change', async () => {
-            await carregarAtividades();
-        });
-    });
-
-    // Verificar e recarregar ML a cada 30 segundos
-    setInterval(async () => {
-        await carregarAtividades();
-    }, 30000);
-    </script>
-    <script>
-const API_URL = 'http://localhost:5000/api';
-        let todasAtividades = [];
-        let useApi = false;
+            const exercises = EXERCISES[this.currentLanguage];
+            const exercise = exercises.find(e => e.id === this.currentExercise);
+            if (!exercise) return;
+            
+            const info = LANGUAGE_INFO[this.currentLanguage];
+            const progress = this.currentUser.progress[this.currentLanguage];
+            const isCompleted = progress.completed.includes(exercise.id);
+            const savedCode = this.currentUser.code?.[`${this.currentLanguage}_${exercise.id}`] || exercise.starter;
+            
+            // Update fullscreen elements
+            document.getElementById('fs-exercise-title').textContent = exercise.title;
+            document.getElementById('fs-exercise-desc').textContent = exercise.description;
+            document.getElementById('fs-language-badge').className = `language-badge ${this.currentLanguage}`;
+            document.getElementById('fs-language-badge').innerHTML = `${info.icon} ${info.name}`;
+            document.getElementById('fs-exercise-difficulty').className = `exercise-difficulty difficulty-${exercise.difficulty}`;
+            document.getElementById('fs-exercise-difficulty').textContent = exercise.difficulty;
+            document.getElementById('fs-code-editor').value = savedCode;
+            
+            document.getElementById('btn-solution-fullscreen').style.display = isCompleted ? 'none' : 'inline-flex';
+            document.getElementById('btn-complete-fullscreen').style.display = isCompleted ? 'none' : 'inline-flex';
+            document.getElementById('output-fullscreen').textContent = 'Execute o código para ver o resultado...';
+            document.getElementById('output-fullscreen').className = 'output-content';
+        };
         
-        const atividadeInput = document.getElementById('atividadeAutocomplete');
-        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        // Sync code from normal editor to fullscreen when typing
+        document.getElementById('code-editor')?.addEventListener('input', function() {
+            const fsEditor = document.getElementById('fs-code-editor');
+            if (fsEditor && App.isFullscreen) {
+                fsEditor.value = this.value;
+            }
+        });
         
-        // Carregar atividades do DB
-        async function carregarAtividades() {
-            try {
-                const projetos = await DB.getAllProjetos();
-                todasAtividades = [];
-                for (const projeto of projetos) {
-                    try {
-                        const atks = await DB.getAtividadesByProjeto(projeto._id);
-                        atks.forEach(atk => {
-                            todasAtividades.push({
-                                id: atk._id,
-                                titulo: atk.titulo,
-                                descricao: atk.descricao || '',
-                                projeto: projeto.nome,
-                                status: atk.status
-                            });
-                        });
-                    } catch (e) {}
-                }
-            } catch (err) {
-                console.log('Erro ao carregar atividades:', err);
+        // Sync code from fullscreen to normal editor when typing
+        document.getElementById('fs-code-editor')?.addEventListener('input', function() {
+            const normalEditor = document.getElementById('code-editor');
+            if (normalEditor) {
+                normalEditor.value = this.value;
             }
-        }
-
-        function filtrarAtividades(termo) {
-            if (!termo) return [];
-            return todasAtividades.filter(atk => 
-                atk.titulo.toLowerCase().includes(termo.toLowerCase()) ||
-                atk.projeto.toLowerCase().includes(termo.toLowerCase())
-            ).slice(0, 10);
-        }
-
-        function mostrarDropdown(itens) {
-            if (itens.length === 0) {
-                autocompleteDropdown.classList.remove('show');
-                return;
-            }
-            autocompleteDropdown.innerHTML = itens.map(atk => `
-                <div class="autocomplete-item" data-id="${atk.id}" data-titulo="${atk.titulo}">
-                    <div class="item-title">${atk.titulo}</div>
-                    <div class="item-subtitle">${atk.projeto} - ${atk.status}</div>
-                </div>
-            `).join('');
-            autocompleteDropdown.classList.add('show');
-        }
-
-        if (atividadeInput) {
-            atividadeInput.addEventListener('input', async function() {
-                await carregarAtividades();
-                const termo = this.value.trim();
-                const itens = filtrarAtividades(termo);
-                mostrarDropdown(itens);
-            });
-
-            atividadeInput.addEventListener('focus', async function() {
-                await carregarAtividades();
-                const termo = this.value.trim();
-                const itens = filtrarAtividades(termo);
-                mostrarDropdown(itens);
-            });
-
-            autocompleteDropdown.addEventListener('click', function(e) {
-                const item = e.target.closest('.autocomplete-item');
-                if (item) {
-                    const titulo = item.dataset.titulo;
-                    atividadeInput.value = titulo;
-                    autocompleteDropdown.classList.remove('show');
-                    
-                    // Rolar até a atividade no fluxograma
-                    if (window.Mapa) {
-                        const atividadeId = parseInt(item.dataset.id);
-                        const nodes = document.querySelectorAll('.flow-node');
-                        nodes.forEach(node => {
-                            if (node.textContent.includes(titulo)) {
-                                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                node.style.animation = 'pulse 0.5s ease 3';
-                            }
-                        });
-                    }
-                }
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!atividadeInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-                    autocompleteDropdown.classList.remove('show');
-                }
-            });
-        }
-
-        // Event listeners para o formulário de atividade
-        const descAtividadeInput = document.getElementById('descAtividade');
-        const mlSuggestions = document.getElementById('mlSuggestions');
-        const suggestionTags = document.getElementById('suggestionTags');
-        const mlLoading = document.getElementById('mlLoading');
-
-        if (descAtividadeInput) {
-            let timeout = null;
-            descAtividadeInput.addEventListener('input', async function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(async () => {
-                    const descricao = this.value;
-                    const nomeInput = document.getElementById('nomeAtividade');
-                    const nome = nomeInput ? nomeInput.value : '';
-                    
-                    if (descricao.length > 3 || nome.length > 3) {
-                        mlSuggestions.style.display = 'block';
-                        mlLoading.style.display = 'block';
-                        suggestionTags.innerHTML = '';
-
-                        const sugestoes = await AtividadeML.sugerir(descricao, nome);
-                        
-                        mlLoading.style.display = 'none';
-                        suggestionTags.innerHTML = sugestoes.map(s => `
-                            <span class="suggestion-tag" onclick="aplicarSugestao('${s.titulo}', '${s.stack || ''}')">
-                                ${s.titulo}
-                                <span class="confidence">${s.confidence}%</span>
-                            </span>
-                        `).join('');
-                    }
-                }, 800);
-            });
-        }
-
-        function aplicarSugestao(titulo, stack) {
-            const nomeInput = document.getElementById('nomeAtividade');
-            const stackSelect = document.getElementById('stackAtividade');
-            
-            if (nomeInput) nomeInput.value = titulo;
-            if (stackSelect && stack) {
-                const option = Array.from(stackSelect.options).find(opt => 
-                    opt.value.toLowerCase().includes(stack.toLowerCase())
-                );
-                if (option) stackSelect.value = option.value;
-            }
-        }
-        window.aplicarSugestao = aplicarSugestao;
-    </script>
-
-    <!-- MODAL PAGAMENTO PIX -->
-    <div class="modal" id="modalPagamento">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header">
-                <h3>💳 Pagamento via PIX</h3>
-                <button class="close-btn" onclick="Planos.fecharModalPagamento()">&times;</button>
-            </div>
-            <div id="pagamentoContent">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="background: #f0f0f0; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                        <div style="font-size: 14px; color: var(--text-muted);">Plano</div>
-                        <div style="font-size: 24px; font-weight: bold;" id="pagamentoPlanoNome">Pro</div>
-                        <div style="font-size: 32px; color: var(--success); font-weight: bold;">
-                            R$ <span id="pagamentoValor">29</span><span style="font-size: 14px; color: var(--text-muted);">/mês</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Seu nome completo</label>
-                    <input type="text" id="pagamentoNome" class="form-control" placeholder="Digite seu nome">
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Seu email</label>
-                    <input type="email" id="pagamentoEmail" class="form-control" placeholder="seu@email.com">
-                </div>
-
-                <div style="background: var(--accent-light); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="font-weight: 600; margin-bottom: 12px;">📱 Dados para transferência:</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="color: var(--text-muted);">Chave PIX:</span>
-                        <span style="font-weight: 600; font-family: monospace;" id="chavePixDisplay">projetosdinamicos@gmail.com</span>
-                    </div>
-                    <button class="btn btn-sm" onclick="Planos.copiarChavePix()" style="width: 100%;">📋 Copiar Chave PIX</button>
-                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
-                        <strong>Instruções:</strong><br>
-                        1. Abra o app do seu banco<br>
-                        2. Escolha PIX ou Transferência<br>
-                        3. Cole a chave PIX acima<br>
-                        4. Digite o valor de R$ <span id="valorPix">29</span>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Link do comprovante (opcional)</label>
-                    <input type="url" id="pagamentoComprovante" class="form-control" placeholder="URL da imagem ou arquivo do comprovante">
-                    <small style="color: var(--text-muted);"> Você pode enviar a imagem do comprovante depois pelo WhatsApp</small>
-                </div>
-
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-secondary" onclick="Planos.fecharModalPagamento()" style="flex: 1;">Cancelar</button>
-                    <button class="btn btn-primary" onclick="Planos.confirmarPagamento()" style="flex: 1;">✅ Confirmar Pagamento</button>
-                </div>
-
-                <div style="margin-top: 16px; text-align: center;">
-                    <a href="https://api.whatsapp.com/send?text=Olá, fiz o pagamento do plano e gostaria de confirmar" target="_blank" style="color: var(--accent); font-size: 14px;">
-                        💬 Falar no WhatsApp
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIRMAÇÃO -->
-    <div class="modal" id="modalConfirmacao">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
-            <h3>Pagamento Confirmado!</h3>
-            <p>Sua assinatura foi ativada com sucesso.</p>
-            <p style="color: var(--text-muted); font-size: 14px;">
-                Você agora tem acesso a todos os recursos premium.<br>
-                O período de teste começa agora e termina em 30 dias.
-            </p>
-            <button class="btn btn-primary" onclick="document.getElementById('modalConfirmacao').classList.remove('active'); Planos.renderizarPlanos();" style="width: 100%; margin-top: 16px;">
-                Ótimo, thanks!
-            </button>
-        </div>
-    </div>
-
-    <script>
-    // ========== SISTEMA DE PLANOS ==========
-    const Planos = {
-        planoSelecionado: null,
-
-        init() {
-            this.atualizarPlanoDisplay();
-            this.renderizarPlanos();
-            this.renderizarAssinaturas();
-        },
-
-        atualizarPlanoDisplay() {
-            const plano = PlanoStore.getPlano();
-            const planoDiv = document.getElementById('planoAtual');
-            const nomeSpan = document.getElementById('planoAtualNome');
-            const statusSpan = document.getElementById('planoStatus');
-
-            if (plano.tipo !== 'gratuito' && plano.pago) {
-                planoDiv.style.display = 'block';
-                nomeSpan.textContent = plano.tipo.charAt(0).toUpperCase() + plano.tipo.slice(1);
-                statusSpan.textContent = '✅ Ativo';
-                statusSpan.style.background = 'var(--success)';
-                statusSpan.style.color = 'white';
-            } else {
-                planoDiv.style.display = 'none';
-            }
-        },
-
-        renderizarPlanos() {
-            const grid = document.getElementById('plansGrid');
-            const planoAtual = PlanoStore.getPlano();
-            
-            let html = '';
-            
-            Object.values(PLANOS).forEach(plano => {
-                const isAtual = planoAtual.tipo === plano.id;
-                const isPro = plano.id === 'pro';
-                
-                html += '<div class="plan-card' + (isPro ? ' featured' : '') + '">';
-                
-                if (isPro && !planoAtual.pago) {
-                    html += '<div class="plan-badge">Mais Popular</div>';
-                }
-                
-                html += '<div class="plan-header">' +
-                    '<h3>' + plano.nome + '</h3>' +
-                    '<div class="plan-price">R$ ' + plano.preco + '<span>/mês</span></div>' +
-                    '</div>' +
-                    '<ul class="plan-features">';
-                
-                plano.features.forEach(f => {
-                    html += '<li>' + f + '</li>';
-                });
-                
-                html += '</ul>';
-                
-                if (isAtual && plano.pago) {
-                    html += '<button class="btn btn-outline" disabled>✓ Plano atual</button>';
-                } else if (plano.preco === 0) {
-                    html += '<button class="btn btn-outline" disabled>Plano gratuito</button>';
-                } else {
-                    const btnClass = isPro ? 'btn btn-primary' : 'btn btn-secondary';
-                    html += '<button class="' + btnClass + '" onclick="Planos.abrirModalPagamento(\'' + plano.id + '\')">Assinar</button>';
-                }
-                
-                html += '</div>';
-            });
-            
-            grid.innerHTML = html;
-        },
-
-        abrirModalPagamento(planoId) {
-            this.planoSelecionado = PLANOS[planoId];
-            if (!this.planoSelecionado) return;
-
-            document.getElementById('pagamentoPlanoNome').textContent = this.planoSelecionado.nome;
-            document.getElementById('pagamentoValor').textContent = this.planoSelecionado.preco;
-            document.getElementById('valorPix').textContent = this.planoSelecionado.preco;
-            document.getElementById('chavePixDisplay').textContent = PagamentoConfig.chavePix;
-
-            document.getElementById('modalPagamento').classList.add('active');
-        },
-
-        fecharModalPagamento() {
-            document.getElementById('modalPagamento').classList.remove('active');
-            this.planoSelecionado = null;
-        },
-
-        copiarChavePix() {
-            navigator.clipboard.writeText(PagamentoConfig.chavePix).then(() => {
-                alert('Chave PIX copiada!');
-            });
-        },
-
-        confirmarPagamento() {
-            const nome = document.getElementById('pagamentoNome').value.trim();
-            const email = document.getElementById('pagamentoEmail').value.trim();
-            const comprovante = document.getElementById('pagamentoComprovante').value.trim();
-
-            if (!nome || !email) {
-                alert('Por favor, preencha seu nome e email.');
-                return;
-            }
-
-            if (!this.planoSelecionado) {
-                alert('Erro: plano não selecionado');
-                return;
-            }
-
-            const pagamento = PagamentoStore.criar({
-                plano: this.planoSelecionado.id,
-                planoNome: this.planoSelecionado.nome,
-                valor: this.planoSelecionado.preco,
-                nome: nome,
-                email: email,
-                comprovante: comprovante,
-                chavePix: PagamentoConfig.chavePix
-            });
-
-            PlanoStore.ativarPlano(this.planoSelecionado.id, { nome, email });
-
-            AssinaturaStore.adicionar({
-                planoId: this.planoSelecionado.id,
-                planoNome: this.planoSelecionado.nome,
-                valor: this.planoSelecionado.preco,
-                pagamentoId: pagamento.id,
-                status: 'ATIVA'
-            });
-
-            this.fecharModalPagamento();
-            document.getElementById('modalConfirmacao').classList.add('active');
-            this.renderizarAssinaturas();
-        },
-
-        renderizarAssinaturas() {
-            const lista = document.getElementById('assinaturasLista');
-            const assinaturas = AssinaturaStore.getAll();
-            
-            if (assinaturas.length === 0) {
-                lista.innerHTML = '<p style="color: var(--text-muted);">Nenhuma assinatura ainda.</p>';
-                return;
-            }
-
-            const html = assinaturas.slice().reverse().map(a => `
-                <div style="padding: 12px; background: var(--primary); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>${a.planoNome}</strong>
-                        <span style="color: var(--text-muted); margin-left: 8px;">R$ ${a.valor}/mês</span>
-                    </div>
-                    <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: ${a.status === 'ATIVA' ? 'var(--success)' : 'var(--warning)'}; color: white;">
-                        ${a.status}
-                    </span>
-                </div>
-            `).join('');
-
-            lista.innerHTML = html;
-        }
-    };
-
-    window.Planos = Planos;
-    Planos.init();
+            App.saveCode();
+        });
+        
+        // Override runCodeFullscreen to save code first
+        const originalRunFullscreen = App.runCodeFullscreen.bind(App);
+        App.runCodeFullscreen = function() {
+            const code = document.getElementById('fs-code-editor').value;
+            const normalEditor = document.getElementById('code-editor');
+            if (normalEditor) normalEditor.value = code;
+            App.saveCode();
+            originalRunFullscreen();
+        };
+        
+        // Override showSolutionFullscreen
+        const originalSolutionFullscreen = App.showSolutionFullscreen.bind(App);
+        App.showSolutionFullscreen = function() {
+            originalSolutionFullscreen();
+            const code = document.getElementById('code-editor').value;
+            document.getElementById('fs-code-editor').value = code;
+        };
     </script>
 </body>
+</html>
