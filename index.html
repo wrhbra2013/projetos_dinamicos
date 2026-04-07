@@ -746,6 +746,19 @@
                 }
             });
         });
+
+        // Reset localStorage (desenvolvimento)
+        function resetProjects() {
+            localStorage.removeItem('pd_projects');
+            loadProjects();
+            renderAll();
+            alert('Projetos resetados!');
+        }
     </script>
+    
+    <!-- Botão de debug - remover em produção -->
+    <button onclick="resetProjects()" style="position: fixed; bottom: 10px; right: 10px; padding: 8px 12px; background: #333; color: #fff; border: 1px solid #555; border-radius: 6px; font-size: 12px; cursor: pointer; z-index: 9999;">
+        🔄 Resetar
+    </button>
 </body>
 </html>
