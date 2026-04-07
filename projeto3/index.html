@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceOrganizer - Organizador Financeiro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header" onclick="window.location.href='../../index.html'">
+        <h1><span>💰</span> FinanceOrganizer</h1>
+    </header>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../../index.html" class="back-link">← Voltar</a>
+                <h2>💰 FinanceOrganizer</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+                    <span>📊</span> Dashboard
+                </button>
+                <button class="nav-btn" data-view="receitas" onclick="switchView('receitas')">
+                    <span>📈</span> Receitas
+                </button>
+                <button class="nav-btn" data-view="despesas" onclick="switchView('despesas')">
+                    <span>📉</span> Despesas
+                </button>
+                <button class="nav-btn" data-view="metas" onclick="switchView('metas')">
+                    <span>🎯</span> Metas
+                </button>
+                <button class="nav-btn" data-view="relatorios" onclick="switchView('relatorios')">
+                    <span>📋</span> Relatórios
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="balance-summary">
+                    <span>Saldo Atual</span>
+                    <strong id="header-balance">R$ 0,00</strong>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- DASHBOARD -->
+            <div class="view active" id="view-dashboard">
+                <div class="view-header">
+                    <h1>Dashboard Financeiro</h1>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card income">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="dash-receitas">R$ 0,00</span>
+                            <span class="stat-label">Receitas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card expense">
+                        <div class="stat-icon">📉</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="dash-despesas">R$ 0,00</span>
+                            <span class="stat-label">Despesas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card balance">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="dash-saldo">R$ 0,00</span>
+                            <span class="stat-label">Saldo</span>
+                        </div>
+                    </div>
+                    <div class="stat-card goals">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="dash-metas">0</span>
+                            <span class="stat-label">Metas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>📊 Últimas Transações</h3>
+                        <div id="recent-transactions" class="transaction-list"></div>
+                    </div>
+                    <div class="card">
+                        <h3>🎯 Progresso das Metas</h3>
+                        <div id="goals-progress" class="goals-list"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Gastos por Categoria</h3>
+                    <div id="category-chart" class="chart-bars"></div>
+                </div>
+            </div>
+
+            <!-- RECEITAS -->
+            <div class="view" id="view-receitas">
+                <div class="view-header">
+                    <h1>Receitas</h1>
+                    <button class="btn btn-primary" onclick="openModal('receita')">+ Nova Receita</button>
+                </div>
+                
+                <div class="summary-box">
+                    <span>Total de Receitas:</span>
+                    <strong id="total-receitas">R$ 0,00</strong>
+                </div>
+
+                <div class="card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receitas-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DESPESAS -->
+            <div class="view" id="view-despesas">
+                <div class="view-header">
+                    <h1>Despesas</h1>
+                    <button class="btn btn-primary" onclick="openModal('despesa')">+ Nova Despesa</button>
+                </div>
+                
+                <div class="summary-box">
+                    <span>Total de Despesas:</span>
+                    <strong id="total-despesas">R$ 0,00</strong>
+                </div>
+
+                <div class="card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="despesas-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- METAS -->
+            <div class="view" id="view-metas">
+                <div class="view-header">
+                    <h1>Metas de Economia</h1>
+                    <button class="btn btn-primary" onclick="openModal('meta')">+ Nova Meta</button>
+                </div>
+                
+                <div class="goals-grid" id="goals-grid"></div>
+            </div>
+
+            <!-- RELATÓRIOS -->
+            <div class="view" id="view-relatorios">
+                <div class="view-header">
+                    <h1>Relatórios</h1>
+                </div>
+                
+                <div class="report-filters">
+                    <select id="report-month" onchange="renderReports()">
+                        <option value="">Selecione o mês</option>
+                    </select>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card income">
+                        <div class="stat-info">
+                            <span class="stat-value" id="report-receitas">R$ 0,00</span>
+                            <span class="stat-label">Receitas do Mês</span>
+                        </div>
+                    </div>
+                    <div class="stat-card expense">
+                        <div class="stat-info">
+                            <span class="stat-value" id="report-despesas">R$ 0,00</span>
+                            <span class="stat-label">Despesas do Mês</span>
+                        </div>
+                    </div>
+                    <div class="stat-card balance">
+                        <div class="stat-info">
+                            <span class="stat-value" id="report-saldo">R$ 0,00</span>
+                            <span class="stat-label">Saldo do Mês</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Comparativo Mensal</h3>
+                    <div id="monthly-comparison" class="chart-bars"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nova Receita -->
+    <div class="modal" id="modal-receita">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Receita</h2>
+                <button class="modal-close" onclick="closeModal('receita')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="addReceita(event)">
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="receita-desc" required placeholder="Ex: Salário">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="receita-valor" step="0.01" min="0" required placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="receita-data" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="receita-categoria">
+                        <option value="salario">Salário</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="investimento">Investimento</option>
+                        <option value="presente">Presente</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('receita')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nova Despesa -->
+    <div class="modal" id="modal-despesa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Despesa</h2>
+                <button class="modal-close" onclick="closeModal('despesa')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="addDespesa(event)">
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="despesa-desc" required placeholder="Ex: Alimentação">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="despesa-valor" step="0.01" min="0" required placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="despesa-data" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="despesa-categoria">
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="transporte">Transporte</option>
+                        <option value="moradia">Moradia</option>
+                        <option value="lazer">Lazer</option>
+                        <option value="saude">Saúde</option>
+                        <option value="educacao">Educação</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('despesa')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nova Meta -->
+    <div class="modal" id="modal-meta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Meta</h2>
+                <button class="modal-close" onclick="closeModal('meta')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="addMeta(event)">
+                <div class="form-group">
+                    <label>Nome da Meta</label>
+                    <input type="text" id="meta-nome" required placeholder="Ex: Viagem">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor Target</label>
+                        <input type="number" id="meta-valor" step="0.01" min="0" required placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Limite</label>
+                        <input type="date" id="meta-data" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="meta-desc" rows="2" placeholder="Descrição da meta..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('meta')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Meta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

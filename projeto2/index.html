@@ -14,12 +14,7 @@
     <link rel="stylesheet" href="static/css/training.css">
 </head>
 <body>
-    <input type="radio" name="page" id="page-login" checked>
-    <input type="radio" name="page" id="page-dashboard">
-    <input type="radio" name="page" id="page-exercises">
-    <input type="radio" name="page" id="page-progress">
-
-    <header class="header">
+    <header class="header" onclick="window.location.href='../../index.html'">
         <div class="logo">
             <span>💻</span>
             <span>CodeTrain</span>
@@ -168,7 +163,10 @@
 
     <script src="static/js/training.js"></script>
     <script>
-        // Override renderExerciseEditor to sync with fullscreen
+        document.getElementById('login-name').style.pointerEvents = 'auto';
+        document.getElementById('login-name').style.opacity = '1';
+        document.getElementById('login-name').style.visibility = 'visible';
+
         const originalRender = App.renderExerciseEditor.bind(App);
         App.renderExerciseEditor = function() {
             originalRender();

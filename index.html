@@ -7,271 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            --bg: #0f0f0f;
-            --bg2: #1a1a1a;
-            --bg3: #252525;
-            --border: #333;
-            --text: #fff;
-            --text2: #999;
-            --accent: #6366f1;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg2);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .header h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
-        .header h1 span { font-size: 24px; }
-
-        /* Nav Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 4px;
-        }
-
-        .nav-tab {
-            padding: 10px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text2);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        .nav-tab:hover { background: var(--bg3); color: var(--text); }
-        .nav-tab.active { background: var(--accent); color: white; }
-
-        /* Main */
-        .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
-
-        .view { display: none; }
-        .view.active { display: block; }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .stat-icon { font-size: 28px; }
-        .stat-info h3 { font-size: 28px; font-weight: 700; }
-        .stat-info p { font-size: 13px; color: var(--text2); }
-
-        /* Section Title */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title { font-size: 18px; font-weight: 600; }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: #5558e3; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-outline:hover { background: var(--bg3); }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
-
-        /* Cards Grid */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            transition: 0.3s;
-        }
-
-        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .card-icon { font-size: 40px; }
-        .card-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .badge-active { background: rgba(34,197,94,0.2); color: var(--success); }
-        .badge-inactive { background: rgba(239,68,68,0.2); color: var(--danger); }
-
-        .card h3 { font-size: 18px; margin-bottom: 8px; }
-        .card p { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 16px; }
-
-        .card-actions { display: flex; gap: 8px; }
-
-        /* Table */
-        .table-container { overflow-x: auto; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--bg2);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: var(--bg3);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text2);
-            text-transform: uppercase;
-        }
-
-        td { font-size: 14px; }
-
-        tr:hover td { background: var(--bg3); }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 480px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .modal-header h2 { font-size: 18px; }
-        .modal-close { background: none; border: none; color: var(--text2); font-size: 24px; cursor: pointer; }
-
-        .modal-body { padding: 24px; }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-
-        /* Chart Placeholder */
-        .chart-box {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-
-        .chart-box h3 { font-size: 16px; margin-bottom: 20px; }
-
-        .bar-chart { display: flex; align-items: flex-end; gap: 20px; height: 150px; padding-top: 20px; }
-        .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .bar { width: 100%; max-width: 60px; border-radius: 6px 6px 0 0; transition: 0.3s; }
-        .bar-label { font-size: 12px; color: var(--text2); }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .nav-tabs { display: none; }
-            .header { cursor: default; }
-        }
-    </style>
+    <link rel="stylesheet" href="dashboard/css/style.css">
 </head>
 <body>
-    <header class="header" onclick="showDashboard()">
-        <h1><span>🚀</span> Projetos Dinâmicos</h1>
+    <header class="header">
+        <h1 id="header-logo" onclick="backToDashboard()"><span>🚀</span> Projetos Dinâmicos</h1>
+        <div class="header-center">
+            <select id="project-select" onchange="setDefaultProject(this.value)">
+                <option value="">Selecione um projeto padrão</option>
+            </select>
+        </div>
         <div class="nav-tabs" onclick="event.stopPropagation()">
             <button class="nav-tab active" data-view="dashboard" onclick="switchView('dashboard')">Dashboard</button>
             <button class="nav-tab" data-view="cards" onclick="switchView('cards')">Projetos</button>
@@ -281,7 +26,6 @@
     </header>
 
     <main class="main">
-        <!-- Dashboard -->
         <div class="view active" id="view-dashboard">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -322,7 +66,6 @@
             <div class="cards-grid" id="dashboard-cards"></div>
         </div>
 
-        <!-- Cards View -->
         <div class="view" id="view-cards">
             <div class="section-header">
                 <h2 class="section-title">📂 Gerenciar Projetos</h2>
@@ -331,7 +74,6 @@
             <div class="cards-grid" id="cards-grid"></div>
         </div>
 
-        <!-- Lista View -->
         <div class="view" id="view-lista">
             <div class="section-header">
                 <h2 class="section-title">📋 Lista de Projetos</h2>
@@ -353,7 +95,6 @@
             </div>
         </div>
 
-        <!-- Estatísticas View -->
         <div class="view" id="view-estatisticas">
             <h2 class="section-title" style="margin-bottom: 24px;">📊 Estatísticas Gerais</h2>
             
@@ -400,7 +141,6 @@
         </div>
     </main>
 
-    <!-- Modal Novo Projeto -->
     <div class="modal" id="modal-novo">
         <div class="modal-content">
             <div class="modal-header">
@@ -431,7 +171,6 @@
         </div>
     </div>
 
-    <!-- Modal Excluir -->
     <div class="modal" id="modal-excluir">
         <div class="modal-content">
             <div class="modal-header">
@@ -448,7 +187,6 @@
         </div>
     </div>
 
-    <!-- Modal Abrir Projeto -->
     <div class="modal" id="modal-abrir">
         <div class="modal-content">
             <div class="modal-header">
@@ -465,300 +203,10 @@
         </div>
     </div>
 
-    <script>
-        console.log('Projetos Dinâmicos - JS Carregado');
-        
-        let projects = [];
-        let deleteTarget = null;
-        let openTarget = null;
-
-        const projectTemplates = {
-            gestao: {
-                id: 'gestao',
-                nome: 'Gestão de Projetos',
-                desc: 'Sistema completo de gerenciamento visual com mapa interativo, fluxogramas, processos e quadro Kanban.',
-                icon: '📊',
-                url: 'projeto1/index.html',
-                status: 'ativo'
-            },
-            treinamento: {
-                id: 'treinamento',
-                nome: 'Plataforma de Treinamento',
-                desc: 'Aprenda e pratique programação com exercícios interativos em Python, JavaScript, Java, C++ e Go.',
-                icon: '💻',
-                url: 'projeto2/index.html',
-                status: 'ativo'
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProjects();
-            renderAll();
-        });
-
-        function loadProjects() {
-            const saved = localStorage.getItem('pd_projects');
-            if (saved) {
-                projects = JSON.parse(saved);
-            } else {
-                projects = [
-                    { id: Date.now() + 1, ...projectTemplates.gestao, created: Date.now() },
-                    { id: Date.now() + 2, ...projectTemplates.treinamento, created: Date.now() }
-                ];
-                saveProjects();
-            }
-        }
-
-        function saveProjects() {
-            localStorage.setItem('pd_projects', JSON.stringify(projects));
-        }
-
-        function renderAll() {
-            renderCards();
-            renderTable();
-            renderDashboard();
-            renderStats();
-        }
-
-        function switchView(view) {
-            document.querySelectorAll('.nav-tab').forEach(t => {
-                t.classList.toggle('active', t.dataset.view === view);
-            });
-            document.querySelectorAll('.view').forEach(v => {
-                v.classList.toggle('active', v.id === 'view-' + view);
-            });
-        }
-
-        function showDashboard() {
-            switchView('dashboard');
-        }
-
-        function renderDashboard() {
-            const container = document.getElementById('dashboard-cards');
-            const recentProjects = projects.slice(0, 6);
-
-            container.innerHTML = recentProjects.map(p => `
-                <div class="card" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">
-                    <div class="card-header">
-                        <span class="card-icon">${p.icon}</span>
-                        <span class="card-badge ${p.status === 'ativo' ? 'badge-active' : 'badge-inactive'}">${p.status}</span>
-                    </div>
-                    <h3>${p.nome}</h3>
-                    <p>${p.desc}</p>
-                </div>
-            `).join('') || '<p style="color: var(--text2)">Nenhum projeto</p>';
-
-            updateStats();
-        }
-
-        function renderCards() {
-            const container = document.getElementById('cards-grid');
-            container.innerHTML = projects.map(p => `
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">${p.icon}</span>
-                        <span class="card-badge ${p.status === 'ativo' ? 'badge-active' : 'badge-inactive'}">${p.status}</span>
-                    </div>
-                    <h3>${p.nome}</h3>
-                    <p>${p.desc}</p>
-                    <div class="card-actions">
-                        <button class="btn btn-sm ${p.status === 'ativo' ? 'btn-outline' : 'btn-primary'}" onclick="toggleStatus('${p.id}')">
-                            ${p.status === 'ativo' ? 'Desativar' : 'Ativar'}
-                        </button>
-                        <button class="btn btn-sm btn-primary" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">🚀 Abrir</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">🗑️</button>
-                    </div>
-                </div>
-            `).join('') || '<p style="color: var(--text2)">Nenhum projeto</p>';
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = projects.map(p => `
-                <tr>
-                    <td><strong>${p.icon} ${p.nome}</strong></td>
-                    <td style="max-width: 300px; color: var(--text2)">${p.desc}</td>
-                    <td>${formatDate(p.created)}</td>
-                    <td>
-                        <span class="status-badge ${p.status === 'ativo' ? 'badge-active' : 'badge-inactive'}">${p.status}</span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">🚀</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">🗑️</button>
-                    </td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" style="text-align: center; color: var(--text2)">Nenhum projeto</td></tr>';
-        }
-
-        function renderStats() {
-            const total = projects.length;
-            const ativos = projects.filter(p => p.status === 'ativo').length;
-            const inativos = projects.filter(p => p.status === 'inativo').length;
-            const recent = projects.filter(p => Date.now() - p.created < 30 * 24 * 60 * 60 * 1000).length;
-
-            document.getElementById('estat-total').textContent = total;
-            document.getElementById('estat-ativos').textContent = ativos;
-            document.getElementById('estat-inativos').textContent = inativos;
-            document.getElementById('estat-recentes').textContent = recent;
-
-            // Chart
-            const chart = document.getElementById('chart-status');
-            const max = Math.max(ativos, inativos, 1);
-            chart.innerHTML = `
-                <div class="bar-item">
-                    <div class="bar" style="height: ${(ativos / max) * 120}px; background: var(--success);"></div>
-                    <span class="bar-label">Ativos (${ativos})</span>
-                </div>
-                <div class="bar-item">
-                    <div class="bar" style="height: ${(inativos / max) * 120}px; background: var(--danger);"></div>
-                    <span class="bar-label">Inativos (${inativos})</span>
-                </div>
-            `;
-
-            // Timeline
-            const timeline = document.getElementById('chart-timeline');
-            timeline.innerHTML = projects.map(p => `
-                <div style="margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                        <span>${p.icon} ${p.nome}</span>
-                        <span style="color: var(--text2); font-size: 12px">${formatDate(p.created)}</span>
-                    </div>
-                    <div style="height: 8px; background: var(--bg3); border-radius: 4px;">
-                        <div style="height: 100%; width: ${p.status === 'ativo' ? '100' : '40'}%; background: ${p.status === 'ativo' ? 'var(--success)' : 'var(--warning)'}; border-radius: 4px;"></div>
-                    </div>
-                </div>
-            `).join('') || '<p style="color: var(--text2)">Nenhum projeto</p>';
-        }
-
-        function updateStats() {
-            const total = projects.length;
-            const ativos = projects.filter(p => p.status === 'ativo').length;
-            const inativos = projects.filter(p => p.status === 'inativo').length;
-
-            document.getElementById('stat-projetos').textContent = total;
-            document.getElementById('stat-ativos').textContent = ativos;
-            document.getElementById('stat-inativos').textContent = inativos;
-        }
-
-        function openModal(type) {
-            document.getElementById('modal-' + type).classList.add('active');
-        }
-
-        function closeModal(type) {
-            document.getElementById('modal-' + type).classList.remove('active');
-        }
-
-        function createProject(e) {
-            e.preventDefault();
-            const nome = document.getElementById('proj-nome').value;
-            const desc = document.getElementById('proj-desc').value;
-            const status = document.getElementById('proj-status').value;
-
-            projects.push({
-                id: Date.now(),
-                nome,
-                desc,
-                icon: '📁',
-                url: '',
-                status,
-                created: Date.now()
-            });
-
-            saveProjects();
-            renderAll();
-            closeModal('novo');
-            e.target.reset();
-        }
-
-        function deleteProject(id) {
-            const p = projects.find(pr => pr.id == id);
-            if (p) {
-                deleteTarget = id;
-                document.getElementById('exclude-name').textContent = p.nome;
-                openModal('excluir');
-            }
-        }
-
-        function confirmDelete() {
-            if (deleteTarget) {
-                projects = projects.filter(p => p.id != deleteTarget);
-                saveProjects();
-                renderAll();
-                closeModal('excluir');
-                deleteTarget = null;
-            }
-        }
-
-        function toggleStatus(id) {
-            const p = projects.find(pr => pr.id == id);
-            if (p) {
-                p.status = p.status === 'ativo' ? 'inativo' : 'ativo';
-                saveProjects();
-                renderAll();
-            }
-        }
-
-        function openProjectConfirm(id) {
-            const p = projects.find(pr => pr.id == id);
-            if (p && p.url) {
-                openTarget = p;
-                document.getElementById('abrir-name').textContent = p.nome;
-                openModal('abrir');
-            } else if (p) {
-                alert('Este projeto não tem URL configurada.');
-            }
-        }
-
-        function confirmOpen() {
-            if (openTarget && openTarget.url) {
-                const win = window.open(openTarget.url, '_blank');
-                if (win) {
-                    win.focus();
-                    // Tenta entrar em tela cheia
-                    win.document.documentElement.requestFullscreen?.();
-                }
-                closeModal('abrir');
-                openTarget = null;
-            }
-        }
-
-        function openProjectFullscreen(url, name) {
-            const win = window.open(url, '_blank');
-            if (win) {
-                win.focus();
-                setTimeout(() => {
-                    try {
-                        win.document.documentElement.requestFullscreen?.();
-                    } catch(e) {}
-                }, 1000);
-            }
-        }
-
-        function formatDate(timestamp) {
-            return new Date(timestamp).toLocaleDateString('pt-BR');
-        }
-
-        // Close modal on backdrop click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', e => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            });
-        });
-
-        // Reset localStorage (desenvolvimento)
-        function resetProjects() {
-            localStorage.removeItem('pd_projects');
-            loadProjects();
-            renderAll();
-            alert('Projetos resetados!');
-        }
-    </script>
-    
-    <!-- Botão de debug - remover em produção -->
     <button onclick="resetProjects()" style="position: fixed; bottom: 10px; right: 10px; padding: 8px 12px; background: #333; color: #fff; border: 1px solid #555; border-radius: 6px; font-size: 12px; cursor: pointer; z-index: 9999;">
         🔄 Resetar
     </button>
+
+    <script src="dashboard/js/app.js"></script>
 </body>
 </html>
