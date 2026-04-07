@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Dinâmicos - Incubadora de Projetos</title>
+    <title>Projetos Dinâmicos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,9 +21,10 @@
             --border: #2a2a3a;
             --text-primary: #ffffff;
             --text-secondary: #8888a0;
-            --accent-1: #6366f1;
-            --accent-2: #22c55e;
-            --accent-3: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-blue: #3b82f6;
         }
 
         body {
@@ -31,31 +32,125 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
-            overflow: hidden;
         }
 
-        .dashboard {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 40px;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-                var(--bg-primary);
-        }
-
+        /* Header */
         .header {
-            text-align: center;
-            margin-bottom: 60px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
         }
 
         .logo {
-            font-size: 48px;
-            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-primary);
         }
 
-        h1 {
+        .logo:hover {
+            color: var(--accent-purple);
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fullscreen-btn {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        .main {
+            padding: 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard View */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .dashboard-header h1 {
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -65,26 +160,75 @@
             background-clip: text;
         }
 
-        .subtitle {
+        .dashboard-header p {
             color: var(--text-secondary);
-            font-size: 18px;
+            font-size: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .stat-icon.purple { background: rgba(139, 92, 246, 0.2); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.2); }
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.2); }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .stat-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Projects Grid */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
             gap: 24px;
-            max-width: 1200px;
-            margin: 0 auto;
-            flex: 1;
-            align-content: center;
         }
 
         .project-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 32px;
+            padding: 28px;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -98,54 +242,52 @@
             left: 0;
             right: 0;
             height: 4px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .project-card:hover::before {
-            opacity: 1;
+            transition: opacity 0.3s;
         }
 
         .project-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: transparent;
         }
 
-        .project-card.project-1::before {
-            background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
-        }
+        .project-card.project-1::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-orange)); }
+        .project-card.project-2::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-blue)); }
 
-        .project-card.project-2::before {
-            background: linear-gradient(90deg, var(--accent-2), #10b981);
+        .project-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
         .project-icon {
-            width: 72px;
-            height: 72px;
+            width: 64px;
+            height: 64px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            margin-bottom: 20px;
+            font-size: 32px;
         }
 
-        .project-1 .project-icon {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(245, 158, 11, 0.2));
+        .project-1 .project-icon { background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(245, 158, 11, 0.2)); }
+        .project-2 .project-icon { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2)); }
+
+        .open-badge {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        .project-2 .project-icon {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
-        }
-
-        .project-title {
-            font-size: 24px;
+        .project-card h2 {
+            font-size: 22px;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
-        .project-desc {
+        .project-card > p {
             color: var(--text-secondary);
             font-size: 14px;
             line-height: 1.6;
@@ -156,12 +298,13 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-bottom: 20px;
         }
 
         .feature-tag {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
             padding: 6px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
             border-radius: 20px;
             font-size: 12px;
             color: var(--text-secondary);
@@ -171,22 +314,23 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 20px;
             padding: 12px 24px;
             border-radius: 12px;
             font-weight: 500;
             font-size: 14px;
-            transition: all 0.2s ease;
             text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
 
         .project-1 .open-btn {
-            background: linear-gradient(135deg, var(--accent-1), #4f46e5);
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
             color: white;
         }
 
         .project-2 .open-btn {
-            background: linear-gradient(135deg, var(--accent-2), #10b981);
+            background: linear-gradient(135deg, var(--accent-green), #059669);
             color: white;
         }
 
@@ -195,7 +339,62 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .fullscreen-hint {
+        /* Project View (Iframe Container) */
+        .project-view {
+            height: calc(100vh - 80px);
+        }
+
+        .project-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .current-project {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .current-project span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .iframe-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            height: calc(100% - 60px);
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Footer Hint */
+        .footer-hint {
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -220,110 +419,272 @@
             border: 1px solid var(--border);
         }
 
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-secondary);
-            font-size: 13px;
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 768px) {
-            .dashboard {
-                padding: 20px;
+            .header {
+                padding: 12px 16px;
             }
-            
-            h1 {
-                font-size: 28px;
+
+            .nav-tabs {
+                display: none;
             }
-            
+
+            .main {
+                padding: 20px 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
             .projects-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .footer-hint {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <header class="header">
-            <div class="logo">🚀</div>
-            <h1>Projetos Dinâmicos</h1>
-            <p class="subtitle">Incubadora de Projetos - Escolha uma solução para começar</p>
-        </header>
+    <header class="header">
+        <div class="header-left">
+            <a href="#" class="logo" onclick="showDashboard(); return false;">
+                <span class="logo-icon">🚀</span>
+                <span>Projetos Dinâmicos</span>
+            </a>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-view="dashboard" onclick="switchView('dashboard')">Dashboard</button>
+                <button class="nav-tab" data-view="projects" onclick="switchView('projects')">Projetos</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                <span>⛶</span> Tela Cheia
+            </button>
+        </div>
+    </header>
 
-        <div class="projects-grid">
-            <div class="project-card project-1" onclick="openProject('projeto1')">
-                <div class="project-icon">📊</div>
-                <h2 class="project-title">Gestão de Projetos</h2>
-                <p class="project-desc">
-                    Sistema completo de gerenciamento visual com mapa interativo, 
-                    fluxogramas, processos e quadro Kanban para planejamento, 
-                    execução e entrega de projetos.
-                </p>
-                <div class="project-features">
-                    <span class="feature-tag">🗺️ Mapa Visual</span>
-                    <span class="feature-tag">📈 Fluxograma</span>
-                    <span class="feature-tag">⚙️ Processos</span>
-                    <span class="feature-tag">📋 Kanban</span>
-                    <span class="feature-tag">📊 Estatísticas</span>
-                </div>
-                <a href="projeto1/" class="open-btn">
-                    Abrir Projeto
-                    <span>→</span>
-                </a>
+    <main class="main">
+        <!-- Dashboard View -->
+        <div class="view active" id="view-dashboard">
+            <div class="dashboard-header">
+                <h1>Incubadora de Projetos</h1>
+                <p>Selecione um projeto para começar a trabalhar</p>
             </div>
 
-            <div class="project-card project-2" onclick="openProject('projeto2')">
-                <div class="project-icon">💻</div>
-                <h2 class="project-title">Plataforma de Treinamento</h2>
-                <p class="project-desc">
-                    Aprenda e pratique programação com exercícios interativos 
-                    em Python, JavaScript, Java, C++ e Go. Acompanhe seu 
-                    progresso e desbloqueie conquistas.
-                </p>
-                <div class="project-features">
-                    <span class="feature-tag">🐍 Python</span>
-                    <span class="feature-tag">🌐 JavaScript</span>
-                    <span class="feature-tag">☕ Java</span>
-                    <span class="feature-tag">⚡ C++</span>
-                    <span class="feature-tag">🔷 Go</span>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon purple">📁</div>
+                    <div class="stat-info">
+                        <h3>2</h3>
+                        <p>Projetos Ativos</p>
+                    </div>
                 </div>
-                <a href="projeto2/index.html" class="open-btn">
-                    Abrir Projeto
-                    <span>→</span>
-                </a>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-info">
+                        <h3>12</h3>
+                        <p>Tarefas Concluídas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">⚡</div>
+                    <div class="stat-info">
+                        <h3>5</h3>
+                        <p>Exercícios Feitos</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue">📊</div>
+                    <div class="stat-info">
+                        <h3>85%</h3>
+                        <p>Progresso Total</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">📂 Meus Projetos</h2>
+            <div class="projects-grid">
+                <div class="project-card project-1">
+                    <div class="project-header">
+                        <div class="project-icon">📊</div>
+                        <span class="open-badge">Ativo</span>
+                    </div>
+                    <h2>Gestão de Projetos</h2>
+                    <p>Sistema completo de gerenciamento visual com mapa interativo, fluxogramas, processos e quadro Kanban para planejamento e execução.</p>
+                    <div class="project-features">
+                        <span class="feature-tag">🗺️ Mapa Visual</span>
+                        <span class="feature-tag">📋 Kanban</span>
+                        <span class="feature-tag">📈 Fluxograma</span>
+                        <span class="feature-tag">📊 Estatísticas</span>
+                    </div>
+                    <button class="open-btn" onclick="openProject('gestao')">
+                        Abrir Projeto →
+                    </button>
+                </div>
+
+                <div class="project-card project-2">
+                    <div class="project-header">
+                        <div class="project-icon">💻</div>
+                        <span class="open-badge">Ativo</span>
+                    </div>
+                    <h2>Plataforma de Treinamento</h2>
+                    <p>Aprenda e pratique programação com exercícios interativos em Python, JavaScript, Java, C++ e Go. Acompanhe seu progresso.</p>
+                    <div class="project-features">
+                        <span class="feature-tag">🐍 Python</span>
+                        <span class="feature-tag">🌐 JavaScript</span>
+                        <span class="feature-tag">☕ Java</span>
+                        <span class="feature-tag">⚡ C++</span>
+                        <span class="feature-tag">🔷 Go</span>
+                    </div>
+                    <button class="open-btn" onclick="openProject('treinamento')">
+                        Abrir Projeto →
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="fullscreen-hint">
-            <span>Dica: Pressione</span>
-            <span class="hint-key">F11</span>
-            <span>ou</span>
-            <span class="hint-key">ESC</span>
-            <span>nos projetos para tela cheia</span>
+        <!-- Projects List View -->
+        <div class="view" id="view-projects">
+            <h1 class="section-title">📂 Todos os Projetos</h1>
+            <div class="projects-grid">
+                <div class="project-card project-1">
+                    <div class="project-header">
+                        <div class="project-icon">📊</div>
+                        <span class="open-badge">Gestão</span>
+                    </div>
+                    <h2>Gestão de Projetos</h2>
+                    <p>Mapa visual, Kanban, Fluxograma de estrutura, Processos e atividades, Estatísticas de produtividade.</p>
+                    <div class="project-features">
+                        <span class="feature-tag">🗺️</span>
+                        <span class="feature-tag">📋</span>
+                        <span class="feature-tag">📈</span>
+                        <span class="feature-tag">⚙️</span>
+                    </div>
+                    <button class="open-btn" onclick="openProject('gestao')">
+                        Abrir →
+                    </button>
+                </div>
+
+                <div class="project-card project-2">
+                    <div class="project-header">
+                        <div class="project-icon">💻</div>
+                        <span class="open-badge">Treino</span>
+                    </div>
+                    <h2>Plataforma de Treinamento</h2>
+                    <p>Exercícios interativos para aprender Python, JavaScript, Java, C++ e Go com acompanhamento de progresso.</p>
+                    <div class="project-features">
+                        <span class="feature-tag">🐍</span>
+                        <span class="feature-tag">🌐</span>
+                        <span class="feature-tag">☕</span>
+                        <span class="feature-tag">⚡</span>
+                    </div>
+                    <button class="open-btn" onclick="openProject('treinamento')">
+                        Abrir →
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <footer class="footer">
-            Projetos Dinâmicos © 2024
-        </footer>
+        <!-- Project View (when a project is open) -->
+        <div class="view" id="view-project">
+            <div class="project-toolbar">
+                <button class="back-btn" onclick="closeProject()">
+                    ✕ Fechar Projeto
+                </button>
+                <span class="current-project">
+                    Projeto: <span id="current-project-name">-</span>
+                </span>
+            </div>
+            <div class="iframe-container">
+                <iframe id="project-iframe" src=""></iframe>
+            </div>
+        </div>
+    </main>
+
+    <div class="footer-hint" id="footer-hint">
+        <span>Dica:</span>
+        <span class="hint-key">F11</span>
+        <span>para tela cheia</span>
+        <span class="hint-key">ESC</span>
+        <span>para sair</span>
     </div>
 
     <script>
-        function openProject(project) {
-            if (project === 'projeto1') {
-                window.location.href = 'projeto1/';
-            } else if (project === 'projeto2') {
-                window.location.href = 'projeto2/index.html';
+        const projectUrls = {
+            gestao: 'projeto1/index.html',
+            treinamento: 'projeto2/index.html'
+        };
+
+        const projectNames = {
+            gestao: 'Gestão de Projetos',
+            treinamento: 'Plataforma de Treinamento'
+        };
+
+        // Abre projeto padrão ao carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            openProject('gestao');
+        });
+
+        function switchView(view) {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.view === view);
+            });
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.toggle('active', v.id === `view-${view}`);
+            });
+        }
+
+        function showDashboard() {
+            closeProject();
+            switchView('dashboard');
+        }
+
+        function openProject(projectId) {
+            document.getElementById('current-project-name').textContent = projectNames[projectId];
+            document.getElementById('project-iframe').src = projectUrls[projectId];
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-project').classList.add('active');
+            document.getElementById('footer-hint').style.display = 'none';
+        }
+
+        function closeProject() {
+            document.getElementById('project-iframe').src = '';
+            switchView('dashboard');
+            document.getElementById('footer-hint').style.display = 'flex';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
             }
         }
 
         document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.fullscreenElement) {
+                document.exitFullscreen();
+            }
             if (e.key === 'F11') {
-                e.preventDefault();
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    document.documentElement.requestFullscreen();
-                }
+                // Default browser behavior
+            }
+        });
+
+        // Handle iframe messages
+        window.addEventListener('message', (e) => {
+            if (e.data === 'requestFullscreen') {
+                toggleFullscreen();
             }
         });
     </script>
