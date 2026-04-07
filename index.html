@@ -466,6 +466,8 @@
     </div>
 
     <script>
+        console.log('Projetos Dinâmicos - JS Carregado');
+        
         let projects = [];
         let deleteTarget = null;
         let openTarget = null;
@@ -536,7 +538,7 @@
             const recentProjects = projects.slice(0, 6);
 
             container.innerHTML = recentProjects.map(p => `
-                <div class="card" onclick="openProjectConfirm('${p.id}')">
+                <div class="card" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">
                     <div class="card-header">
                         <span class="card-icon">${p.icon}</span>
                         <span class="card-badge ${p.status === 'ativo' ? 'badge-active' : 'badge-inactive'}">${p.status}</span>
@@ -563,8 +565,8 @@
                         <button class="btn btn-sm ${p.status === 'ativo' ? 'btn-outline' : 'btn-primary'}" onclick="toggleStatus('${p.id}')">
                             ${p.status === 'ativo' ? 'Desativar' : 'Ativar'}
                         </button>
-                        <button class="btn btn-sm btn-outline" onclick="openProjectConfirm('${p.id}')">Abrir</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">Excluir</button>
+                        <button class="btn btn-sm btn-primary" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">🚀 Abrir</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">🗑️</button>
                     </div>
                 </div>
             `).join('') || '<p style="color: var(--text2)">Nenhum projeto</p>';
@@ -581,8 +583,8 @@
                         <span class="status-badge ${p.status === 'ativo' ? 'badge-active' : 'badge-inactive'}">${p.status}</span>
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline" onclick="openProjectConfirm('${p.id}')">Abrir</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">Excluir</button>
+                        <button class="btn btn-sm btn-primary" onclick="openProjectFullscreen('${p.url}', '${p.nome}')">🚀</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">🗑️</button>
                     </td>
                 </tr>
             `).join('') || '<tr><td colspan="5" style="text-align: center; color: var(--text2)">Nenhum projeto</td></tr>';
@@ -709,9 +711,26 @@
 
         function confirmOpen() {
             if (openTarget && openTarget.url) {
-                window.open(openTarget.url, '_blank');
+                const win = window.open(openTarget.url, '_blank');
+                if (win) {
+                    win.focus();
+                    // Tenta entrar em tela cheia
+                    win.document.documentElement.requestFullscreen?.();
+                }
                 closeModal('abrir');
                 openTarget = null;
+            }
+        }
+
+        function openProjectFullscreen(url, name) {
+            const win = window.open(url, '_blank');
+            if (win) {
+                win.focus();
+                setTimeout(() => {
+                    try {
+                        win.document.documentElement.requestFullscreen?.();
+                    } catch(e) {}
+                }, 1000);
             }
         }
 
