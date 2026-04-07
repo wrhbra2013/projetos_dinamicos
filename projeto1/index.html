@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Projetos</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="back-link">← Voltar</a>
+                <h2>📊 Gestão</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="dashboard">
+                    <span>🏠</span> Dashboard
+                </button>
+                <button class="nav-btn" data-view="mapa">
+                    <span>🗺️</span> Mapa Visual
+                </button>
+                <button class="nav-btn" data-view="kanban">
+                    <span>📋</span> Kanban
+                </button>
+                <button class="nav-btn" data-view="fluxograma">
+                    <span>📈</span> Fluxograma
+                </button>
+                <button class="nav-btn" data-view="processos">
+                    <span>⚙️</span> Processos
+                </button>
+                <button class="nav-btn" data-view="estatisticas">
+                    <span>📊</span> Estatísticas
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                    <span>⛶</span> Tela Cheia
+                </button>
+                <span class="hint">F11 / ESC</span>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="view active" id="view-dashboard">
+                <div class="view-header">
+                    <h1>Dashboard</h1>
+                    <button class="btn btn-primary" onclick="showModal('novo-projeto')">+ Novo Projeto</button>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">📁</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="total-projetos">0</span>
+                            <span class="stat-label">Projetos</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="total-tarefas">0</span>
+                            <span class="stat-label">Tarefas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="tarefas-concluidas">0</span>
+                            <span class="stat-label">Concluídas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="em-andamento">0</span>
+                            <span class="stat-label">Em Andamento</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>Projetos Recentes</h3>
+                        <div id="projetos-lista" class="projetos-lista"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Atividades Recentes</h3>
+                        <div id="atividades-recentes" class="atividades-lista"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view" id="view-mapa">
+                <div class="view-header">
+                    <h1>Mapa Visual</h1>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" onclick="zoomMapa('in')">+ Zoom</button>
+                        <button class="btn btn-secondary" onclick="zoomMapa('out')">- Zoom</button>
+                    </div>
+                </div>
+                <div class="mapa-container" id="mapa-container">
+                    <div class="mapa-workspace" id="mapa-workspace"></div>
+                </div>
+            </div>
+
+            <div class="view" id="view-kanban">
+                <div class="view-header">
+                    <h1>Quadro Kanban</h1>
+                    <button class="btn btn-primary" onclick="showModal('nova-tarefa')">+ Nova Tarefa</button>
+                </div>
+                <div class="kanban-board" id="kanban-board">
+                    <div class="kanban-column" data-status="planejamento">
+                        <div class="column-header">
+                            <span>📝 Planejamento</span>
+                            <span class="column-count" id="count-planejamento">0</span>
+                        </div>
+                        <div class="column-tasks" id="kanban-planejamento"></div>
+                    </div>
+                    <div class="kanban-column" data-status="execucao">
+                        <div class="column-header">
+                            <span>🚀 Execução</span>
+                            <span class="column-count" id="count-execucao">0</span>
+                        </div>
+                        <div class="column-tasks" id="kanban-execucao"></div>
+                    </div>
+                    <div class="kanban-column" data-status="entrega">
+                        <div class="column-header">
+                            <span>📦 Entrega</span>
+                            <span class="column-count" id="count-entrega">0</span>
+                        </div>
+                        <div class="column-tasks" id="kanban-entrega"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view" id="view-fluxograma">
+                <div class="view-header">
+                    <h1>Fluxograma de Estrutura</h1>
+                </div>
+                <div class="fluxograma-container" id="fluxograma-container"></div>
+            </div>
+
+            <div class="view" id="view-processos">
+                <div class="view-header">
+                    <h1>Processos e Atividades</h1>
+                    <button class="btn btn-primary" onclick="showModal('novo-processo')">+ Novo Processo</button>
+                </div>
+                <div class="processos-grid" id="processos-grid"></div>
+            </div>
+
+            <div class="view" id="view-estatisticas">
+                <div class="view-header">
+                    <h1>Estatísticas</h1>
+                </div>
+                <div class="stats-grid">
+                    <div class="card stat-chart">
+                        <h3>Progresso por Status</h3>
+                        <div id="chart-status" class="chart-placeholder"></div>
+                    </div>
+                    <div class="card stat-chart">
+                        <h3>Produtividade</h3>
+                        <div id="chart-produtividade" class="chart-placeholder"></div>
+                    </div>
+                    <div class="card stat-chart wide">
+                        <h3>Timeline de Projetos</h3>
+                        <div id="chart-timeline" class="chart-placeholder"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="modal-novo-projeto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Projeto</h2>
+                <button class="modal-close" onclick="closeModal('novo-projeto')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="createProject(event)">
+                <div class="form-group">
+                    <label>Nome do Projeto</label>
+                    <input type="text" id="projeto-nome" required placeholder="Ex: Sistema Web">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="projeto-desc" placeholder="Descrição do projeto..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data Início</label>
+                        <input type="date" id="projeto-inicio">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Fim</label>
+                        <input type="date" id="projeto-fim">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('novo-projeto')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-nova-tarefa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Tarefa</h2>
+                <button class="modal-close" onclick="closeModal('nova-tarefa')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="createTarefa(event)">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="tarefa-titulo" required placeholder="Título da tarefa">
+                </div>
+                <div class="form-group">
+                    <label>Projeto</label>
+                    <select id="tarefa-projeto"></select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="tarefa-status">
+                            <option value="planejamento">📝 Planejamento</option>
+                            <option value="execucao">🚀 Execução</option>
+                            <option value="entrega">📦 Entrega</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridade</label>
+                        <select id="tarefa-prioridade">
+                            <option value="baixa">🟢 Baixa</option>
+                            <option value="media">🟡 Média</option>
+                            <option value="alta">🔴 Alta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="tarefa-desc" placeholder="Detalhes da tarefa..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('nova-tarefa')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Tarefa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-novo-processo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Processo</h2>
+                <button class="modal-close" onclick="closeModal('novo-processo')">&times;</button>
+            </div>
+            <form class="modal-body" onsubmit="createProcesso(event)">
+                <div class="form-group">
+                    <label>Nome do Processo</label>
+                    <input type="text" id="processo-nome" required placeholder="Ex: Desenvolvimento">
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="processo-tipo">
+                        <option value="desenvolvimento">💻 Desenvolvimento</option>
+                        <option value="design">🎨 Design</option>
+                        <option value="marketing">📢 Marketing</option>
+                        <option value="operacional">⚙️ Operacional</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="processo-desc" placeholder="Descreva o processo..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('novo-processo')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Processo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-detalhes">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Detalhes</h2>
+                <button class="modal-close" onclick="closeModal('detalhes')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-conteudo"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

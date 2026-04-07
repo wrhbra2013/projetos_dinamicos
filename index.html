@@ -2,235 +2,330 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="robots" content="noindex, nofollow">
-    <title>CodeTrain - Plataforma de Treinamento em Programação</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projetos Dinâmicos - Incubadora de Projetos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="static/css/training.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --border: #2a2a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #8888a0;
+            --accent-1: #6366f1;
+            --accent-2: #22c55e;
+            --accent-3: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 40px;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+                var(--bg-primary);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+            align-content: center;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: transparent;
+        }
+
+        .project-card.project-1::before {
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+        }
+
+        .project-card.project-2::before {
+            background: linear-gradient(90deg, var(--accent-2), #10b981);
+        }
+
+        .project-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .project-1 .project-icon {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(245, 158, 11, 0.2));
+        }
+
+        .project-2 .project-icon {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
+        }
+
+        .project-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .project-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .open-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .project-1 .open-btn {
+            background: linear-gradient(135deg, var(--accent-1), #4f46e5);
+            color: white;
+        }
+
+        .project-2 .open-btn {
+            background: linear-gradient(135deg, var(--accent-2), #10b981);
+            color: white;
+        }
+
+        .open-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .fullscreen-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hint-key {
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <input type="radio" name="page" id="page-login" checked>
-    <input type="radio" name="page" id="page-dashboard">
-    <input type="radio" name="page" id="page-exercises">
-    <input type="radio" name="page" id="page-progress">
+    <div class="dashboard">
+        <header class="header">
+            <div class="logo">🚀</div>
+            <h1>Projetos Dinâmicos</h1>
+            <p class="subtitle">Incubadora de Projetos - Escolha uma solução para começar</p>
+        </header>
 
-    <header class="header">
-        <div class="logo">
-            <span>💻</span>
-            <span>CodeTrain</span>
-        </div>
-        <div id="header-actions" class="user-info" style="display: none;">
-            <span id="user-name">Usuário</span>
-            <div class="user-avatar" id="user-avatar">U</div>
-            <button class="btn btn-outline btn-sm" id="logout-btn">Sair</button>
-        </div>
-    </header>
-
-    <main class="main">
-        <!-- LOGIN PAGE -->
-        <section class="page-content" id="login">
-            <div class="login-container">
-                <div class="login-card">
-                    <h1>🚀 CodeTrain</h1>
-                    <p>Plataforma de Treinamento em Programação</p>
-                    
-                    <form id="login-form">
-                        <div class="form-group">
-                            <label for="login-name">Seu Nome</label>
-                            <input type="text" id="login-name" placeholder="Digite seu nome" required autocomplete="off">
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Começar a Treinar</button>
-                    </form>
-
-                    <div class="divider">ou continue como visitante</div>
-                    
-                    <p style="font-size: 14px; color: var(--text-muted);">
-                        5 linguagens • 75 exercícios • Dashboard de progresso
-                    </p>
+        <div class="projects-grid">
+            <div class="project-card project-1" onclick="openProject('projeto1')">
+                <div class="project-icon">📊</div>
+                <h2 class="project-title">Gestão de Projetos</h2>
+                <p class="project-desc">
+                    Sistema completo de gerenciamento visual com mapa interativo, 
+                    fluxogramas, processos e quadro Kanban para planejamento, 
+                    execução e entrega de projetos.
+                </p>
+                <div class="project-features">
+                    <span class="feature-tag">🗺️ Mapa Visual</span>
+                    <span class="feature-tag">📈 Fluxograma</span>
+                    <span class="feature-tag">⚙️ Processos</span>
+                    <span class="feature-tag">📋 Kanban</span>
+                    <span class="feature-tag">📊 Estatísticas</span>
                 </div>
-            </div>
-        </section>
-
-        <!-- DASHBOARD PAGE -->
-        <section class="page-content" id="dashboard">
-            <div class="stats-grid" id="dashboard-stats"></div>
-            
-            <div class="card" style="margin-bottom: 24px;">
-                <h3 style="margin-bottom: 20px;">📚 Escolha uma Linguagem</h3>
-                <div class="language-grid" id="dashboard-languages"></div>
+                <a href="projeto1/" class="open-btn">
+                    Abrir Projeto
+                    <span>→</span>
+                </a>
             </div>
 
-            <div class="card">
-                <h3 style="margin-bottom: 20px;">🕐 Atividade Recente</h3>
-                <div class="activity-list" id="activity-list"></div>
-            </div>
-        </section>
-
-        <!-- EXERCISES PAGE -->
-        <section class="page-content" id="exercises">
-            <button class="back-btn" id="btn-back">
-                ← Voltar às Linguagens
-            </button>
-
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;" id="exercises-container">
-                <div class="card">
-                    <div class="exercise-list" id="exercise-list"></div>
+            <div class="project-card project-2" onclick="openProject('projeto2')">
+                <div class="project-icon">💻</div>
+                <h2 class="project-title">Plataforma de Treinamento</h2>
+                <p class="project-desc">
+                    Aprenda e pratique programação com exercícios interativos 
+                    em Python, JavaScript, Java, C++ e Go. Acompanhe seu 
+                    progresso e desbloqueie conquistas.
+                </p>
+                <div class="project-features">
+                    <span class="feature-tag">🐍 Python</span>
+                    <span class="feature-tag">🌐 JavaScript</span>
+                    <span class="feature-tag">☕ Java</span>
+                    <span class="feature-tag">⚡ C++</span>
+                    <span class="feature-tag">🔷 Go</span>
                 </div>
-
-                <div class="exercise-editor" id="exercise-editor" style="display: none;">
-                    <div class="editor-header">
-                        <div class="editor-title">
-                            <span id="exercise-title">Exercício</span>
-                            <span id="language-badge" class="language-badge"></span>
-                            <span id="exercise-difficulty" class="exercise-difficulty"></span>
-                        </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button class="btn btn-outline btn-sm" id="btn-show-solution">👁️ Solução</button>
-                            <button class="btn btn-success btn-sm" id="btn-mark-complete">✓ Concluir</button>
-                            <button class="expand-code-btn" id="expand-fullscreen" title="Tela Cheia">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                                </svg>
-                                <span>Tela Cheia</span>
-                            </button>
-                        </div>
-                    </div>
-                    <p id="exercise-desc" style="padding: 12px 16px; background: var(--secondary); border-bottom: 1px solid var(--border); font-size: 14px;"></p>
-                    <div class="editor-content">
-                        <div class="code-panel">
-                            <textarea id="code-editor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-                        </div>
-                        <div class="output-panel">
-                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">SAÍDA:</div>
-                            <div id="output" class="output-content">Execute o código para ver o resultado...</div>
-                        </div>
-                    </div>
-                    <div class="code-output">
-                        <span class="language-badge" id="language-badge-2"></span>
-                        <button class="btn btn-primary" id="btn-run">▶️ Executar</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROGRESS PAGE -->
-        <section class="page-content" id="progress">
-            <div class="card" id="progress-chart"></div>
-            
-            <div class="card" style="margin-top: 24px;">
-                <div id="progress-achievements"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Fullscreen Editor Overlay -->
-    <div id="fullscreen-container">
-        <div class="fullscreen-editor" id="fullscreen-editor">
-            <div class="editor-header">
-                <div class="exercise-info-fullscreen">
-                    <span class="exercise-title" id="fs-exercise-title"></span>
-                    <span class="language-badge" id="fs-language-badge"></span>
-                    <span class="exercise-difficulty" id="fs-exercise-difficulty"></span>
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="btn btn-outline btn-sm" id="btn-solution-fullscreen">👁️ Solução</button>
-                    <button class="btn btn-success btn-sm" id="btn-complete-fullscreen">✓ Concluir</button>
-                </div>
-            </div>
-            <p id="fs-exercise-desc" style="padding: 12px 16px; background: var(--secondary); border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-secondary);"></p>
-            <div class="editor-body">
-                <div class="code-panel">
-                    <textarea id="fs-code-editor" class="code-editor" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
-                </div>
-                <div class="output-section">
-                    <div class="output-header">
-                        <span style="font-weight: 600;">📤 Saída</span>
-                        <button class="btn btn-primary btn-sm" id="btn-run-fullscreen">▶️ Executar (Ctrl+Enter)</button>
-                    </div>
-                    <div id="output-fullscreen" class="output-content">Execute o código para ver o resultado...</div>
-                </div>
+                <a href="projeto2/index.html" class="open-btn">
+                    Abrir Projeto
+                    <span>→</span>
+                </a>
             </div>
         </div>
+
+        <div class="fullscreen-hint">
+            <span>Dica: Pressione</span>
+            <span class="hint-key">F11</span>
+            <span>ou</span>
+            <span class="hint-key">ESC</span>
+            <span>nos projetos para tela cheia</span>
+        </div>
+
+        <footer class="footer">
+            Projetos Dinâmicos © 2024
+        </footer>
     </div>
 
-    <!-- Exit Fullscreen Button -->
-    <button id="exit-fullscreen-btn" class="exit-fullscreen-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-        Sair da Tela Cheia
-    </button>
-
-    <script src="static/js/training.js"></script>
     <script>
-        // Override renderExerciseEditor to sync with fullscreen
-        const originalRender = App.renderExerciseEditor.bind(App);
-        App.renderExerciseEditor = function() {
-            originalRender();
-            
-            const exercises = EXERCISES[this.currentLanguage];
-            const exercise = exercises.find(e => e.id === this.currentExercise);
-            if (!exercise) return;
-            
-            const info = LANGUAGE_INFO[this.currentLanguage];
-            const progress = this.currentUser.progress[this.currentLanguage];
-            const isCompleted = progress.completed.includes(exercise.id);
-            const savedCode = this.currentUser.code?.[`${this.currentLanguage}_${exercise.id}`] || exercise.starter;
-            
-            // Update fullscreen elements
-            document.getElementById('fs-exercise-title').textContent = exercise.title;
-            document.getElementById('fs-exercise-desc').textContent = exercise.description;
-            document.getElementById('fs-language-badge').className = `language-badge ${this.currentLanguage}`;
-            document.getElementById('fs-language-badge').innerHTML = `${info.icon} ${info.name}`;
-            document.getElementById('fs-exercise-difficulty').className = `exercise-difficulty difficulty-${exercise.difficulty}`;
-            document.getElementById('fs-exercise-difficulty').textContent = exercise.difficulty;
-            document.getElementById('fs-code-editor').value = savedCode;
-            
-            document.getElementById('btn-solution-fullscreen').style.display = isCompleted ? 'none' : 'inline-flex';
-            document.getElementById('btn-complete-fullscreen').style.display = isCompleted ? 'none' : 'inline-flex';
-            document.getElementById('output-fullscreen').textContent = 'Execute o código para ver o resultado...';
-            document.getElementById('output-fullscreen').className = 'output-content';
-        };
-        
-        // Sync code from normal editor to fullscreen when typing
-        document.getElementById('code-editor')?.addEventListener('input', function() {
-            const fsEditor = document.getElementById('fs-code-editor');
-            if (fsEditor && App.isFullscreen) {
-                fsEditor.value = this.value;
+        function openProject(project) {
+            if (project === 'projeto1') {
+                window.location.href = 'projeto1/';
+            } else if (project === 'projeto2') {
+                window.location.href = 'projeto2/index.html';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F11') {
+                e.preventDefault();
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    document.documentElement.requestFullscreen();
+                }
             }
         });
-        
-        // Sync code from fullscreen to normal editor when typing
-        document.getElementById('fs-code-editor')?.addEventListener('input', function() {
-            const normalEditor = document.getElementById('code-editor');
-            if (normalEditor) {
-                normalEditor.value = this.value;
-            }
-            App.saveCode();
-        });
-        
-        // Override runCodeFullscreen to save code first
-        const originalRunFullscreen = App.runCodeFullscreen.bind(App);
-        App.runCodeFullscreen = function() {
-            const code = document.getElementById('fs-code-editor').value;
-            const normalEditor = document.getElementById('code-editor');
-            if (normalEditor) normalEditor.value = code;
-            App.saveCode();
-            originalRunFullscreen();
-        };
-        
-        // Override showSolutionFullscreen
-        const originalSolutionFullscreen = App.showSolutionFullscreen.bind(App);
-        App.showSolutionFullscreen = function() {
-            originalSolutionFullscreen();
-            const code = document.getElementById('code-editor').value;
-            document.getElementById('fs-code-editor').value = code;
-        };
     </script>
 </body>
 </html>
