@@ -31,9 +31,30 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
+    position: relative;
+}
+
+body * {
+    pointer-events: auto;
 }
 
 input[type="radio"] { display: none; }
+
+#login-name {
+    pointer-events: auto !important;
+    cursor: text !important;
+    position: relative !important;
+    z-index: 200 !important;
+}
+
+#login-name:focus {
+    z-index: 201 !important;
+}
+
+#login-form {
+    position: relative;
+    z-index: 100;
+}
 
 .header {
     display: flex;
@@ -174,6 +195,25 @@ input[type="radio"] { display: none; }
     background: var(--primary);
     color: var(--text-primary);
     transition: border-color 0.2s;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    z-index: 100;
+}
+
+.login-card {
+    position: relative;
+    z-index: 10;
+}
+
+.login-card * {
+    position: relative;
+    z-index: 10;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     outline: none;
@@ -499,6 +539,8 @@ input[type="radio"] { display: none; }
     align-items: center;
     justify-content: center;
     padding: 20px;
+    position: relative;
+    z-index: 100;
 }
 
 .login-card {
@@ -509,6 +551,8 @@ input[type="radio"] { display: none; }
     max-width: 420px;
     border: 1px solid var(--border);
     text-align: center;
+    position: relative;
+    z-index: 101;
 }
 
 .login-card h1 { font-size: 28px; margin-bottom: 8px; }
