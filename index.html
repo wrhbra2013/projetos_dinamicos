@@ -3,210 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Dinâmicos</title>
+    <title>APOIA - Autores &amp; Pesquisadores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="dashboard/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header class="header">
-        <h1 id="header-logo" onclick="backToDashboard()"><span>🚀</span> Projetos Dinâmicos</h1>
-        <div class="header-center">
-            <select id="project-select" onchange="setDefaultProject(this.value)">
-                <option value="">Selecione um projeto padrão</option>
-            </select>
-        </div>
-        <div class="nav-tabs" onclick="event.stopPropagation()">
-            <button class="nav-tab active" data-view="dashboard" onclick="switchView('dashboard')">Dashboard</button>
-            <button class="nav-tab" data-view="cards" onclick="switchView('cards')">Projetos</button>
-            <button class="nav-tab" data-view="lista" onclick="switchView('lista')">Lista</button>
-            <button class="nav-tab" data-view="estatisticas" onclick="switchView('estatisticas')">Estatísticas</button>
-        </div>
-    </header>
-
-    <main class="main">
-        <div class="view active" id="view-dashboard">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-icon">📁</span>
-                    <div class="stat-info">
-                        <h3 id="stat-projetos">2</h3>
-                        <p>Projetos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">✅</span>
-                    <div class="stat-info">
-                        <h3 id="stat-ativos">2</h3>
-                        <p>Ativos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">⏸️</span>
-                    <div class="stat-info">
-                        <h3 id="stat-inativos">0</h3>
-                        <p>Inativos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">📊</span>
-                    <div class="stat-info">
-                        <h3>100%</h3>
-                        <p>Uso</p>
-                    </div>
+    <div id="app">
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo" onclick="showView('dashboard')">
+                    <span class="logo-icon">✍️</span>
+                    <span class="logo-text" style="font-size:16px;">APOIA</span>
                 </div>
             </div>
-
-            <div class="section-header">
-                <h2 class="section-title">📂 Projetos Recentes</h2>
-                <button class="btn btn-primary" onclick="openModal('novo')">+ Novo Projeto</button>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="subjects" onclick="showView('subjects')">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">Projetos</span>
+                </button>
+                <button class="nav-item" data-view="summaries" onclick="showView('summaries')">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">Documentos</span>
+                </button>
+                <button class="nav-item" data-view="tests" onclick="showView('tests')">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Revisões</span>
+                </button>
+                <button class="nav-item" data-view="results" onclick="showView('results')">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-label">Pareceres</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer" onclick="resetAll()" title="Resetar todos os dados">
+                <span>🔄 Resetar Dados</span>
             </div>
-
-            <div class="cards-grid" id="dashboard-cards"></div>
-        </div>
-
-        <div class="view" id="view-cards">
-            <div class="section-header">
-                <h2 class="section-title">📂 Gerenciar Projetos</h2>
-                <button class="btn btn-primary" onclick="openModal('novo')">+ Novo Projeto</button>
-            </div>
-            <div class="cards-grid" id="cards-grid"></div>
-        </div>
-
-        <div class="view" id="view-lista">
-            <div class="section-header">
-                <h2 class="section-title">📋 Lista de Projetos</h2>
-                <button class="btn btn-primary" onclick="openModal('novo')">+ Novo Projeto</button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Descrição</th>
-                            <th>Data</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="view" id="view-estatisticas">
-            <h2 class="section-title" style="margin-bottom: 24px;">📊 Estatísticas Gerais</h2>
-            
-            <div class="stats-grid" style="margin-bottom: 32px;">
-                <div class="stat-card">
-                    <span class="stat-icon">📁</span>
-                    <div class="stat-info">
-                        <h3 id="estat-total">2</h3>
-                        <p>Total Projetos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">✅</span>
-                    <div class="stat-info">
-                        <h3 id="estat-ativos">2</h3>
-                        <p>Projetos Ativos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">⏸️</span>
-                    <div class="stat-info">
-                        <h3 id="estat-inativos">0</h3>
-                        <p>Projetos Inativos</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">📅</span>
-                    <div class="stat-info">
-                        <h3 id="estat-recentes">0</h3>
-                        <p>Criados (30d)</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-box">
-                <h3>Projetos por Status</h3>
-                <div class="bar-chart" id="chart-status"></div>
-            </div>
-
-            <div class="chart-box">
-                <h3>Timeline de Projetos</h3>
-                <div id="chart-timeline"></div>
-            </div>
-        </div>
-    </main>
-
-    <div class="modal" id="modal-novo">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Novo Projeto</h2>
-                <button class="modal-close" onclick="closeModal('novo')">&times;</button>
-            </div>
-            <form class="modal-body" onsubmit="createProject(event)">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text" id="proj-nome" required placeholder="Nome do projeto">
-                </div>
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <textarea id="proj-desc" rows="3" placeholder="Descrição do projeto"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="proj-status">
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('novo')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Criar</button>
-                </div>
-            </form>
-        </div>
+        </aside>
+        <main id="main-content"></main>
     </div>
 
-    <div class="modal" id="modal-excluir">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Excluir Projeto</h2>
-                <button class="modal-close" onclick="closeModal('excluir')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 20px; color: var(--text2);">Tem certeza que deseja excluir o projeto <strong id="exclude-name"></strong>?</p>
-                <div class="form-actions">
-                    <button class="btn btn-outline" onclick="closeModal('excluir')">Cancelar</button>
-                    <button class="btn btn-danger" onclick="confirmDelete()">Excluir</button>
-                </div>
-            </div>
+    <div id="modal-overlay" class="hidden" onclick="closeModal()"></div>
+    <div id="modal" class="hidden">
+        <div class="modal-header">
+            <h2 id="modal-title"></h2>
+            <button class="btn-icon modal-close-btn" onclick="closeModal()">&times;</button>
         </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-footer" id="modal-footer"></div>
     </div>
 
-    <div class="modal" id="modal-abrir">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Abrir Projeto</h2>
-                <button class="modal-close" onclick="closeModal('abrir')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 20px;">Deseja abrir o projeto <strong id="abrir-name"></strong>?</p>
-                <div class="form-actions">
-                    <button class="btn btn-outline" onclick="closeModal('abrir')">Cancelar</button>
-                    <button class="btn btn-primary" onclick="confirmOpen()">Abrir</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <button onclick="resetProjects()" style="position: fixed; bottom: 10px; right: 10px; padding: 8px 12px; background: #333; color: #fff; border: 1px solid #555; border-radius: 6px; font-size: 12px; cursor: pointer; z-index: 9999;">
-        🔄 Resetar
-    </button>
-
-    <script src="dashboard/js/app.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
