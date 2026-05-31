@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adoção - ONG Amor Animal Marília</title>
+  <link rel="stylesheet" href="../static/css/default.css">
+  <link rel="stylesheet" href="../static/css/imagem/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../static/css/adote.css">
+  <link rel="icon" type="image/png" href="../static/css/favicon/ong.ico">
+  
+</head>
+<body>
+
+<script>var ROOT='..';</script>
+<script src="../components/header.js"></script>
+
+<div class="adocao-container">
+  <div class="alert-important">
+    <h5><i class="fas fa-exclamation-circle"></i> Importante</h5>
+    <p>O Serviço de Adoção é realizado para o bem-estar do PET, com total responsabilidade do adotante. Cada adoção representa uma nova chance de felicidade tanto para o animal quanto para quem o adota.</p>
+  </div>
+
+  <div class="page-section" id="cadastro-pet">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-plus-circle"></i>
+        Cadastrar Pet para Ado&ccedil;&atilde;o
+      </h2>
+      <p>Quer adotar um pet? Preencha o formul&aacute;rio abaixo.</p>
+    </div>
+
+    <div style="max-width:500px;margin:0 auto;padding:1.5rem;border:1px solid var(--border-color);border-radius:8px;background:var(--container-bg);">
+      <form id="form-adocao-cadastro">
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Foto do Pet *</label>
+          <div>
+            <input type="file" id="foto-pet" accept="image/*" capture="environment" style="padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
+            <button type="button" onclick="document.getElementById('foto-pet').click()" style="padding:8px 16px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85rem;">
+              <i class="bi bi-camera"></i> C&acirc;mera
+            </button>
+          </div>
+          <div id="preview-foto" style="margin-top:8px;display:none;">
+            <img id="preview-img" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid var(--border-color);">
+          </div>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Nome do Pet *</label>
+          <input type="text" id="nome-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" required>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Idade do Pet</label>
+          <input type="text" id="idade-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Ex: 2 anos, 6 meses">
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Espécie</label>
+          <select id="especie-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
+            <option value="">Selecione...</option>
+            <option value="Cachorro">Cachorro</option>
+            <option value="Gato">Gato</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Porte</label>
+          <select id="porte-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
+            <option value="">Selecione...</option>
+            <option value="Pequeno">Pequeno</option>
+            <option value="Médio">Médio</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Características</label>
+          <textarea id="caracteristicas-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;resize:vertical;" rows="3" placeholder="Ex: Amigável, brincalhão, bom com crianças..."></textarea>
+        </div>
+        <button type="submit" style="padding:10px 24px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;font-size:1rem;font-weight:600;">
+          <i class="bi bi-send me-2"></i>Enviar
+        </button>
+      </form>
+      <div id="msg-adocao" style="display:none;margin-top:1rem;padding:1rem;border-radius:6px;text-align:center;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;margin:2rem 0;">
+  <a href="termo_adocao.html" class="btn-submit" style="display:inline-block;text-decoration:none;">
+    <i class="bi bi-file-earmark-text"></i> Preencher Termo de Responsabilidade
+  </a>
+</div>
+
+<script src="../components/footer.js"></script>
+
+</body>
+</html>

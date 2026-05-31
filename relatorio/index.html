@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios — Amor Animal Marília</title>
+  <link rel="stylesheet" href="../static/css/default.css">
+  <link rel="stylesheet" href="../static/css/relatorio.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .page-header {
+      background: var(--nav-gradient);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .page-header h1 { margin: 0; font-size: 1.8em; }
+    .page-header .subtitle { opacity: 0.85; font-size: 0.9em; margin-top: 5px; }
+    .btn-back-home {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-back-home:hover { background: rgba(255,255,255,0.35); color: white; }
+    #tabela, #tableSelect, #backupSelect {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg, white);
+      color: var(--text-color);
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+    #tabela:focus, #tableSelect:focus, #backupSelect:focus {
+      border-color: var(--brand-teal);
+      outline: none;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .table-wrapper table { min-width: 800px; }
+    .badge-count {
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+    }
+    .loading-spinner {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .loading-spinner .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--brand-teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .data-table-error {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--danger);
+    }
+    .data-table-error i { font-size: 3em; margin-bottom: 15px; display: block; }
+    @media (max-width: 768px) {
+      .page-header { flex-direction: column; gap: 15px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="relatorio-container">
+
+    <!-- Cabeçalho -->
+    <div class="page-header">
+      <div>
+        <h1><i class="bi bi-bar-chart-steps me-2"></i>Relatórios</h1>
+        <div class="subtitle">Painel administrativo — visualização de dados do banco</div>
+      </div>
+      <a href="../index.html" class="btn-back-home">
+        <i class="bi bi-house-door"></i> Voltar ao Site
+      </a>
+    </div>
+
+    <!-- Seletor de Tabelas -->
+    <div class="selector-section">
+      <h2 class="mb-3"><i class="bi bi-database me-2"></i>Selecionar Tabela</h2>
+      <p class="text-muted">Escolha uma tabela para visualizar os dados</p>
+
+      <div class="mb-3">
+        <label for="tabela" class="form-label fw-bold">Tabelas:</label>
+        <select id="tabela" onchange="carregarTabela(this.value)">
+          <option value="">-- Selecione uma tabela --</option>
+          <option value="animais">Animais</option>
+          <option value="adocoes">Adoções</option>
+          <option value="castracoes">Castrações</option>
+          <option value="doacoes">Doações</option>
+          <option value="eventos">Eventos</option>
+          <option value="parcerias">Parcerias</option>
+          <option value="procura_se">Procura-se</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Atalhos rápidos:</label>
+        <div class="selector-grid" id="atalhosGrid">
+          <div class="report-option" data-table="animais" onclick="carregarTabela('animais')">
+            <i class="bi bi-heart"></i>
+            <div class="report-title">Animais</div>
+            <div class="report-desc">Pets cadastrados</div>
+          </div>
+          <div class="report-option" data-table="adocoes" onclick="carregarTabela('adocoes')">
+            <i class="bi bi-hand-thumbs-up"></i>
+            <div class="report-title">Adoções</div>
+            <div class="report-desc">Registros de adoção</div>
+          </div>
+          <div class="report-option" data-table="castracoes" onclick="carregarTabela('castracoes')">
+            <i class="bi bi-scissors"></i>
+            <div class="report-title">Castrações</div>
+            <div class="report-desc">Agendamentos realizados</div>
+          </div>
+          <div class="report-option" data-table="doacoes" onclick="carregarTabela('doacoes')">
+            <i class="bi bi-gift"></i>
+            <div class="report-title">Doações</div>
+            <div class="report-desc">Contribuições recebidas</div>
+          </div>
+          <div class="report-option" data-table="eventos" onclick="carregarTabela('eventos')">
+            <i class="bi bi-calendar-event"></i>
+            <div class="report-title">Eventos</div>
+            <div class="report-desc">Eventos cadastrados</div>
+          </div>
+          <div class="report-option" data-table="parcerias" onclick="carregarTabela('parcerias')">
+            <i class="bi bi-people"></i>
+            <div class="report-title">Parcerias</div>
+            <div class="report-desc">Parceiros da ONG</div>
+          </div>
+          <div class="report-option" data-table="procura_se" onclick="carregarTabela('procura_se')">
+            <i class="bi bi-search"></i>
+            <div class="report-title">Procura-se</div>
+            <div class="report-desc">Pets desaparecidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dados da Tabela -->
+    <div class="data-section" id="dataSection" style="display:none">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title" id="sectionTitle"><i class="bi bi-database me-2"></i><span id="tableNameDisplay"></span></h1>
+        </div>
+        <div>
+          <span class="badge-count" id="recordCount">0 registros</span>
+        </div>
+      </div>
+      <div id="tableDataContainer">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Carregando dados...</p>
+        </div>
+      </div>
+      <div class="export-section" id="exportSection" style="display:none">
+        <button type="button" class="btn-export btn-pdf" onclick="exportarPDF()">
+          <i class="bi bi-file-earmark-pdf"></i> Gerar Relatório PDF
+        </button>
+        <button type="button" class="btn-export" style="background:var(--muted-color);color:white" onclick="exportarCSV()">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div class="data-section" id="emptySection">
+      <div class="empty-state">
+        <i class="bi bi-graph-up"></i>
+        <h3>Selecione um Relatório</h3>
+        <p>Escolha uma tabela acima para visualizar os dados correspondentes.</p>
+      </div>
+    </div>
+
+    <!-- Painel de Administração -->
+    <details class="db-panel-details" style="margin-top:30px;">
+      <summary class="db-panel-title">
+        <i class="bi bi-hdd-stack me-2"></i>Administração
+        <span class="warning-text">⚠️ Risco de perda de dados</span>
+        <span class="db-panel-arrow">▼</span>
+      </summary>
+      <div class="db-panel-content">
+        <div class="db-panel-actions">
+          <button type="button" class="btn-db" onclick="runBackup('run')">
+            <i class="bi bi-database-check"></i> Criar Backup
+          </button>
+          <button type="button" class="btn-db btn-secondary" onclick="runBackup('cron')">
+            <i class="bi bi-clock-history"></i> Agendar Backup (Cron)
+          </button>
+          <button type="button" class="btn-db btn-warning" onclick="showMaintenanceMenu()">
+            <i class="bi bi-tools"></i> Manutenção (control.sh)
+          </button>
+        </div>
+
+        <div class="mb-3" style="margin-top:20px;">
+          <label for="backupSelect" class="form-label fw-bold">Restaurar Backup:</label>
+          <div class="restore-controls">
+            <select id="backupSelect" style="flex:1">
+              <option value="">-- Selecione um backup --</option>
+            </select>
+            <button type="button" class="btn-db btn-restore" onclick="restoreTable()">
+              <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+            </button>
+          </div>
+        </div>
+
+        <div id="maintenanceMenu" class="maintenance-menu" style="display:none">
+          <div class="menu-options">
+            <button type="button" class="menu-option" onclick="runMaintenance('1')">1) Fluxo Completo</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('2')">2) Gerenciar Repositório</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('3')">3) Atualizar Código (Git Pull)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('4')">4) Instalar Dependências (NPM)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('5')">5) Reiniciar App (PM2)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('6')">6) Validar Webserver (Nginx)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('7')">7) Verificar Certificado (Certbot)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('8')">8) Renovar Certificado (Certbot)</button>
+            <button type="button" class="menu-option" onclick="runMaintenance('9')">9) Ver Logs</button>
+          </div>
+        </div>
+
+        <div class="log-container">
+          <label for="logOutput" class="form-label"><i class="bi bi-terminal me-2"></i>Logs:</label>
+          <textarea id="logOutput" class="form-control log-textarea" readonly placeholder="Aguardando ação..."></textarea>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearLog()">
+            <i class="bi bi-trash"></i> Limpar
+          </button>
+        </div>
+      </div>
+    </details>
+
+  </div>
+
+  <script>
+    const API_BASE = '/amoranimal';
+
+    const TABLE_LABELS = {
+      animais: 'Animais',
+      adocoes: 'Adoções',
+      castracoes: 'Castrações',
+      doacoes: 'Doações',
+      eventos: 'Eventos',
+      parcerias: 'Parcerias',
+      procura_se: 'Procura-se',
+    };
+
+    const TABLE_COLUMNS_HIDE = ['id', 'senha', 'updated_at', 'created_at'];
+
+    let currentTable = null;
+    let currentData = null;
+
+    function carregarTabela(tabela) {
+      if (!tabela) return;
+      currentTable = tabela;
+      document.getElementById('tabela').value = tabela;
+      document.getElementById('emptySection').style.display = 'none';
+      document.getElementById('dataSection').style.display = 'block';
+      document.getElementById('exportSection').style.display = 'none';
+
+      const label = TABLE_LABELS[tabela] || tabela.charAt(0).toUpperCase() + tabela.slice(1);
+      document.getElementById('tableNameDisplay').textContent = label;
+
+      document.getElementById('tableDataContainer').innerHTML = `
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Carregando dados...</p>
+        </div>
+      `;
+
+      fetch(`${API_BASE}/${tabela}`)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then(data => {
+          currentData = data;
+          renderTabela(tabela, data);
+        })
+        .catch(err => {
+          document.getElementById('tableDataContainer').innerHTML = `
+            <div class="data-table-error">
+              <i class="bi bi-exclamation-triangle"></i>
+              <h4>Erro ao carregar dados</h4>
+              <p>${err.message}</p>
+              <p class="text-muted small">Verifique se a API está rodando em ${API_BASE}</p>
+            </div>
+          `;
+        });
+
+      document.querySelectorAll('.report-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.table === tabela);
+      });
+    }
+
+    function renderTabela(tabela, data) {
+      const container = document.getElementById('tableDataContainer');
+      const countEl = document.getElementById('recordCount');
+
+      if (!data || !data.length) {
+        countEl.textContent = '0 registros';
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>Nenhum Dado Encontrado</h3>
+            <p>Não há registros disponíveis para esta tabela.</p>
+          </div>
+        `;
+        document.getElementById('exportSection').style.display = 'none';
+        return;
+      }
+
+      countEl.textContent = data.length + ' registros';
+
+      const columns = Object.keys(data[0]).filter(col => !TABLE_COLUMNS_HIDE.includes(col));
+
+      let html = '<div class="table-wrapper"><table class="table-modern"><thead><tr>';
+      columns.forEach(col => {
+        const label = col.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        html += `<th>${label}</th>`;
+      });
+      html += '<th style="text-align:center;min-width:80px">Ações</th>';
+      html += '</tr></thead><tbody>';
+
+      data.forEach(row => {
+        html += '<tr>';
+        columns.forEach(col => {
+          let val = row[col];
+          if (val === null || val === undefined) val = '-';
+          if (typeof val === 'string' && val.length > 120) val = val.substring(0, 120) + '...';
+          if (col === 'foto_url' && val && val !== '-') {
+            val = `<a href="${val}" target="_blank" class="text-decoration-none"><i class="bi bi-image"></i> Foto</a>`;
+          }
+          if (col === 'status') {
+            const statusClass = val === 'disponivel' || val === 'ativo' || val === 'agendado' ? 'text-success' : 'text-warning';
+            val = `<span class="${statusClass} fw-bold">${val}</span>`;
+          }
+          html += `<td>${val}</td>`;
+        });
+        if (row.id) {
+          html += `<td style="text-align:center">
+            <button class="btn-action btn-delete" title="Excluir" onclick="excluirRegistro('${tabela}', ${row.id})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>`;
+        } else {
+          html += '<td class="text-muted text-center">-</td>';
+        }
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+      document.getElementById('exportSection').style.display = 'flex';
+    }
+
+    function excluirRegistro(tabela, id) {
+      if (!confirm(`Tem certeza que deseja excluir o registro #${id} da tabela "${TABLE_LABELS[tabela] || tabela}"?`)) return;
+      fetch(`${API_BASE}/${tabela}/${id}`, { method: 'DELETE' })
+        .then(r => {
+          if (!r.ok) throw new Error('Erro ao excluir');
+          return r.json();
+        })
+        .then(() => {
+          appendLog(`Registro #${id} excluído de "${tabela}"`);
+          carregarTabela(tabela);
+        })
+        .catch(err => {
+          appendLog(`Erro ao excluir #${id}: ${err.message}`, true);
+        });
+    }
+
+    function exportarPDF() {
+      if (!currentData || !currentTable) return;
+      appendLog('Gerando relatório PDF...');
+      const win = window.open('', '_blank');
+      if (!win) { appendLog('Pop-up bloqueado. Permita pop-ups para gerar PDF.', true); return; }
+
+      let html = `
+      <html><head><meta charset="utf-8"><title>Relatório ${TABLE_LABELS[currentTable]}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+        th { background: #0d9488; color: white; padding: 8px; text-align: left; }
+        td { padding: 6px 8px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        .footer { margin-top: 30px; font-size: 11px; color: #666; text-align: center; }
+      </style></head><body>
+      <h1>ONG Amor Animal Marília</h1>
+      <h2 style="color:#333;">Relatório: ${TABLE_LABELS[currentTable]}</h2>
+      <p>Gerado em: ${new Date().toLocaleString('pt-BR')} | Total: ${currentData.length} registro(s)</p>
+      <table>
+        <thead><tr>`;
+
+      const columns = Object.keys(currentData[0]).filter(col => !TABLE_COLUMNS_HIDE.includes(col));
+      columns.forEach(col => {
+        const label = col.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        html += `<th>${label}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      currentData.forEach(row => {
+        html += '<tr>';
+        columns.forEach(col => {
+          let val = row[col];
+          if (val === null || val === undefined) val = '-';
+          html += `<td>${String(val).substring(0, 100)}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += `</tbody></table>
+      <div class="footer">ONG Amor Animal Marília — https://amoranimal.ong.br</div>
+      </body></html>`;
+
+      win.document.write(html);
+      win.document.close();
+      win.print();
+      appendLog('PDF enviado para impressão');
+    }
+
+    function exportarCSV() {
+      if (!currentData || !currentTable) return;
+      const columns = Object.keys(currentData[0]).filter(col => !TABLE_COLUMNS_HIDE.includes(col));
+      let csv = columns.map(c => '"' + c.replace(/_/g, ' ') + '"').join(',') + '\n';
+      currentData.forEach(row => {
+        csv += columns.map(col => {
+          let val = row[col];
+          if (val === null || val === undefined) val = '';
+          return '"' + String(val).replace(/"/g, '""') + '"';
+        }).join(',') + '\n';
+      });
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `relatorio_${currentTable}_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      appendLog(`CSV exportado: ${link.download}`);
+    }
+
+    function appendLog(msg, isError) {
+      const log = document.getElementById('logOutput');
+      if (!log) return;
+      const ts = new Date().toLocaleTimeString('pt-BR');
+      log.value += `[${ts}] ${isError ? '⚠️ ' : '✅ '}${msg}\n`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function clearLog() {
+      const log = document.getElementById('logOutput');
+      if (log) log.value = '';
+    }
+
+    function showMaintenanceMenu() {
+      const el = document.getElementById('maintenanceMenu');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function runBackup(action) {
+      const btn = action === 'run'
+        ? document.querySelector('.btn-db:not(.btn-secondary):not(.btn-warning)')
+        : document.querySelector('.btn-db.btn-secondary');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Aguarde...'; }
+      appendLog(`Iniciando: ${action === 'run' ? 'Criar Backup' : 'Agendar Backup (Cron)'}...`);
+      fetch(`${API_BASE}/relatorio/backup?action=${action}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => {
+          appendLog(d.log || (d.success ? 'OK' : 'Erro'));
+          if (action === 'run') loadBackups();
+        })
+        .catch(e => appendLog('Erro: ' + e.message, true))
+        .finally(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = action === 'run'
+              ? '<i class="bi bi-database-check"></i> Criar Backup'
+              : '<i class="bi bi-clock-history"></i> Agendar Backup (Cron)';
+          }
+        });
+    }
+
+    function runMaintenance(option) {
+      const btn = document.querySelector(`.menu-option[onclick*="'${option}'"]`);
+      if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+      const labels = { '1':'Fluxo Completo','2':'Gerenciar Repositório','3':'Atualizar Código','4':'Instalar Dependências','5':'Reiniciar App','6':'Validar Nginx','7':'Verificar Certificado','8':'Renovar Certificado','9':'Ver Logs' };
+      appendLog(`Iniciando: ${labels[option] || option}...`);
+      fetch(`${API_BASE}/relatorio/maintenance?option=${option}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => appendLog(d.log || (d.success ? 'OK' : 'Erro')))
+        .catch(e => appendLog('Erro: ' + e.message, true))
+        .finally(() => {
+          if (btn) { btn.disabled = false; btn.textContent = `${option}) ${labels[option] || option}`; }
+        });
+    }
+
+    function loadBackups() {
+      const sel = document.getElementById('backupSelect');
+      if (!sel) return;
+      fetch(`${API_BASE}/relatorio/backups`)
+        .then(r => r.json())
+        .then(d => {
+          sel.innerHTML = '<option value="">-- Selecione um backup --</option>';
+          if (d.success && d.files && d.files.length) {
+            d.files.forEach(f => {
+              const opt = document.createElement('option');
+              opt.value = f; opt.textContent = f;
+              sel.appendChild(opt);
+            });
+          } else {
+            sel.innerHTML += '<option value="">Nenhum backup encontrado</option>';
+          }
+        })
+        .catch(() => {
+          sel.innerHTML = '<option value="">Erro ao carregar backups</option>';
+        });
+    }
+
+    function restoreTable() {
+      const tableSel = document.getElementById('tabela');
+      const backupSel = document.getElementById('backupSelect');
+      const tabela = tableSel.value;
+      const backupFile = backupSel.value;
+      if (!tabela) { appendLog('Selecione uma tabela primeiro!', true); return; }
+      if (!backupFile) { appendLog('Selecione um arquivo de backup!', true); return; }
+      if (!confirm(`ATENÇÃO! Isso fará DROP na tabela "${tabela}" e restaurará do backup. Continuar?`)) return;
+      appendLog(`Iniciando restauração da tabela "${tabela}"...`);
+      fetch(`${API_BASE}/relatorio/restore?tabela=${encodeURIComponent(tabela)}&backupFile=${encodeURIComponent(backupFile)}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => appendLog(d.log || (d.success ? 'Restauração concluída!' : 'Erro')))
+        .catch(e => appendLog('Erro: ' + e.message, true));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadBackups();
+      const params = new URLSearchParams(window.location.search);
+      const tbl = params.get('tabela');
+      if (tbl) carregarTabela(tbl);
+    });
+  </script>
+
+</body>
+</html>
