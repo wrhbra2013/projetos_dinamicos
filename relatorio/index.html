@@ -194,62 +194,6 @@
       </div>
     </div>
 
-    <!-- Painel de Administração -->
-    <details class="db-panel-details" style="margin-top:30px;">
-      <summary class="db-panel-title">
-        <i class="bi bi-hdd-stack me-2"></i>Administração
-        <span class="warning-text">⚠️ Risco de perda de dados</span>
-        <span class="db-panel-arrow">▼</span>
-      </summary>
-      <div class="db-panel-content">
-        <div class="db-panel-actions">
-          <button type="button" class="btn-db" onclick="runBackup('run')">
-            <i class="bi bi-database-check"></i> Criar Backup
-          </button>
-          <button type="button" class="btn-db btn-secondary" onclick="runBackup('cron')">
-            <i class="bi bi-clock-history"></i> Agendar Backup (Cron)
-          </button>
-          <button type="button" class="btn-db btn-warning" onclick="showMaintenanceMenu()">
-            <i class="bi bi-tools"></i> Manutenção (control.sh)
-          </button>
-        </div>
-
-        <div class="mb-3" style="margin-top:20px;">
-          <label for="backupSelect" class="form-label fw-bold">Restaurar Backup:</label>
-          <div class="restore-controls">
-            <select id="backupSelect" style="flex:1">
-              <option value="">-- Selecione um backup --</option>
-            </select>
-            <button type="button" class="btn-db btn-restore" onclick="restoreTable()">
-              <i class="bi bi-arrow-counterclockwise"></i> Restaurar
-            </button>
-          </div>
-        </div>
-
-        <div id="maintenanceMenu" class="maintenance-menu" style="display:none">
-          <div class="menu-options">
-            <button type="button" class="menu-option" onclick="runMaintenance('1')">1) Fluxo Completo</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('2')">2) Gerenciar Repositório</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('3')">3) Atualizar Código (Git Pull)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('4')">4) Instalar Dependências (NPM)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('5')">5) Reiniciar App (PM2)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('6')">6) Validar Webserver (Nginx)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('7')">7) Verificar Certificado (Certbot)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('8')">8) Renovar Certificado (Certbot)</button>
-            <button type="button" class="menu-option" onclick="runMaintenance('9')">9) Ver Logs</button>
-          </div>
-        </div>
-
-        <div class="log-container">
-          <label for="logOutput" class="form-label"><i class="bi bi-terminal me-2"></i>Logs:</label>
-          <textarea id="logOutput" class="form-control log-textarea" readonly placeholder="Aguardando ação..."></textarea>
-          <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearLog()">
-            <i class="bi bi-trash"></i> Limpar
-          </button>
-        </div>
-      </div>
-    </details>
-
   </div>
 
   <script>
@@ -382,19 +326,17 @@
           return r.json();
         })
         .then(() => {
-          appendLog(`Registro #${id} excluído de "${tabela}"`);
           carregarTabela(tabela);
         })
         .catch(err => {
-          appendLog(`Erro ao excluir #${id}: ${err.message}`, true);
+          console.error(`Erro ao excluir #${id}:`, err.message);
         });
     }
 
     function exportarPDF() {
       if (!currentData || !currentTable) return;
-      appendLog('Gerando relatório PDF...');
       const win = window.open('', '_blank');
-      if (!win) { appendLog('Pop-up bloqueado. Permita pop-ups para gerar PDF.', true); return; }
+      if (!win) { alert('Pop-up bloqueado. Permita pop-ups para gerar PDF.'); return; }
 
       let html = `
       <html><head><meta charset="utf-8"><title>Relatório ${TABLE_LABELS[currentTable]}</title>
@@ -437,7 +379,6 @@
       win.document.write(html);
       win.document.close();
       win.print();
-      appendLog('PDF enviado para impressão');
     }
 
     function exportarCSV() {
@@ -457,103 +398,9 @@
       link.download = `relatorio_${currentTable}_${new Date().toISOString().slice(0,10)}.csv`;
       link.click();
       URL.revokeObjectURL(link.href);
-      appendLog(`CSV exportado: ${link.download}`);
-    }
-
-    function appendLog(msg, isError) {
-      const log = document.getElementById('logOutput');
-      if (!log) return;
-      const ts = new Date().toLocaleTimeString('pt-BR');
-      log.value += `[${ts}] ${isError ? '⚠️ ' : '✅ '}${msg}\n`;
-      log.scrollTop = log.scrollHeight;
-    }
-
-    function clearLog() {
-      const log = document.getElementById('logOutput');
-      if (log) log.value = '';
-    }
-
-    function showMaintenanceMenu() {
-      const el = document.getElementById('maintenanceMenu');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function runBackup(action) {
-      const btn = action === 'run'
-        ? document.querySelector('.btn-db:not(.btn-secondary):not(.btn-warning)')
-        : document.querySelector('.btn-db.btn-secondary');
-      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Aguarde...'; }
-      appendLog(`Iniciando: ${action === 'run' ? 'Criar Backup' : 'Agendar Backup (Cron)'}...`);
-      fetch(`${API_BASE}/relatorio/backup?action=${action}`, { method: 'POST' })
-        .then(r => r.json())
-        .then(d => {
-          appendLog(d.log || (d.success ? 'OK' : 'Erro'));
-          if (action === 'run') loadBackups();
-        })
-        .catch(e => appendLog('Erro: ' + e.message, true))
-        .finally(() => {
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = action === 'run'
-              ? '<i class="bi bi-database-check"></i> Criar Backup'
-              : '<i class="bi bi-clock-history"></i> Agendar Backup (Cron)';
-          }
-        });
-    }
-
-    function runMaintenance(option) {
-      const btn = document.querySelector(`.menu-option[onclick*="'${option}'"]`);
-      if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
-      const labels = { '1':'Fluxo Completo','2':'Gerenciar Repositório','3':'Atualizar Código','4':'Instalar Dependências','5':'Reiniciar App','6':'Validar Nginx','7':'Verificar Certificado','8':'Renovar Certificado','9':'Ver Logs' };
-      appendLog(`Iniciando: ${labels[option] || option}...`);
-      fetch(`${API_BASE}/relatorio/maintenance?option=${option}`, { method: 'POST' })
-        .then(r => r.json())
-        .then(d => appendLog(d.log || (d.success ? 'OK' : 'Erro')))
-        .catch(e => appendLog('Erro: ' + e.message, true))
-        .finally(() => {
-          if (btn) { btn.disabled = false; btn.textContent = `${option}) ${labels[option] || option}`; }
-        });
-    }
-
-    function loadBackups() {
-      const sel = document.getElementById('backupSelect');
-      if (!sel) return;
-      fetch(`${API_BASE}/relatorio/backups`)
-        .then(r => r.json())
-        .then(d => {
-          sel.innerHTML = '<option value="">-- Selecione um backup --</option>';
-          if (d.success && d.files && d.files.length) {
-            d.files.forEach(f => {
-              const opt = document.createElement('option');
-              opt.value = f; opt.textContent = f;
-              sel.appendChild(opt);
-            });
-          } else {
-            sel.innerHTML += '<option value="">Nenhum backup encontrado</option>';
-          }
-        })
-        .catch(() => {
-          sel.innerHTML = '<option value="">Erro ao carregar backups</option>';
-        });
-    }
-
-    function restoreTable() {
-      const tableSel = document.getElementById('tabela');
-      const backupSel = document.getElementById('backupSelect');
-      const tabela = tableSel.value;
-      const backupFile = backupSel.value;
-      if (!tabela) { appendLog('Selecione uma tabela primeiro!', true); return; }
-      if (!backupFile) { appendLog('Selecione um arquivo de backup!', true); return; }
-      if (!confirm(`ATENÇÃO! Isso fará DROP na tabela "${tabela}" e restaurará do backup. Continuar?`)) return;
-      appendLog(`Iniciando restauração da tabela "${tabela}"...`);
-      fetch(`${API_BASE}/relatorio/restore?tabela=${encodeURIComponent(tabela)}&backupFile=${encodeURIComponent(backupFile)}`, { method: 'POST' })
-        .then(r => r.json())
-        .then(d => appendLog(d.log || (d.success ? 'Restauração concluída!' : 'Erro')))
-        .catch(e => appendLog('Erro: ' + e.message, true));
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      loadBackups();
       const params = new URLSearchParams(window.location.search);
       const tbl = params.get('tabela');
       if (tbl) carregarTabela(tbl);

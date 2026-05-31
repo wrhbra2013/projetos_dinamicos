@@ -794,6 +794,9 @@ NGINXEOF
   fi
 
   cat >> "$NGINX_CONF" <<NGINXEOF
+    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+
     location /.well-known/acme-challenge/ {
         root /var/www;
     }
