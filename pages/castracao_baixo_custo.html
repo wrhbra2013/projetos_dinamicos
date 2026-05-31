@@ -182,7 +182,7 @@
 </main>
 
 <script>
-const API_BASE_BC = (location.protocol === 'file:') ? 'https://api.projetosdinamicos.com.br/amoranimal' : '/amoranimal';
+const API_BASE_BC = 'https://api.projetosdinamicos.com.br/amoranimal';
 
 fetch(API_BASE_BC + '/settings')
   .then(function(r) { return r.json(); })

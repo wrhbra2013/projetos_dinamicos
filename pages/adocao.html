@@ -8,7 +8,11 @@
   <link rel="stylesheet" href="../static/css/imagem/bootstrap-icons.min.css">
   <link rel="stylesheet" href="../static/css/adote.css">
   <link rel="icon" type="image/png" href="../static/css/favicon/ong.ico">
-  
+  <style>
+    #msg-adocao.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    #msg-adocao.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    #msg-adocao i { margin-right:8px; }
+  </style>
 </head>
 <body>
 
@@ -89,6 +93,77 @@
     <i class="bi bi-file-earmark-text"></i> Preencher Termo de Responsabilidade
   </a>
 </div>
+
+<script>
+const API_BASE = 'https://api.projetosdinamicos.com.br/amoranimal';
+
+document.getElementById('form-adocao-cadastro').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  const msgDiv = document.getElementById('msg-adocao');
+  const preview = document.getElementById('preview-foto');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Enviando...';
+  msgDiv.style.display = 'none';
+
+  try {
+    const fileInput = document.getElementById('foto-pet');
+    let foto_url = null;
+    if (fileInput.files[0]) {
+      foto_url = await new Promise(function(resolve) {
+        const reader = new FileReader();
+        reader.onload = function(ev) { resolve(ev.target.result); };
+        reader.readAsDataURL(fileInput.files[0]);
+      });
+    }
+
+    const data = {
+      nome: document.getElementById('nome-pet').value.trim(),
+      idade: document.getElementById('idade-pet').value.trim() || null,
+      especie: document.getElementById('especie-pet').value || null,
+      porte: document.getElementById('porte-pet').value || null,
+      caracteristicas: document.getElementById('caracteristicas-pet').value.trim() || null,
+      foto_url: foto_url,
+      status: 'disponivel'
+    };
+
+    const resp = await fetch(API_BASE + '/animais', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!resp.ok) throw new Error('Erro ao cadastrar pet');
+
+    this.reset();
+    preview.style.display = 'none';
+    msgDiv.className = 'success';
+    msgDiv.innerHTML = '<i class="bi bi-check-circle-fill"></i> Pet cadastrado com sucesso!';
+    msgDiv.style.display = 'block';
+  } catch (err) {
+    msgDiv.className = 'error';
+    msgDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Erro: ' + err.message;
+    msgDiv.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-send me-2"></i>Enviar';
+  }
+});
+
+document.getElementById('foto-pet').addEventListener('change', function() {
+  const preview = document.getElementById('preview-foto');
+  const img = document.getElementById('preview-img');
+  if (this.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(ev) { img.src = ev.target.result; };
+    reader.readAsDataURL(this.files[0]);
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+});
+</script>
 
 <script src="../components/footer.js"></script>
 

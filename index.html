@@ -186,7 +186,7 @@
 
   if (pending === 0) return;
 
-  var API_BASE = (location.protocol === 'file:') ? 'https://api.projetosdinamicos.com.br/amoranimal' : '/amoranimal';
+  var API_BASE = 'https://api.projetosdinamicos.com.br/amoranimal';
 
   cards.forEach(function(card) {
     var endpoint = card.getAttribute('data-endpoint');
