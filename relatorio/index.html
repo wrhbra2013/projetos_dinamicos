@@ -114,6 +114,8 @@
           <option value="eventos">Eventos</option>
           <option value="parcerias">Parcerias</option>
           <option value="procura_se">Procura-se</option>
+          <option value="voluntarios">Voluntários</option>
+          <option value="coleta">Coleta</option>
         </select>
       </div>
 
@@ -154,6 +156,16 @@
             <i class="bi bi-search"></i>
             <div class="report-title">Procura-se</div>
             <div class="report-desc">Pets desaparecidos</div>
+          </div>
+          <div class="report-option" data-table="voluntarios" onclick="carregarTabela('voluntarios')">
+            <i class="bi bi-people"></i>
+            <div class="report-title">Voluntários</div>
+            <div class="report-desc">Cadastro de voluntários</div>
+          </div>
+          <div class="report-option" data-table="coleta" onclick="carregarTabela('coleta')">
+            <i class="bi bi-truck"></i>
+            <div class="report-title">Coleta</div>
+            <div class="report-desc">Solicitações de coleta</div>
           </div>
         </div>
       </div>
@@ -207,6 +219,8 @@
       eventos: 'Eventos',
       parcerias: 'Parcerias',
       procura_se: 'Procura-se',
+      voluntarios: 'Voluntários',
+      coleta: 'Coleta',
     };
 
     const TABLE_COLUMNS_HIDE = ['id', 'senha', 'updated_at', 'created_at'];

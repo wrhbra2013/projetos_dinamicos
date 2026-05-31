@@ -364,7 +364,8 @@ app.post('/settings', async (req, res) => {
 // Mapeia nomes de tabela que o frontend acessa diretamente
 const TABELAS_PERMITIDAS = [
     'animais', 'adocoes', 'castracoes', 'doacoes',
-    'eventos', 'parcerias', 'procura_se', 'usuarios'
+    'eventos', 'parcerias', 'procura_se', 'usuarios',
+    'voluntarios', 'coleta'
 ];
 
 // GET /:tabela — listar registros
@@ -971,19 +972,49 @@ CREATE TABLE IF NOT EXISTS parcerias (
 -- procura_se: animais desaparecidos
 CREATE TABLE IF NOT EXISTS procura_se (
     id SERIAL PRIMARY KEY,
-    tutor_nome VARCHAR(255) NOT NULL,
-    tutor_contato VARCHAR(100),
-    tutor_whatsapp VARCHAR(100),
-    pet_nome VARCHAR(255) NOT NULL,
-    pet_especie VARCHAR(50),
-    pet_idade VARCHAR(100),
-    pet_porte VARCHAR(50),
-    pet_caracteristicas TEXT,
-    local_desaparecimento VARCHAR(255),
-    data_desaparecimento DATE,
+    origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nome VARCHAR(255),
+    especie VARCHAR(100),
+    sexo VARCHAR(50),
+    idade VARCHAR(50),
+    porte VARCHAR(50),
+    cor VARCHAR(100),
     foto_url TEXT,
-    status VARCHAR(50) DEFAULT 'desaparecido',
-    created_at TIMESTAMP DEFAULT NOW()
+    informacoes TEXT,
+    contato VARCHAR(255),
+    status VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS voluntarios (
+    id SERIAL PRIMARY KEY,
+    origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nome VARCHAR(255),
+    localidade VARCHAR(255),
+    telefone VARCHAR(20),
+    whatsapp VARCHAR(20),
+    disponibilidade TEXT,
+    habilidade TEXT,
+    mensagem TEXT
+);
+
+CREATE TABLE IF NOT EXISTS coleta (
+    id SERIAL PRIMARY KEY,
+    origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nome VARCHAR(255),
+    telefone VARCHAR(20),
+    whatsapp VARCHAR(20),
+    item VARCHAR(255),
+    quantidade VARCHAR(50),
+    dia VARCHAR(10),
+    hora TIME,
+    cep VARCHAR(10),
+    endereco VARCHAR(255),
+    numero VARCHAR(20),
+    complemento VARCHAR(100),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    estado VARCHAR(50),
+    mensagem TEXT
 );
 
 -- usuarios: usuários do sistema (login, voluntários)

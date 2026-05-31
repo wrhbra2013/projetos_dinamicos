@@ -1,6 +1,17 @@
 document.write(`
 <input type="checkbox" id="contrast-toggle" class="css-toggle-checkbox">
 <label for="contrast-toggle" class="contrast-label" aria-label="Alternar alto contraste">\u25E7</label>
+<script>
+(function(){
+  var t = document.getElementById('contrast-toggle');
+  if(!t) return;
+  if(localStorage.getItem('highContrast')==='true'){ document.body.classList.add('high-contrast'); t.checked=true; }
+  t.addEventListener('change', function(){
+    if(t.checked){ document.body.classList.add('high-contrast'); localStorage.setItem('highContrast','true'); }
+    else{ document.body.classList.remove('high-contrast'); localStorage.setItem('highContrast','false'); }
+  });
+})();
+<\/script>
 
 <input type="checkbox" id="help-toggle" class="help-checkbox">
 <label for="help-toggle" class="help-label" aria-label="Ajuda">?</label>
@@ -34,6 +45,7 @@ document.write(`
       <li><a href="${ROOT}/pages/procura_se.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-search"></i> Procura-se</a></li>
       <li><a href="${ROOT}/pages/doacao.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-donate"></i> Doa&ccedil;&atilde;o</a></li>
       <li><a href="${ROOT}/pages/parceria.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-handshake"></i> Parceria</a></li>
+      <li><a href="${ROOT}/pages/voluntario.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-hands-helping"></i> Voluntário</a></li>
       <li><a href="${ROOT}/pages/sobre.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-info-circle"></i> Sobre</a></li>
       <li><a href="${ROOT}/pages/transparencia.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-file-invoice"></i> Transpar&ecirc;ncia</a></li>
       <li><a href="${ROOT}/pages/eventos.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
@@ -56,6 +68,7 @@ document.write(`
         <li><a href="${ROOT}/pages/procura_se.html">Procura-se</a></li>
         <li><a href="${ROOT}/pages/doacao.html">Doa&ccedil;&atilde;o</a></li>
         <li><a href="${ROOT}/pages/parceria.html">Parceria</a></li>
+        <li><a href="${ROOT}/pages/voluntario.html">Voluntário</a></li>
         <li><a href="${ROOT}/pages/sobre.html">Sobre</a></li>
         <li><a href="${ROOT}/pages/transparencia.html">Transpar&ecirc;ncia</a></li>
         <li><a href="${ROOT}/pages/eventos.html">Eventos</a></li>

@@ -1,23 +1,4 @@
 document.write(`
-<script>
-(function() {
-  var toggle = document.getElementById('contrast-toggle');
-  if (!toggle) return;
-  if (localStorage.getItem('highContrast') === 'true') {
-    document.body.classList.add('high-contrast');
-    toggle.checked = true;
-  }
-  toggle.addEventListener('change', function() {
-    if (toggle.checked) {
-      document.body.classList.add('high-contrast');
-      localStorage.setItem('highContrast', 'true');
-    } else {
-      document.body.classList.remove('high-contrast');
-      localStorage.setItem('highContrast', 'false');
-    }
-  });
-})();
-<\/script>
 <script src="${ROOT}/static/js/main.js"><\/script>
 
 <footer>
