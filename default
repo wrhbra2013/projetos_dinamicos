@@ -1,0 +1,138 @@
+# BEGIN crebortoli
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.projetosdinamicos.com.br;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location /crebortoli/ {
+        return 301 https://$host$request_uri;
+    }
+
+    location /amoranimal/ {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name api.projetosdinamicos.com.br;
+
+    ssl_certificate /etc/letsencrypt/live/api.projetosdinamicos.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.projetosdinamicos.com.br/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    if ($request_method = OPTIONS) {
+        return 204;
+    }
+
+    location /crebortoli/ {
+        proxy_pass http://127.0.0.1:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /amoranimal/ {
+        proxy_pass http://127.0.0.1:3002/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.crebortoli.com.br crebortoli.com.br;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+# END crebortoli
+
+# BEGIN amoranimal_site
+server {
+    listen 80;
+    listen [::]:80;
+    server_name 201.54.22.122;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        return 301 https://www.amoranimal.ong.br$request_uri;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.amoranimal.ong.br amoranimal.ong.br;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.amoranimal.ong.br amoranimal.ong.br 201.54.22.122;
+
+    ssl_certificate /etc/letsencrypt/live/amoranimal.ong.br-0001/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/amoranimal.ong.br-0001/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    client_max_body_size 15M;
+}
+# END amoranimal_site
