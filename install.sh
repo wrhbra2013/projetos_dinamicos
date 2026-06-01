@@ -263,14 +263,19 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // CORS — permite requisições do frontend hospedado em outro domínio
+// ATENÇÃO: verifique se o nginx NÃO tem add_header Access-Control-Allow-Origin
+// pois headers duplicados causam erro de CORS no browser
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
         'https://www.projetosdinamicos.com.br',
         'https://api.projetosdinamicos.com.br'
     ];
-    if (origin && allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
+    if (origin) {
+        const match = allowedOrigins.find(o => origin === o || origin.endsWith('://' + o.split('://')[1]));
+        if (match) {
+            res.header('Access-Control-Allow-Origin', match);
+        }
     }
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
