@@ -157,7 +157,7 @@ function updateEmptyState() {
             var noResults = document.createElement('div');
             noResults.id = 'noResults';
             noResults.className = 'empty-state';
-            noResults.innerHTML = '<div class="empty-icon"><i class="fas fa-search"></i></div><h2 class="empty-title">Nenhum Pet Encontrado</h2><p class="empty-description">Tente ajustar os filtros para encontrar o pet perfeito para voc\u00ea.</p>';
+            noResults.innerHTML = '<div class="empty-icon"><i class="bi bi-search"></i></div><h2 class="empty-title">Nenhum Pet Encontrado</h2><p class="empty-description">Tente ajustar os filtros para encontrar o pet perfeito para voc\u00ea.</p>';
             grid.appendChild(noResults);
         }
     } else {

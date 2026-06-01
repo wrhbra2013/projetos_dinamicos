@@ -104,7 +104,7 @@ class LoginFormHandler {
             input.parentNode.insertBefore(errorElement, input.nextSibling);
         }
         
-        errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+        errorElement.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${message}`;
     }
 
     clearFieldError(input) {
@@ -138,7 +138,7 @@ class LoginFormHandler {
         const isPassword = this.senhaInput.type === 'password';
         
         this.senhaInput.type = isPassword ? 'text' : 'password';
-        this.eyeIcon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+        this.eyeIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
         
         // Update button accessibility
         const button = this.eyeIcon.closest('.password-toggle');
@@ -158,15 +158,15 @@ class LoginFormHandler {
         alertDiv.setAttribute('role', 'alert');
         alertDiv.setAttribute('aria-live', 'polite');
         
-        const icon = type === 'danger' ? 'fa-exclamation-triangle' : 
-                    type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        const icon = type === 'danger' ? 'bi bi-exclamation-triangle' : 
+                    type === 'success' ? 'bi bi-check-circle' : 'bi bi-info-circle';
         
         alertDiv.innerHTML = `
-            <i class="fas ${icon}"></i>
+            <i class="${icon}"></i>
             <span>${message}</span>
             <button type="button" class="alert-close" aria-label="Fechar mensagem" 
                     style="margin-left: auto; background: none; border: none; color: white; cursor: pointer;">
-                <i class="fas fa-times"></i>
+                <i class="bi bi-x"></i>
             </button>
         `;
         
@@ -205,7 +205,7 @@ class LoginFormHandler {
             this.submitButton.disabled = false;
             this.submitButton.classList.remove('loading');
             this.submitButton.innerHTML = `
-                <i class="fas fa-sign-in-alt me-2"></i>
+                <i class="bi bi-box-arrow-in-right me-2"></i>
                 Entrar no Sistema
             `;
         }

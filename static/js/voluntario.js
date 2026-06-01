@@ -44,7 +44,7 @@ function updateEmptyState() {
             noResults.className = 'empty-state';
             noResults.innerHTML = `
                 <div class="empty-icon">
-                    <i class="fas fa-search"></i>
+                    <i class="bi bi-search"></i>
                 </div>
                 <h2 class="empty-title">Nenhum Voluntário Encontrado</h2>
                 <p class="empty-description">

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ONG Amor Animal Marília</title>
   <link rel="stylesheet" href="static/css/default.css">
-  <link rel="stylesheet" href="static/css/imagem/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="static/css/icons/bootstrap-icons.min.css">
   <link rel="stylesheet" href="static/css/home.css">
   <link rel="icon" type="image/png" href="static/css/favicon/ong.ico">
-  <script src="https://unpkg.com/pdfmake@0.2.20/build/pdfmake.min.js"></script>
-  <script src="https://unpkg.com/pdfmake@0.2.20/build/vfs_fonts.js"></script>
+  <script src="static/js/pdfmake/pdfmake.min.js"></script>
+  <script src="static/js/pdfmake/vfs_fonts.js"></script>
+
   <style>
   .stat-card { background: var(--container-bg) !important; }
   .event-card-hover {
@@ -146,32 +147,32 @@
     <h2 class="text-center mb-4" style="color: var(--heading-color);">Nosso Impacto</h2>
     <div class="stats-grid" id="stats-grid">
       <div class="stat-card" data-endpoint="usuarios">
-        <div class="stat-card-icon" style="color: var(--brand-teal);"><i class="fas fa-users"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-teal);"><i class="bi bi-people"></i></div>
         <div class="stat-card-number" id="stat-count-usuarios">0</div>
         <div class="stat-card-label">Voluntários</div>
       </div>
       <div class="stat-card" data-endpoint="animais">
-        <div class="stat-card-icon" style="color: var(--brand-coral);"><i class="fas fa-paw"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-coral);"><i class="bi bi-paw"></i></div>
         <div class="stat-card-number" id="stat-count-animais">0</div>
         <div class="stat-card-label">Aguardando Adoção</div>
       </div>
       <div class="stat-card" data-endpoint="adocoes">
-        <div class="stat-card-icon" style="color: var(--brand-purple);"><i class="fas fa-heart"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-purple);"><i class="bi bi-heart"></i></div>
         <div class="stat-card-number" id="stat-count-adocoes">0</div>
         <div class="stat-card-label">Adotados</div>
       </div>
       <div class="stat-card" data-endpoint="procura_se">
-        <div class="stat-card-icon" style="color: var(--brand-blue);"><i class="fas fa-search"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-blue);"><i class="bi bi-search"></i></div>
         <div class="stat-card-number" id="stat-count-procura_se">0</div>
         <div class="stat-card-label">Desaparecidos</div>
       </div>
       <div class="stat-card" data-endpoint="castracoes">
-        <div class="stat-card-icon" style="color: var(--brand-green);"><i class="fas fa-user-md"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-green);"><i class="bi bi-person-heart"></i></div>
         <div class="stat-card-number" id="stat-count-castracoes">0</div>
         <div class="stat-card-label">Castrações</div>
       </div>
       <div class="stat-card" data-endpoint="parcerias">
-        <div class="stat-card-icon" style="color: var(--brand-yellow);"><i class="fas fa-handshake"></i></div>
+        <div class="stat-card-icon" style="color: var(--brand-yellow);"><i class="bi bi-handshake"></i></div>
         <div class="stat-card-number" id="stat-count-parcerias">0</div>
         <div class="stat-card-label">Parcerias</div>
       </div>
@@ -270,13 +271,13 @@
         <div class="event-info">
           <h3 class="event-titulo" style="margin-bottom: 10px;">Feira de Adoção</h3>
           <div class="event-meta">
-            <span><i class="fas fa-calendar-alt"></i> 15 de Junho de 2026</span>
-            <span><i class="fas fa-map-marker-alt"></i> Praça Central, Marília</span>
+            <span><i class="bi bi-calendar-event"></i> 15 de Junho de 2026</span>
+            <span><i class="bi bi-geo-alt"></i> Praça Central, Marília</span>
           </div>
           <p class="event-descricao">Venha conhecer nossos animais e encontrar seu novo melhor amigo! Teremos diversos pets esperando por um lar amoroso. Leve seu documento e prepare-se para se apaixonar.</p>
         </div>
         <div class="event-fotos-area" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#94a3b8; font-size:3rem;">
-          <i class="fas fa-calendar-alt"></i>
+          <i class="bi bi-calendar-event"></i>
         </div>
       </div>
 
@@ -284,13 +285,13 @@
         <div class="event-info">
           <h3 class="event-titulo" style="margin-bottom: 10px;">Mutirão de Castração</h3>
           <div class="event-meta">
-            <span><i class="fas fa-calendar-alt"></i> 22 de Junho de 2026</span>
-            <span><i class="fas fa-map-marker-alt"></i> Clínica E O Bicho</span>
+            <span><i class="bi bi-calendar-event"></i> 22 de Junho de 2026</span>
+            <span><i class="bi bi-geo-alt"></i> Clínica E O Bicho</span>
           </div>
           <p class="event-descricao">Mutirão de castração a baixo custo. Agende seu horário e contribua para o controle populacional de animais. Vagas limitadas.</p>
         </div>
         <div class="event-fotos-area" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#94a3b8; font-size:3rem;">
-          <i class="fas fa-calendar-alt"></i>
+          <i class="bi bi-calendar-event"></i>
         </div>
       </div>
 
@@ -390,7 +391,7 @@
   <div class="landing-container">
     <div class="section-header" style="text-align: center; margin-bottom: 2rem;">
       <h2 style="color: var(--heading-color);">
-        <i class="fas fa-paw"></i>
+        <i class="bi bi-paw"></i>
         Pets para Adoção
       </h2>
       <p style="color: var(--text-color);">Encontre seu novo melhor amigo! Estes são os pets que aguardam uma família amorosa.</p>
@@ -506,7 +507,7 @@
 <section class="landing-section landing-section-alt">
   <div class="landing-container">
     <h2 class="text-center mb-4" style="color: var(--heading-color);">
-      <i class="fas fa-hands-helping"></i> Nossos Voluntários
+      <i class="bi bi-people-fill"></i> Nossos Voluntários
     </h2>
     <p class="text-center text-muted mb-4">Conheça as pessoas que fazem essa obra acontecer</p>
 

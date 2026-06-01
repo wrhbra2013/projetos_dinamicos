@@ -1,6 +1,6 @@
 document.write(
 '<input type="checkbox" id="contrast-toggle" class="css-toggle-checkbox">' +
-'<label for="contrast-toggle" class="contrast-label" aria-label="Alternar alto contraste"><i class="fas fa-eye"></i></label>' +
+'<label for="contrast-toggle" class="contrast-label" aria-label="Alternar alto contraste"><i class="bi bi-eye"></i></label>' +
 '<script>' +
 '(function(){' +
 '  var t = document.getElementById(\'contrast-toggle\');' +
@@ -13,7 +13,7 @@ document.write(
 '})();' +
 '<\/script>' +
 '<input type="checkbox" id="help-toggle" class="help-checkbox">' +
-'<label for="help-toggle" class="help-label" aria-label="Ajuda"><i class="fas fa-circle-info"></i></label>' +
+'<label for="help-toggle" class="help-label" aria-label="Ajuda"><i class="bi bi-info-circle"></i></label>' +
 '<div class="help-dropdown">' +
 '  <div class="help-content">' +
 '    <h4>Ajuda</h4>' +
@@ -33,7 +33,7 @@ document.write(
 '<header class="main-header">' +
 '  <main class="main-header-controls"></main>' +
 '  <div style="text-align:center;padding:10px 0 0">' +
-'    <a href="' + ROOT + '/login/index.html" style="display:inline-block;padding:8px 24px;background:var(--brand-teal);color:#fff;border-radius:6px;text-decoration:none;font-weight:600"><i class="fas fa-lock"></i> Acesso</a>' +
+'    <a href="' + ROOT + '/login/index.html" style="display:inline-block;padding:8px 24px;background:var(--brand-teal);color:#fff;border-radius:6px;text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
 '  </div>' +
 '  <div class="nav-container">' +
 '    <img src="' + ROOT + '/static/css/imagem/ong.jpg" alt="Logo ONG AMOR ANIMAL MARILIA" />' +
@@ -42,7 +42,7 @@ document.write(
 '  <div class="search-wrapper">' +
 '    <div class="search-inner">' +
 '      <input type="text" id="site-search" class="search-input" placeholder="Pesquisar em todo o site...">' +
-'      <i class="fas fa-search search-icon"></i>' +
+'      <i class="bi bi-search search-icon"></i>' +
 '    </div>' +
 '    <div id="search-results" class="search-results-box"></div>' +
 '  </div>' +
@@ -50,17 +50,17 @@ document.write(
 '<script>' +
 '(function(){' +
 '  var PAGES = [' +
-'    { t:"Inicio", d:"Pagina inicial da ONG Amor Animal", k:"inicio home principal ong amor animal marilia", i:"fa-home", c:"#14b8a6", u:"index.html" },' +
-'    { t:"Adocao", d:"Animais disponiveis para adocao", k:"adocao adotar pet cachorro gato animal", i:"fa-paw", c:"#f59e0b", u:"pages/adocao.html" },' +
-'    { t:"Castracao", d:"Agendamento de castracao", k:"castracao castrar cirurgia veterinario mutirao", i:"fa-user-md", c:"#10b981", u:"pages/castracao.html" },' +
-'    { t:"Procura-se", d:"Animais desaparecidos", k:"procura se perdido desaparecido busca", i:"fa-search", c:"#f97316", u:"pages/procura_se.html" },' +
-'    { t:"Doacao", d:"Contribua com doacoes", k:"doacao doar contribuir ajuda dinheiro", i:"fa-donate", c:"#8b5cf6", u:"pages/doacao.html" },' +
-'    { t:"Parceria", d:"Seja um parceiro da ONG", k:"parceria parceiro empresa apoiar", i:"fa-handshake", c:"#14b8a6", u:"pages/parceria.html" },' +
-'    { t:"Voluntario", d:"Seja um voluntario", k:"voluntario voluntariado ajudar trabalho", i:"fa-hands-helping", c:"#ec4899", u:"pages/voluntario.html" },' +
-'    { t:"Sobre", d:"Conheca a ONG Amor Animal", k:"sobre nos historia missao quem somos", i:"fa-info-circle", c:"#3b82f6", u:"pages/sobre.html" },' +
-'    { t:"Transparencia", d:"Portal da transparencia", k:"transparencia prestacao contas documentos", i:"fa-file-invoice", c:"#6366f1", u:"pages/transparencia.html" },' +
-'    { t:"Eventos", d:"Eventos da ONG", k:"eventos feira adocao mutirao castracao agenda", i:"fa-calendar-alt", c:"#a855f7", u:"pages/eventos.html" },' +
-'    { t:"Admin", d:"Painel administrativo", k:"admin administrador login acesso gestao", i:"fa-lock", c:"#64748b", u:"login/index.html" }' +
+'    { t:"Inicio", d:"Pagina inicial da ONG Amor Animal", k:"inicio home principal ong amor animal marilia", i:"bi bi-house-door", c:"#14b8a6", u:"index.html" },' +
+'    { t:"Adocao", d:"Animais disponiveis para adocao", k:"adocao adotar pet cachorro gato animal", i:"bi bi-paw", c:"#f59e0b", u:"pages/adocao.html" },' +
+'    { t:"Castracao", d:"Agendamento de castracao", k:"castracao castrar cirurgia veterinario mutirao", i:"bi bi-person-heart", c:"#10b981", u:"pages/castracao.html" },' +
+'    { t:"Procura-se", d:"Animais desaparecidos", k:"procura se perdido desaparecido busca", i:"bi bi-search", c:"#f97316", u:"pages/procura_se.html" },' +
+'    { t:"Doacao", d:"Contribua com doacoes", k:"doacao doar contribuir ajuda dinheiro", i:"bi bi-gift", c:"#8b5cf6", u:"pages/doacao.html" },' +
+'    { t:"Parceria", d:"Seja um parceiro da ONG", k:"parceria parceiro empresa apoiar", i:"bi bi-handshake", c:"#14b8a6", u:"pages/parceria.html" },' +
+'    { t:"Voluntario", d:"Seja um voluntario", k:"voluntario voluntariado ajudar trabalho", i:"bi bi-people-fill", c:"#ec4899", u:"pages/voluntario.html" },' +
+'    { t:"Sobre", d:"Conheca a ONG Amor Animal", k:"sobre nos historia missao quem somos", i:"bi bi-info-circle", c:"#3b82f6", u:"pages/sobre.html" },' +
+'    { t:"Transparencia", d:"Portal da transparencia", k:"transparencia prestacao contas documentos", i:"bi bi-file-text", c:"#6366f1", u:"pages/transparencia.html" },' +
+'    { t:"Eventos", d:"Eventos da ONG", k:"eventos feira adocao mutirao castracao agenda", i:"bi bi-calendar-event", c:"#a855f7", u:"pages/eventos.html" },' +
+'    { t:"Admin", d:"Painel administrativo", k:"admin administrador login acesso gestao", i:"bi bi-lock", c:"#64748b", u:"login/index.html" }' +
 '  ];' +
 '  var input = document.getElementById("site-search");' +
 '  var results = document.getElementById("search-results");' +
@@ -85,7 +85,7 @@ document.write(
 '      for (var i = 0; i < found.length; i++) {' +
 '        var p = found[i];' +
 '        html += "<a href=\"" + ROOT + "/" + p.u + "\" data-search-link=\"1\">";' +
-'        html += "<span class=\"sr-icon\" style=\"background:" + p.c + "\"><i class=\"fas " + p.i + "\"></i></span>";' +
+'        html += "<span class=\"sr-icon\" style=\"background:" + p.c + "\"><i class=\"" + p.i + "\"></i></span>";' +
 '        html += "<div><div class=\"sr-title\">" + p.t + "</div><div class=\"sr-desc\">" + p.d + "</div></div>";' +
 '        html += "</a>";' +
 '      }' +
