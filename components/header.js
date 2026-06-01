@@ -33,7 +33,7 @@ document.write(
 '<header class="main-header">' +
 '  <main class="main-header-controls"></main>' +
 '  <div style="text-align:center;padding:10px 0 0">' +
-'    <a href="' + ROOT + '/login/index.html" style="display:inline-block;padding:8px 24px;background:var(--brand-teal);color:#fff;border-radius:6px;text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
+'    <a href="' + ROOT + '/login/index.html" style="color:var(--brand-teal);text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
 '  </div>' +
 '  <div class="nav-container">' +
 '    <img src="' + ROOT + '/static/css/imagem/ong.jpg" alt="Logo ONG AMOR ANIMAL MARILIA" />' +
