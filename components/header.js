@@ -39,17 +39,7 @@ document.write(`
   <label for="mobile-menu-toggle" class="mobile-menu-close" aria-label="Fechar menu">&times;</label>
   <nav class="mobile-menu">
     <ul class="nav-list">
-      <li><a href="${ROOT}/index.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-home"></i> In&iacute;cio</a></li>
-      <li><a href="${ROOT}/pages/adocao.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-paw"></i> Ado&ccedil;&atilde;o</a></li>
-      <li><a href="${ROOT}/pages/castracao.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-user-md"></i> Castra&ccedil;&atilde;o</a></li>
-      <li><a href="${ROOT}/pages/procura_se.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-search"></i> Procura-se</a></li>
-      <li><a href="${ROOT}/pages/doacao.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-donate"></i> Doa&ccedil;&atilde;o</a></li>
-      <li><a href="${ROOT}/pages/parceria.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-handshake"></i> Parceria</a></li>
-      <li><a href="${ROOT}/pages/voluntario.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-hands-helping"></i> Voluntário</a></li>
-      <li><a href="${ROOT}/pages/sobre.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-info-circle"></i> Sobre</a></li>
-      <li><a href="${ROOT}/pages/transparencia.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-file-invoice"></i> Transpar&ecirc;ncia</a></li>
-      <li><a href="${ROOT}/pages/eventos.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
-      <li><a href="${ROOT}/login/index.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-lock"></i> Admin</a></li>
+      <li><a href="${ROOT}/login/index.html" onclick="document.getElementById('mobile-menu-toggle').checked = false;"><i class="fas fa-lock"></i> Acesso</a></li>
     </ul>
   </nav>
 </div>
@@ -62,17 +52,7 @@ document.write(`
   <div class="nav-wrapper">
     <nav class="main-nav">
       <ul class="nav-list">
-        <li><a href="${ROOT}/index.html">In&iacute;cio</a></li>
-        <li><a href="${ROOT}/pages/adocao.html">Ado&ccedil;&atilde;o</a></li>
-        <li><a href="${ROOT}/pages/castracao.html">Castra&ccedil;&atilde;o</a></li>
-        <li><a href="${ROOT}/pages/procura_se.html">Procura-se</a></li>
-        <li><a href="${ROOT}/pages/doacao.html">Doa&ccedil;&atilde;o</a></li>
-        <li><a href="${ROOT}/pages/parceria.html">Parceria</a></li>
-        <li><a href="${ROOT}/pages/voluntario.html">Voluntário</a></li>
-        <li><a href="${ROOT}/pages/sobre.html">Sobre</a></li>
-        <li><a href="${ROOT}/pages/transparencia.html">Transpar&ecirc;ncia</a></li>
-        <li><a href="${ROOT}/pages/eventos.html">Eventos</a></li>
-        <li><a href="${ROOT}/login/index.html">Admin</a></li>
+        <li><a href="${ROOT}/login/index.html">Acesso</a></li>
       </ul>
     </nav>
   </div>
