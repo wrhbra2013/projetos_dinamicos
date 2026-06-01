@@ -152,8 +152,8 @@ _check_port() {
 }
 
 while :; do
-  printf "Porta do app [3000]: "; read -r APP_PORT
-  APP_PORT=${APP_PORT:-3000}
+  printf "Porta do app [3002]: "; read -r APP_PORT
+  APP_PORT=${APP_PORT:-3002}
   if _check_port "$APP_PORT"; then
     warn "Porta $APP_PORT já está em uso!"
     printf "  (M)atar processo, (T)rocar porta, (C)ancelar [M/t/c]: "; read -r PORT_ACT
@@ -310,15 +310,23 @@ app.get('/health', async (req, res) => {
 // ===================== AUTH =====================
 
 app.post('/auth/login', async (req, res) => {
-    const { email, senha } = req.body;
-    if (!email || !senha) {
-        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    const { nome, email, senha } = req.body;
+    if ((!nome && !email) || !senha) {
+        return res.status(400).json({ error: 'Nome ou email, e senha são obrigatórios' });
     }
     try {
-        const result = await pool.query(
-            'SELECT id, nome, email, tipo FROM usuarios WHERE email = $1 AND senha = $2',
-            [email, senha]
-        );
+        let result;
+        if (nome) {
+            result = await pool.query(
+                'SELECT id, nome, email, tipo FROM usuarios WHERE nome = $1 AND senha = $2',
+                [nome, senha]
+            );
+        } else {
+            result = await pool.query(
+                'SELECT id, nome, email, tipo FROM usuarios WHERE email = $1 AND senha = $2',
+                [email, senha]
+            );
+        }
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Usuário ou senha inválidos' });
         }
@@ -1136,7 +1144,7 @@ echo "  Migration:  $MIGRATION_FILE"
 
 info "Testando API..."
 sleep 2
-BASE="http://127.0.0.1:$APP_PORT${APP_LOCATION}"
+BASE="http://127.0.0.1:$APP_PORT/"
 
 health_resp=$(curl -s "${BASE}health" 2>/dev/null) || health_resp=""
 if echo "$health_resp" | grep -q '"healthy"\|"connected"'; then
@@ -1161,7 +1169,7 @@ fi
 
 login_resp=$(curl -s -X POST "${BASE}auth/login" \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"$ADMIN_EMAIL\",\"senha\":\"$ADMIN_PASS\"}" 2>/dev/null) || login_resp=""
+  -d "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" 2>/dev/null) || login_resp=""
 if echo "$login_resp" | grep -q '"success":true\|"token"'; then
   info "Login:     ✓ autenticado"
 else
