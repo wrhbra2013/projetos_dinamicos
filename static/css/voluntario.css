@@ -61,40 +61,6 @@
     align-items: center;
 }
 
-.btn-modern {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1em;
-}
-
-.btn-primary-modern {
-    background: var(--button-bg);
-    color: var(--button-text);
-}
-
-.btn-primary-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
-
-.btn-success-modern {
-    background: linear-gradient(135deg, var(--success), #20c997);
-    color: white;
-}
-
-.btn-success-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px color-mix(in srgb, var(--success) 30%, transparent);
-}
-
 .search-section {
     background: var(--container-bg);
     border: 1px solid var(--border-color);

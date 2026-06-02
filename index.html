@@ -122,9 +122,9 @@
       <p style="margin:6px 0 0; font-size:0.9em;">Utilizamos cookies essenciais para o funcionamento do site e, com seu consentimento, cookies adicionais para análises e melhorias. Consulte nossa <a href="pages/policy.html" style="color:inherit; text-decoration:underline;">Política de Privacidade</a>.</p>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <button id="accept-essential-btn" class="btn-cookie" style="padding:8px 12px; border-radius:6px; background:#83c395; border:1px solid #ddd; font-size:0.9em;">Apenas essenciais</button>
-      <button id="open-preferences-btn" class="btn-cookie" style="padding:8px 12px; border-radius:6px; background:transparent; border:1px solid #ccc; font-size:0.9em;">Configurar</button>
-      <button id="accept-all-btn" class="btn-cookie" style="padding:8px 12px; border-radius:6px; background:var(--brand-teal); color:#fff; border:none; font-size:0.9em;">Aceitar todas</button>
+      <button id="accept-essential-btn" class="btn-cookie btn-cookie-essential">Apenas essenciais</button>
+      <button id="open-preferences-btn" class="btn-cookie btn-cookie-config">Configurar</button>
+      <button id="accept-all-btn" class="btn-cookie btn-cookie-accept">Aceitar todas</button>
     </div>
   </div>
 </div>
@@ -239,7 +239,7 @@
           Movidos pela compaixão, trabalhamos incansavelmente para oferecer uma segunda chance a cada um deles,
           promovendo a posse responsável e o bem-estar animal em nossa comunidade.
         </p>
-        <a href="pages/sobre.html" class="button" style="font-size: 1rem; padding: 10px 25px; background: transparent; border: 2px solid var(--brand-teal); color: var(--brand-teal); border-radius: 8px;">Saiba mais</a>
+        <a href="pages/sobre.html" class="button btn" style="background:transparent;border:2px solid var(--brand-teal);color:var(--brand-teal);">Saiba mais</a>
       </div>
       <div style="text-align: center;">
         <fieldset style="border: 2px solid var(--brand-teal); border-radius: 12px; padding: 1.5rem; max-width: 300px; margin: 0 auto;">
@@ -297,7 +297,7 @@
 
     </div>
     <div class="text-center mt-4">
-      <a href="pages/eventos.html" class="button" style="background: var(--brand-teal); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none;">Ver Todos os Eventos</a>
+      <a href="pages/eventos.html" class="btn btn-primary">Ver Todos os Eventos</a>
     </div>
   </div>
 </div>
@@ -331,11 +331,11 @@
           <td><strong>#001</strong></td>
           <td>Rex</td>
           <td>Ana Paula</td>
-          <td><span class="badge" style="background:#3b82f6;color:white;">Cão</span></td>
+          <td><span class="badge badge-info">Cão</span></td>
           <td>E O BICHO</td>
           <td>22/06/2026</td>
-          <td><span class="badge" style="background:#f59e0b;color:white;">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)" style="background:var(--brand-teal);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
+          <td><span class="badge badge-warning">⏳ Pendente</span></td>
+          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
         </tr>
         <tr data-ticket="002" data-pet="Mimi" data-responsavel="Carlos Eduardo" data-especie="Gato" data-sexo="Fêmea" data-porte="Pequeno" data-idade="2" data-clinica="E O BICHO" data-data="22/06/2026" data-status="Pendente" data-contato="(14) 99999-0002" data-tipo="Baixo Custo" data-dia="terça-feira" data-cpf="987.654.321-00" data-endereco="Av. Sampaio Vidal" data-numero="456" data-bairro="Centro" data-cidade="Marília" data-estado="SP" data-cep="17500-001">
           <td><strong>#002</strong></td>
@@ -344,28 +344,28 @@
           <td><span class="badge" style="background:#8b5cf6;color:white;">Gato</span></td>
           <td>E O BICHO</td>
           <td>22/06/2026</td>
-          <td><span class="badge" style="background:#f59e0b;color:white;">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)" style="background:var(--brand-teal);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
+          <td><span class="badge badge-warning">⏳ Pendente</span></td>
+          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
         </tr>
         <tr data-ticket="003" data-pet="Thor" data-responsavel="Maria Silva" data-especie="Cão" data-sexo="Macho" data-porte="Médio" data-idade="1" data-clinica="E O BICHO" data-data="29/06/2026" data-status="Pendente" data-contato="(14) 99999-0003" data-tipo="Baixo Custo" data-dia="quarta-feira" data-cpf="111.222.333-44" data-endereco="Rua dos Jacarandás" data-numero="789" data-bairro="Jardim Europa" data-cidade="Marília" data-estado="SP" data-cep="17510-000">
           <td><strong>#003</strong></td>
           <td>Thor</td>
           <td>Maria Silva</td>
-          <td><span class="badge" style="background:#3b82f6;color:white;">Cão</span></td>
+          <td><span class="badge badge-info">Cão</span></td>
           <td>E O BICHO</td>
           <td>29/06/2026</td>
-          <td><span class="badge" style="background:#f59e0b;color:white;">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)" style="background:var(--brand-teal);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
+          <td><span class="badge badge-warning">⏳ Pendente</span></td>
+          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
         </tr>
         <tr class="status-atendido" style="display:none;" data-ticket="004" data-pet="Pretinha" data-responsavel="João Oliveira" data-especie="Cão" data-sexo="Fêmea" data-porte="Médio" data-idade="4" data-clinica="E O BICHO" data-data="15/06/2026" data-status="Atendido" data-contato="(14) 99999-0004" data-tipo="Baixo Custo" data-dia="segunda-feira" data-cpf="555.666.777-88" data-endereco="Rua dos Lírios" data-numero="321" data-bairro="Jardim Primavera" data-cidade="Marília" data-estado="SP" data-cep="17520-000">
           <td><strong>#004</strong></td>
           <td>Pretinha</td>
           <td>João Oliveira</td>
-          <td><span class="badge" style="background:#3b82f6;color:white;">Cão</span></td>
+          <td><span class="badge badge-info">Cão</span></td>
           <td>E O BICHO</td>
           <td>15/06/2026</td>
-          <td><span class="badge" style="background:#10b981;color:white;">✓ Atendido</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)" style="background:var(--brand-teal);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
+          <td><span class="badge badge-success">✓ Atendido</span></td>
+          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
         </tr>
         <tr class="status-atendido" style="display:none;" data-ticket="005" data-pet="Bolinha" data-responsavel="Rafael Oliveira" data-especie="Gato" data-sexo="Macho" data-porte="Pequeno" data-idade="2" data-clinica="E O BICHO" data-data="08/06/2026" data-status="Atendido" data-contato="(14) 99999-0005" data-tipo="Baixo Custo" data-dia="sexta-feira" data-cpf="999.888.777-66" data-endereco="Rua das Acácias" data-numero="654" data-bairro="Jardim América" data-cidade="Marília" data-estado="SP" data-cep="17530-000">
           <td><strong>#005</strong></td>
@@ -374,8 +374,8 @@
           <td><span class="badge" style="background:#8b5cf6;color:white;">Gato</span></td>
           <td>E O BICHO</td>
           <td>08/06/2026</td>
-          <td><span class="badge" style="background:#10b981;color:white;">✓ Atendido</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)" style="background:var(--brand-teal);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
+          <td><span class="badge badge-success">✓ Atendido</span></td>
+          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button></td>
         </tr>
       </tbody>
     </table>
@@ -402,7 +402,7 @@
         <div class="pet-carousel-item" data-nome="Bolinha" data-especie="cachorro" data-porte="medio" data-idade="2 anos" data-caracteristicas="Amigável, brincalhão" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/1.jpg" alt="Bolinha" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Bolinha</div>
@@ -414,7 +414,7 @@
         <div class="pet-carousel-item" data-nome="Mimi" data-especie="gato" data-porte="pequeno" data-idade="3 anos" data-caracteristicas="Calma, carinhosa" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/2.jpg" alt="Mimi" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Mimi</div>
@@ -426,7 +426,7 @@
         <div class="pet-carousel-item" data-nome="Thor" data-especie="cachorro" data-porte="grande" data-idade="1 ano" data-caracteristicas="Protetor, leal" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/3.jpg" alt="Thor" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Thor</div>
@@ -438,7 +438,7 @@
         <div class="pet-carousel-item" data-nome="Luna" data-especie="gato" data-porte="pequeno" data-idade="6 meses" data-caracteristicas="Brincalhona, curiosa" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/4.jpg" alt="Luna" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Luna</div>
@@ -450,7 +450,7 @@
         <div class="pet-carousel-item" data-nome="Bolinha" data-especie="cachorro" data-porte="medio" data-idade="2 anos" data-caracteristicas="Amigável, brincalhão" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/1.jpg" alt="Bolinha" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Bolinha</div>
@@ -462,7 +462,7 @@
         <div class="pet-carousel-item" data-nome="Mimi" data-especie="gato" data-porte="pequeno" data-idade="3 anos" data-caracteristicas="Calma, carinhosa" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/2.jpg" alt="Mimi" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Mimi</div>
@@ -474,7 +474,7 @@
         <div class="pet-carousel-item" data-nome="Thor" data-especie="cachorro" data-porte="grande" data-idade="1 ano" data-caracteristicas="Protetor, leal" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/3.jpg" alt="Thor" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Thor</div>
@@ -486,7 +486,7 @@
         <div class="pet-carousel-item" data-nome="Luna" data-especie="gato" data-porte="pequeno" data-idade="6 meses" data-caracteristicas="Brincalhona, curiosa" onclick="abrirTermo(this)">
           <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
             <img src="static/css/imagem/4.jpg" alt="Luna" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge" style="position: absolute; top: 10px; left: 10px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Disponível</span>
+            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
           </div>
           <div class="carousel-info" style="padding: 1rem;">
             <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Luna</div>
@@ -499,7 +499,7 @@
     </div>
 
     <div class="text-center mt-4">
-      <a href="pages/adocao.html#cadastro-pet" class="button" style="background: var(--brand-teal); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none;">+ Novo Pet</a>
+      <a href="pages/adocao.html#cadastro-pet" class="btn btn-primary">+ Novo Pet</a>
     </div>
   </div>
 </section>
@@ -547,7 +547,7 @@
     </div>
 
     <div class="text-center mt-4">
-      <a href="pages/voluntario.html" class="button" style="font-size:1.2rem; padding:16px 40px; background:linear-gradient(135deg,var(--brand-teal),#0f766e); color:#fff; border-radius:12px; box-shadow:0 4px 20px rgba(13,148,136,0.4); animation:pulse 2s infinite; display:inline-flex; align-items:center; gap:10px; border:2px solid var(--brand-teal);">
+      <a href="pages/voluntario.html" class="btn btn-primary" style="animation:pulse 2s infinite;box-shadow:0 4px 20px rgba(13,148,136,0.4);font-size:1.2rem;padding:16px 40px;">
         <i class="bi bi-people-fill"></i> Seja Voluntário
       </a>
     </div>
@@ -563,9 +563,9 @@
       Sua ajuda, seja como voluntário, parceiro ou doador, é fundamental para continuarmos nosso trabalho.
     </p>
     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-      <a href="pages/voluntario.html" class="button" style="font-size:1.15rem; padding:14px 36px; background:linear-gradient(135deg,var(--brand-teal),#0f766e); box-shadow:0 4px 20px rgba(13,148,136,0.4);"><i class="bi bi-people-fill me-2"></i>Quero ser Voluntário</a>
-      <a href="pages/parceria.html" class="button" style="background: var(--brand-coral);">Seja um Parceiro</a>
-      <a href="pages/doacao.html" class="button" style="background: var(--brand-purple);">Faça uma Doação</a>
+      <a href="pages/voluntario.html" class="btn btn-primary" style="font-size:1.15rem;padding:14px 36px;box-shadow:0 4px 20px rgba(13,148,136,0.4);"><i class="bi bi-people-fill me-2"></i>Quero ser Voluntário</a>
+      <a href="pages/parceria.html" class="button btn" style="background:var(--brand-coral);">Seja um Parceiro</a>
+      <a href="pages/doacao.html" class="button btn" style="background:var(--brand-purple);">Faça uma Doação</a>
     </div>
   </div>
 </section>

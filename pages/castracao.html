@@ -69,9 +69,9 @@
     </div>
 
     <div id="admin-section" class="card shadow-sm mt-4" style="display:none;">
-        <div class="card-header" style="background:#374151;color:white;display:flex;justify-content:space-between;align-items:center;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Administração</h5>
-            <a href="../relatorio/castracao.html" class="btn-dashboard" style="background:var(--brand-teal);color:white;padding:6px 16px;font-size:0.85rem;text-decoration:none;">
+            <a href="../relatorio/castracao.html" class="btn-dashboard btn-primary">
                 <i class="bi bi-bar-chart-steps me-1"></i>Relatório de Castrações
             </a>
         </div>
@@ -82,7 +82,7 @@
                     <label style="display:block;margin-bottom:4px;font-weight:600;font-size:0.85rem;">Baixo Custo</label>
                     <div style="display:flex;gap:8px;">
                         <input type="text" id="admin-clinica-baixo" style="flex:1;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Nome da clínica">
-                        <button onclick="salvarClinicaAdmin('baixo')" style="padding:8px 16px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;">Salvar</button>
+                        <button onclick="salvarClinicaAdmin('baixo')" class="btn btn-primary btn-sm">Salvar</button>
                     </div>
                     <small class="text-muted" id="admin-clinica-baixo-status"></small>
                 </div>
@@ -90,7 +90,7 @@
                     <label style="display:block;margin-bottom:4px;font-weight:600;font-size:0.85rem;">Pets de Rua</label>
                     <div style="display:flex;gap:8px;">
                         <input type="text" id="admin-clinica-pets" style="flex:1;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Nome da clínica">
-                        <button onclick="salvarClinicaAdmin('pets')" style="padding:8px 16px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;">Salvar</button>
+                        <button onclick="salvarClinicaAdmin('pets')" class="btn btn-primary btn-sm">Salvar</button>
                     </div>
                     <small class="text-muted" id="admin-clinica-pets-status"></small>
                 </div>
@@ -106,7 +106,7 @@
             <li><strong>Pets de Rua:</strong> Programa voltado para protetores e animais abandonados. Cadastre o animal e acompanhe o agendamento.</li>
         </ul>
         <div class="text-center mt-3">
-            <a href="https://api.whatsapp.com/send?phone=5514998151723&text=ONGAmor%20Animal" class="btn-dashboard btn-primary" style="background:#25d366;font-size:0.9rem;padding:0.6rem 1.5rem;" target="_blank">
+            <a href="https://api.whatsapp.com/send?phone=5514998151723&text=ONGAmor%20Animal" class="btn-dashboard btn-whatsapp" target="_blank">
                 <i class="bi bi-whatsapp me-2"></i>Fale pelo WhatsApp
             </a>
         </div>

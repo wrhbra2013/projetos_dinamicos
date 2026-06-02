@@ -43,7 +43,7 @@
             <p><strong>Contato:</strong> <span id="resp-contato"></span></p>
           </div>
           <div style="flex:1;min-width:250px;">
-            <p><strong>Tipo:</strong> <span id="info-tipo" class="badge" style="background:#f59e0b;color:white;"></span></p>
+            <p><strong>Tipo:</strong> <span id="info-tipo" class="badge badge-warning"></span></p>
             <p><strong>Clínica:</strong> <span id="info-clinica"></span></p>
             <p><strong>Dia Preferencial:</strong> <span id="info-agenda"></span></p>
             <p><strong>Data do Cadastro:</strong> <span id="info-data-cadastro"></span></p>
@@ -72,10 +72,10 @@
         </div>
       </div>
       <div class="card-footer" style="padding:1rem;text-align:center;border-top:1px solid var(--border-color);">
-        <button onclick="gerarComprovante()" class="btn" style="padding:10px 30px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;font-size:1rem;" target="_blank">
+        <button onclick="gerarComprovante()" class="btn btn-primary" target="_blank">
           <i class="bi bi-file-earmark-pdf me-2"></i>Guardar Comprovante
         </button>
-        <a href="castracao_mutirao.html" class="btn" style="display:inline-block;margin-left:8px;padding:10px 30px;background:white;color:var(--text-color);border:1px solid var(--border-color);border-radius:6px;text-decoration:none;font-size:1rem;">
+        <a href="castracao_mutirao.html" class="btn btn-cancel">
           <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
       </div>
@@ -91,7 +91,7 @@
     <i class="bi bi-exclamation-triangle-fill" style="font-size:4rem;color:#f59e0b;"></i>
     <h3 style="margin:1rem 0 0.5rem;">Nenhum dado encontrado</h3>
     <p style="color:var(--muted-color);">Nenhuma inscrição recente foi encontrada.</p>
-    <a href="castracao_mutirao.html" class="btn" style="display:inline-block;margin-top:1rem;padding:0.5rem 2rem;background:var(--brand-teal);color:white;border:none;border-radius:6px;text-decoration:none;">
+    <a href="castracao_mutirao.html" class="btn btn-primary">
       <i class="bi bi-calendar-event me-2"></i>Ver mutirões disponíveis
     </a>
   </div>
@@ -134,19 +134,18 @@ function preencherDados() {
 
   dados.pets.forEach(function(pet, idx) {
     var ticketSpan = document.createElement('span');
-    ticketSpan.className = 'ticket-badge';
-    ticketSpan.style.cssText = 'background:#dc2626;color:white;display:inline-block;cursor:default;border-radius:5px;';
+    ticketSpan.className = 'badge badge-danger';
     ticketSpan.innerHTML = '<i class="bi bi-ticket-perforated me-1"></i>' + pet.ticket;
     ticketsContainer.appendChild(ticketSpan);
 
-    var cols = '<td><span class="badge" style="background:#dc2626;color:white;">' + pet.ticket + '</span></td>';
+    var cols = '<td><span class="badge badge-danger">' + pet.ticket + '</span></td>';
     cols += '<td><strong>' + (pet.nome || '-') + '</strong></td>';
     cols += '<td>' + (pet.especie ? pet.especie.charAt(0).toUpperCase() + pet.especie.slice(1) : '-') + '</td>';
     cols += '<td>' + (pet.sexo ? pet.sexo.charAt(0).toUpperCase() + pet.sexo.slice(1) : '-') + '</td>';
     cols += '<td>' + (pet.idade || '-') + '</td>';
     cols += '<td>' + (pet.peso || '-') + '</td>';
-    cols += '<td>' + (pet.vacinado === true || pet.vacinado === 'true' ? '<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Sim</span>' : '<span style="background:#ef4444;color:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Não</span>') + '</td>';
-    cols += '<td><span class="badge" style="background:#f59e0b;color:white;">' + (pet.status || 'PENDENTE') + '</span></td>';
+    cols += '<td>' + (pet.vacinado === true || pet.vacinado === 'true' ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>') + '</td>';
+    cols += '<td><span class="badge badge-warning">' + (pet.status || 'PENDENTE') + '</span></td>';
 
     var tr = document.createElement('tr');
     tr.innerHTML = cols;

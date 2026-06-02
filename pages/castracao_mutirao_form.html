@@ -20,8 +20,8 @@
 
 <main class="container mt-4 mb-5">
   <nav style="margin-bottom:1rem;font-size:0.85rem;">
-    <a href="castracao.html" style="color:var(--brand-teal);">Central de Castração</a> &raquo;
-    <a href="castracao_mutirao.html" style="color:var(--brand-teal);">Mutirões</a> &raquo;
+    <a href="castracao.html">Central de Castração</a> &raquo;
+    <a href="castracao_mutirao.html">Mutirões</a> &raquo;
     Inscrição
   </nav>
 
@@ -55,7 +55,7 @@
         <h3 style="color:#dc2626;margin:1rem 0 0.5rem;">Vagas Esgotadas</h3>
         <p style="color:var(--muted-color);">Todas as vagas para este mutirão já foram preenchidas.</p>
         <p style="color:var(--muted-color);">Acompanhe nosso calendário para novos mutirões.</p>
-        <a href="castracao_mutirao.html" class="btn" style="display:inline-block;margin-top:1rem;padding:0.5rem 2rem;background:var(--brand-teal);color:white;border:none;border-radius:6px;text-decoration:none;">
+        <a href="castracao_mutirao.html" class="btn btn-primary">
           <i class="bi bi-calendar-event me-2"></i>Ver outros mutirões
         </a>
       </div>
@@ -95,7 +95,7 @@
               <label style="display:block;margin-bottom:4px;font-size:0.85rem;">CEP *</label>
               <div>
                 <input type="text" id="f_cep" style="padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="00000-000" required>
-                <button type="button" onclick="buscarCep()" style="padding:8px 12px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;"><i class="bi bi-search"></i></button>
+                <button type="button" onclick="buscarCep()" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
               </div>
             </div>
             <div>
@@ -182,10 +182,10 @@
             </div>
           </div>
           <div style="margin-bottom:1.5rem;">
-            <button type="button" id="f_btn_add_pet" style="padding:8px 16px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;">
+            <button type="button" id="f_btn_add_pet" class="btn-add-pet">
               <i class="bi bi-plus-circle"></i> Adicionar Pet
             </button>
-            <button type="button" id="f_btn_clear_pet" style="display:none;padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:white;color:var(--text-color);cursor:pointer;">
+            <button type="button" id="f_btn_clear_pet" class="btn-clear-pet" style="display:none;">
               <i class="bi bi-x-circle"></i> Limpar
             </button>
           </div>
@@ -199,8 +199,8 @@
           </div>
 
           <div style="border-top:1px solid var(--border-color);padding-top:1rem;">
-            <a href="castracao_mutirao.html" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:white;color:var(--text-color);cursor:pointer;text-decoration:none;">Cancelar</a>
-            <button type="submit" id="f_btn_submit" disabled style="padding:8px 24px;background:#6b7280;color:white;border:none;border-radius:6px;cursor:not-allowed;">
+            <a href="castracao_mutirao.html" class="btn-back-link">Cancelar</a>
+            <button type="submit" id="f_btn_submit" disabled class="btn-submit-pet">
               <i class="bi bi-paw"></i> Adicione um pet primeiro
             </button>
           </div>
@@ -232,7 +232,7 @@ if (!eventoData.data) {
   document.getElementById('loading-section').innerHTML =
     '<i class="bi bi-exclamation-triangle-fill" style="font-size:3rem;color:#f59e0b;"></i>' +
     '<p style="margin-top:1rem;">Nenhum mutirão selecionado.</p>' +
-    '<a href="castracao_mutirao.html" class="btn" style="display:inline-block;margin-top:1rem;padding:0.5rem 2rem;background:var(--brand-teal);color:white;border:none;border-radius:6px;text-decoration:none;">' +
+    '<a href="castracao_mutirao.html" class="btn btn-primary">' +
     '<i class="bi bi-calendar-event me-2"></i>Ver mutirões disponíveis</a>';
 } else {
   document.getElementById('event-data').textContent = eventoData.data;
@@ -401,14 +401,14 @@ function atualizarTabela() {
 
   if (pets.length === 0) {
     btn.disabled = true;
-    btn.style.cssText = 'padding:8px 24px;background:#6b7280;color:white;border:none;border-radius:6px;cursor:not-allowed;';
+    btn.className = 'btn-submit-pet'; btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-paw"></i> Adicione um pet primeiro';
     container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted-color);"><i class="bi bi-paw" style="font-size:2rem;"></i><p>Nenhum pet cadastrado ainda. Adicione os pets acima.</p></div>';
     return;
   }
 
   btn.disabled = false;
-  btn.style.cssText = 'padding:8px 24px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;';
+  btn.className = 'btn-submit-pet'; btn.disabled = false;
   btn.innerHTML = '<i class="bi bi-check-lg"></i> Realizar Inscrição (' + pets.length + ' pet(s))';
 
   var html = '<table style="width:100%;border-collapse:collapse;"><thead style="background:var(--bg-alt);position:sticky;top:0;"><tr>';
@@ -429,8 +429,8 @@ function atualizarTabela() {
     html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + pet.sexo + '</td>';
     html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.idade || '-') + '</td>';
     html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.peso || '-') + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.vacinado ? '<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Sim</span>' : '<span style="background:#ef4444;color:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">Não</span>') + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);text-align:center;"><button type="button" onclick="removerPet(' + i + ')" style="padding:4px 8px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:4px;cursor:pointer;"><i class="bi bi-trash"></i></button></td>';
+    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.vacinado ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>') + '</td>';
+    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);text-align:center;"><button type="button" onclick="removerPet(' + i + ')" class="btn-delete-sm"><i class="bi bi-trash"></i></button></td>';
     html += '</tr>';
   });
 
@@ -508,7 +508,7 @@ function cadastrarMutirao(e) {
     })
     .finally(function() {
       btn.disabled = false;
-      btn.style.cssText = 'padding:8px 24px;background:var(--brand-teal);color:white;border:none;border-radius:6px;cursor:pointer;';
+      btn.className = 'btn-submit-pet'; btn.disabled = false;
       btn.innerHTML = '<i class="bi bi-check-lg"></i> Realizar Inscrição';
     });
 
