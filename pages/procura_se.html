@@ -40,39 +40,11 @@
             <th>Espécie</th>
             <th>Porte</th>
             <th>Características</th>
-            <th>Local</th>
-            <th>Tutor</th>
-            <th>Contato</th>
-            <th>Whatsapp</th>
+            <th style="text-align:center">Ações</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>15/05/2026</td>
-            <td><img src="../static/css/imagem/1.jpg" width="80" height="80" style="object-fit: cover;" alt="Foto de Rex" class="img-thumbnail p-1 rounded"></td>
-            <td>Rex</td>
-            <td>4 anos</td>
-            <td>Cachorro</td>
-            <td>Médio</td>
-            <td>Pelagem caramelo, coleira azul</td>
-            <td>Centro, Marília</td>
-            <td>Carlos</td>
-            <td>(14) 99815-1723</td>
-            <td>(14) 99815-1723</td>
-          </tr>
-          <tr>
-            <td>10/05/2026</td>
-            <td><img src="../static/css/imagem/2.jpg" width="80" height="80" style="object-fit: cover;" alt="Foto de Nina" class="img-thumbnail p-1 rounded"></td>
-            <td>Nina</td>
-            <td>2 anos</td>
-            <td>Gato</td>
-            <td>Pequeno</td>
-            <td>Pelagem preta, olhos verdes</td>
-            <td>Jardim América, Marília</td>
-            <td>Juliana</td>
-            <td>(14) 99754-3210</td>
-            <td>(14) 99754-3210</td>
-          </tr>
+        <tbody id="procura-se-tbody">
+          <tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -87,6 +59,75 @@
   </div>
 </div>
 
+<script>
+var API_BASE = 'https://api.projetosdinamicos.com.br/amoranimal';
+
+function carregarProcuraSe() {
+  var tbody = document.getElementById('procura-se-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Carregando...</td></tr>';
+  fetch(API_BASE + '/procura_se')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum animal desaparecido cadastrado.</td></tr>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < data.length; i++) {
+        var p = data[i];
+        var dataStr = p.origem ? formatDate(p.origem) : '-';
+        var fotoHtml = p.foto_url
+          ? '<img src="' + p.foto_url + '" width="80" height="80" style="object-fit:cover" class="img-thumbnail p-1 rounded" alt="Foto">'
+          : '<div style="width:80px;height:80px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:1.5rem"><i class="bi bi-question-circle"></i></div>';
+        html +=
+          '<tr>' +
+          '  <td>' + dataStr + '</td>' +
+          '  <td>' + fotoHtml + '</td>' +
+          '  <td style="font-weight:600">' + escapeHtml(p.nome || '-') + '</td>' +
+          '  <td>' + escapeHtml(p.idade || '-') + '</td>' +
+          '  <td>' + escapeHtml(p.especie || '-') + '</td>' +
+          '  <td>' + escapeHtml(p.porte || '-') + '</td>' +
+          '  <td>' + escapeHtml(p.informacoes || p.cor || '-') + '</td>' +
+          '  <td style="text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteProcuraSe(' + p.id + ',\'' + escapeForAttr(p.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
+          '</tr>';
+      }
+      tbody.innerHTML = html;
+    })
+    .catch(function() {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Erro ao carregar dados.</td></tr>';
+    });
+}
+
+function deleteProcuraSe(id, nome) {
+  if (!confirm('Tem certeza que deseja excluir o registro de "' + nome + '"?\n\nEsta ação não poderá ser desfeita.')) return;
+  fetch(API_BASE + '/procura_se/' + id, { method: 'DELETE' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Erro ao excluir');
+      carregarProcuraSe();
+    })
+    .catch(function(err) {
+      alert('Erro ao excluir: ' + err.message);
+    });
+}
+
+function formatDate(dateStr) {
+  var d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('pt-BR');
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function escapeForAttr(str) {
+  return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+carregarProcuraSe();
+</script>
 <script src="../components/footer.js"></script>
 
 </body>
