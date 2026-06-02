@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — ONG Amor Animal Marília</title>
-  <link rel="stylesheet" href="../static/css/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="../static/css/default.css">
   <link rel="stylesheet" href="../static/css/login.css">
   <link rel="stylesheet" href="../static/css/icons/bootstrap-icons.min.css">
@@ -12,42 +11,34 @@
 </head>
 <body>
 
-<div class="container mt-4">
-  <a href="../index.html" class="btn btn-primary">Voltar para a página inicial</a>
-</div>
-
-<div class="container mt-4">
-  <div class="row align-items-center">
-    <div class="col-md-7">
-      <div class="card">
-        <h3 class="text-center mt-3">Acesso ao Sistema</h3>
-        <div class="card-body login-body">
-          <form id="loginForm" autocomplete="off" novalidate>
-            <div class="mb-3">
-              <label for="usuario" class="form-label">Usuário:</label>
-              <input type="text" id="usuario" name="usuario" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="senha" class="form-label">Senha:</label>
-              <div style="position: relative;">
-                <input type="password" id="senha" name="senha" class="form-control" required style="padding-right: 40px;">
-                <span onclick="toggleSenha()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; z-index: 2;">👁</span>
-              </div>
-              <div class="form-check mt-2">
-                <input type="checkbox" class="form-check-input" id="mostrarSenha" onchange="document.getElementById('senha').type = this.checked ? 'text' : 'password'">
-                <label class="form-check-label" for="mostrarSenha">Mostrar Senha</label>
-              </div>
-            </div>
-            <div>
-              <button type="submit" class="btn btn-primary">Login</button>
-            </div>
-          </form>
-          <div id="messageContainer" class="mt-3"></div>
+<div class="login-container">
+  <a href="../index.html" class="back-link"><i class="bi bi-arrow-left"></i> Voltar</a>
+  <div class="login-card">
+    <div class="login-header">
+      <img src="../static/css/imagem/ong.jpg" alt="ONG Amor Animal">
+      <h3 style="margin:0;color:white;">Acesso ao Sistema</h3>
+      <p>ONG Amor Animal Marília</p>
+    </div>
+    <div class="login-body">
+      <form id="loginForm" autocomplete="off" novalidate>
+        <div class="form-group-modern">
+          <label for="usuario" class="form-label-modern">Usuário:</label>
+          <input type="text" id="usuario" name="usuario" class="form-input-modern" required>
         </div>
-        <div class="card-footer text-center">
-          <p class="mb-0">ONG Amor Animal Marília</p>
+        <div class="form-group-modern">
+          <label for="senha" class="form-label-modern">Senha:</label>
+          <div style="position: relative;">
+            <input type="password" id="senha" name="senha" class="form-input-modern" required style="padding-right: 40px;">
+            <span onclick="toggleSenha()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; z-index: 2;">&#x1F441;</span>
+          </div>
+          <div class="checkbox-modern">
+            <input type="checkbox" class="checkbox-input" id="mostrarSenha" onchange="document.getElementById('senha').type = this.checked ? 'text' : 'password'">
+            <label class="checkbox-label" for="mostrarSenha">Mostrar Senha</label>
+          </div>
         </div>
-      </div>
+        <button type="submit" class="login-button">Login</button>
+      </form>
+      <div id="messageContainer" style="margin-top:15px;"></div>
     </div>
   </div>
 </div>

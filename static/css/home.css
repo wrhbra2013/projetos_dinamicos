@@ -883,8 +883,7 @@
 
 /* Hero Section Moderna */
 .hero-landing {
-    background: linear-gradient(135deg, rgba(13, 148, 136, 0.9), rgba(14, 165, 233, 0.85)), 
-                url('/static/css/imagem/ong_hero_background.jpg') center/cover;
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.9), rgba(14, 165, 233, 0.85));
     padding: 6rem 0;
     color: white;
     text-align: center;
