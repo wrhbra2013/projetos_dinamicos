@@ -808,6 +808,14 @@ NGINXEOF
     }
 
     location $APP_LOCATION {
+        # OPTIONS preflight tratado diretamente pelo nginx (CORS)
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin "https://www.projetosdinamicos.com.br" always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+            add_header Content-Length 0;
+            return 204;
+        }
         proxy_pass http://127.0.0.1:$APP_PORT$PROXY_TRAIL;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
