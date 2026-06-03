@@ -75,17 +75,18 @@ LoginFormHandler.prototype.handleSubmit = function(e) {
   }
   this.setLoadingState(true);
 
-  const email = this.usuarioInput.value.trim();
+  const valor = this.usuarioInput.value.trim();
   const senha = this.senhaInput.value;
 
   fetch(API_BASE + '/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, senha })
+    body: JSON.stringify({ nome: valor, email: valor, senha })
   })
   .then(function(r) {
     if (!r.ok) {
       if (r.status === 401) throw new Error('Usuário ou senha inválidos.');
+      if (r.status === 0) throw new Error('Erro de conexão com o servidor (CORS).');
       throw new Error('Erro no servidor.');
     }
     return r.json();
@@ -97,7 +98,11 @@ LoginFormHandler.prototype.handleSubmit = function(e) {
     setTimeout(function() { window.location.href = '/relatorio/index.html'; }, 1000);
   })
   .catch(function(err) {
-    window.loginHandler?.showMessage(err.message, 'danger');
+    var msg = err.message;
+    if (err.name === 'TypeError' && msg.indexOf('fetch') !== -1) {
+      msg = 'Erro de conexão com o servidor. Verifique se a API está acessível (possível bloqueio CORS).';
+    }
+    window.loginHandler?.showMessage(msg, 'danger');
     window.loginHandler?.setLoadingState(false);
   });
 };

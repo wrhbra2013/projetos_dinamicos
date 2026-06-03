@@ -22,7 +22,7 @@
     <div class="dashboard-container">
       <h1 class="text-center mb-4">Gestão de Voluntários</h1>
       <div class="dashboard-grid">
-        <a href="#" class="dashboard-card" onclick="showView('ativos');return false">
+        <a href="#" class="dashboard-card" id="card-ativos" style="display:none" onclick="showView('ativos');return false">
           <i class="bi bi-list-ul"></i>
           <h3>Voluntários Ativos</h3>
           <p>Visualizar e gerenciar voluntários cadastrados</p>
@@ -237,6 +237,9 @@ var API_BASE = 'https://api.projetosdinamicos.com.br/amoranimal';
 window.API_BASE = API_BASE;
 
 function showView(view) {
+  if (view === 'ativos' && !localStorage.getItem('amoranimal_token')) {
+    view = 'dashboard';
+  }
   document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
   document.getElementById('view-ativos').style.display = view === 'ativos' ? 'block' : 'none';
   document.getElementById('view-cadastro').style.display = view === 'cadastro' ? 'block' : 'none';
@@ -371,6 +374,10 @@ function escapeHtml(str) {
   var div = document.createElement('div');
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;
+}
+
+if (localStorage.getItem('amoranimal_token')) {
+  document.getElementById('card-ativos').style.display = '';
 }
 
 document.getElementById('voluntarioForm').addEventListener('submit', function(e) {
