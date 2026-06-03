@@ -38,50 +38,37 @@ PM2_AS_USER=""
 uninstall_app() {
   [ -f "$INSTALL_DIR/.env" ] || error ".env não encontrado em $INSTALL_DIR"
 
-  local udb_host udb_port udb_name udb_user udb_pass upm2 unginx_bkp
-  upm2="amoranimal"
-
-  udb_host=$(grep -oP '^DB_HOST=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "localhost")
-  udb_port=$(grep -oP '^DB_PORT=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "5432")
-  udb_name=$(grep -oP '^DB_NAME=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "")
-  udb_user=$(grep -oP '^DB_USER=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "")
-  udb_pass=$(grep -oP '^PASSWORD=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "")
-  grep -oP '^PM2_APP_NAME=\K.*' "$INSTALL_DIR/.env" 2>/dev/null && upm2=$(grep -oP '^PM2_APP_NAME=\K.*' "$INSTALL_DIR/.env") || true
-  unginx_bkp=$(grep -oP '^NGINX_BKP=\K.*' "$INSTALL_DIR/.env" 2>/dev/null || echo "")
+  # shellcheck source=/dev/null
+  . "$INSTALL_DIR/.env"
+  local upm2="${PM2_APP_NAME:-amoranimal}"
 
   info "Parando PM2 ($upm2)"
   $PM2_AS_USER pm2 delete "$upm2" 2>/dev/null || true
   $PM2_AS_USER pm2 save --force 2>/dev/null || true
 
-  # Restaurar nginx do backup
-  if [ -n "$unginx_bkp" ] && [ -f "$unginx_bkp" ]; then
-    info "Restaurando nginx de $unginx_bkp"
-    cp "$unginx_bkp" "$NGINX_CONF"
-    nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null && \
-      info "Nginx restaurado" || warn "Falha ao recarregar nginx"
+  if [ -n "${NGINX_BKP:-}" ] && [ -f "$NGINX_BKP" ]; then
+    info "Restaurando nginx de $NGINX_BKP"
+    cp "$NGINX_BKP" "$NGINX_CONF"
+    nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null
   else
-    warn "Backup nginx não encontrado ($unginx_bkp) — removendo bloco # BEGIN $upm2"
     cp "$NGINX_CONF" "$NGINX_CONF.bkp.$(date +%Y%m%d_%H%M%S)"
     sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
     nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null || true
   fi
 
-  # Remover banco
-  if [ -n "$udb_name" ] && [ -n "$udb_user" ]; then
-    info "Removendo banco $udb_name..."
-    export PGPASSWORD="$udb_pass"
-    TABLES=$(psql -h "$udb_host" -p "$udb_port" -U "$udb_user" -d "$udb_name" -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null) || true
-    for tbl in $TABLES; do
-      psql -h "$udb_host" -p "$udb_port" -U "$udb_user" -d "$udb_name" -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
+  if [ -n "${DB_NAME:-}" ]; then
+    info "Removendo banco $DB_NAME..."
+    export PGPASSWORD="${DB_PASS:-}"
+    psql -h "${DB_HOST:-localhost}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" -d "$DB_NAME" \
+      -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null | while read -r tbl; do
+      [ -n "$tbl" ] && psql -h "${DB_HOST:-localhost}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" -d "$DB_NAME" \
+        -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
     done
     unset PGPASSWORD
-    sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$udb_name\";" 2>/dev/null || true
-    info "Banco $udb_name removido"
+    sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$DB_NAME\";" 2>/dev/null || true
   fi
 
-  info "Removendo $INSTALL_DIR"
   rm -rf "$INSTALL_DIR"
-
   info "Desinstalação concluída!"
 }
 
@@ -94,53 +81,45 @@ esac
 # ==============================================================
 ROLLBACK_DIR=""
 cleanup_on_error() {
-  local rc=$?
-  [ $rc -eq 0 ] && return 0
-  warn "ERRO: Instalação falhou (código $rc) — revertendo alterações..."
+  [ $? -eq 0 ] && return 0
+  warn "ERRO: Instalação falhou — revertendo..."
   if [ -n "$ROLLBACK_DIR" ] && [ -d "$ROLLBACK_DIR" ]; then
-    info "Restaurando backup pré-instalação de $ROLLBACK_DIR"
-    rm -rf "$SRC_DIR" 2>/dev/null || true
-    [ -d "$ROLLBACK_DIR/src.bkp" ] && cp -r "$ROLLBACK_DIR/src.bkp" "$SRC_DIR" 2>/dev/null || true
-    [ -f "$ROLLBACK_DIR/env.bkp" ] && cp "$ROLLBACK_DIR/env.bkp" "$INSTALL_DIR/.env" 2>/dev/null || true
-    [ -f "$ROLLBACK_DIR/package.json.bkp" ] && cp "$ROLLBACK_DIR/package.json.bkp" "$INSTALL_DIR/package.json" 2>/dev/null || true
-    [ -f "$ROLLBACK_DIR/nginx_default.bkp" ] && cp "$ROLLBACK_DIR/nginx_default.bkp" "$NGINX_CONF" 2>/dev/null || true
-    info "Rollback concluído."
+    [ -d "$ROLLBACK_DIR/src.bkp" ] && rm -rf "$SRC_DIR" && cp -r "$ROLLBACK_DIR/src.bkp" "$SRC_DIR" 2>/dev/null || true
+    for f in env.bkp package.json.bkp nginx_default.bkp; do
+      [ -f "$ROLLBACK_DIR/$f" ] && cp "$ROLLBACK_DIR/$f" "$INSTALL_DIR/${f%.bkp}" 2>/dev/null || true
+    done
   else
-    warn "Nenhum backup prévio encontrado — removendo artefatos..."
     $PM2_AS_USER pm2 delete "$PM2_APP_NAME" 2>/dev/null || true
     rm -rf "$INSTALL_DIR" 2>/dev/null || true
-    info "Artefatos removidos"
   fi
-  exit $rc
+  exit 1
 }
+trap cleanup_on_error EXIT
+trap 'error "Instalação interrompida"' INT TERM
 trap 'cleanup_on_error' EXIT
 trap 'error "Instalação interrompida pelo usuário"' INT TERM
 
-# Backup automático pré-instalação (se já existir instalação)
 if [ -d "$INSTALL_DIR" ] || [ -f "$NGINX_CONF" ]; then
   ROLLBACK_DIR="$BACKUP_ROOT/preinstall_$(date +%Y%m%d_%H%M%S)"
   mkdir -p "$ROLLBACK_DIR"
   info "Backup pré-instalação em $ROLLBACK_DIR"
-  [ -f "$INSTALL_DIR/.env" ] && cp "$INSTALL_DIR/.env" "$ROLLBACK_DIR/env.bkp" 2>/dev/null || true
-  [ -f "$INSTALL_DIR/package.json" ] && cp "$INSTALL_DIR/package.json" "$ROLLBACK_DIR/package.json.bkp" 2>/dev/null || true
+  for f in "$INSTALL_DIR/.env" "$INSTALL_DIR/package.json" "$NGINX_CONF"; do
+    [ -f "$f" ] && cp "$f" "$ROLLBACK_DIR/$(basename "$f").bkp" 2>/dev/null || true
+  done
   [ -d "$SRC_DIR" ] && cp -r "$SRC_DIR" "$ROLLBACK_DIR/src.bkp" 2>/dev/null || true
-  [ -f "$NGINX_CONF" ] && cp "$NGINX_CONF" "$ROLLBACK_DIR/nginx_default.bkp" 2>/dev/null || true
 fi
 
-command -v node  >/dev/null 2>&1 || error "Node.js não encontrado"
-command -v npm   >/dev/null 2>&1 || error "npm não encontrado"
-command -v psql  >/dev/null 2>&1 || warn "psql não encontrado — PostgreSQL pode não estar instalado"
-command -v pm2   >/dev/null 2>&1 || warn "pm2 não encontrado — será instalado via npm"
+command -v node >/dev/null 2>&1 || error "Node.js não encontrado"
+command -v npm  >/dev/null 2>&1 || error "npm não encontrado"
+command -v psql >/dev/null 2>&1 || warn "psql não encontrado"
+command -v pm2  >/dev/null 2>&1 || warn "pm2 não encontrado — será instalado via npm"
 
 mkdir -p "$SRC_DIR" "$INSTALL_DIR/uploads/transparencia" "$INSTALL_DIR/backups"
 
 # --------------------------------------------------------------
 # Inputs do usuário
 # --------------------------------------------------------------
-echo ""
-echo "============================================"
-echo "  Configuração da instalação"
-echo "============================================"
+echo "============ Configuração da instalação ============"
 _check_port() {
   local p=$1
   if command -v ss >/dev/null 2>&1; then
@@ -615,99 +594,6 @@ app.post('/relatorio/maintenance', async (req, res) => {
     }
 });
 
-// ===================== API TABLES (genérico, legado) =====================
-
-app.post('/api/tables', async (req, res) => {
-    const { tableName, columns } = req.body;
-    if (!tableName || !columns || !Array.isArray(columns)) {
-        return res.status(400).json({ error: 'tableName e columns (array) são obrigatórios' });
-    }
-    try {
-        const columnDefs = columns.map(col => {
-            if (typeof col === 'string') return `"${col}" TEXT`;
-            return `"${col.name}" ${col.type || 'TEXT'}${col.primary ? ' PRIMARY KEY' : ''}${col.notnull ? ' NOT NULL' : ''}`;
-        }).join(', ');
-        await pool.query(`CREATE TABLE IF NOT EXISTS "${tableName}" (${columnDefs});`);
-        res.json({ success: true, message: `Tabela "${tableName}" criada` });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.delete('/api/tables/:tableName', async (req, res) => {
-    const { tableName } = req.params;
-    try {
-        await pool.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE;`);
-        res.json({ success: true, message: `Tabela "${tableName}" excluída` });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/api/tables', async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT table_name FROM information_schema.tables
-            WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
-            ORDER BY table_name;
-        `);
-        res.json({ tables: result.rows.map(r => r.table_name) });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/api/tables/:tableName', async (req, res) => {
-    const { tableName } = req.params;
-    try {
-        const result = await pool.query(`SELECT * FROM "${tableName}" LIMIT 100;`);
-        res.json({ table: tableName, data: result.rows, columns: result.fields.map(f => f.name) });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/tables/:tableName', async (req, res) => {
-    const { tableName } = req.params;
-    const data = req.body;
-    try {
-        const keys = Object.keys(data).map(k => `"${k}"`).join(', ');
-        const values = Object.keys(data).map((_, i) => `$${i + 1}`).join(', ');
-        const result = await pool.query(
-            `INSERT INTO "${tableName}" (${keys}) VALUES (${values}) RETURNING *;`,
-            Object.values(data)
-        );
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.put('/api/tables/:tableName/:id', async (req, res) => {
-    const { tableName, id } = req.params;
-    const data = req.body;
-    try {
-        const keys = Object.keys(data).map((k, i) => `"${k}" = $${i + 1}`).join(', ');
-        const result = await pool.query(
-            `UPDATE "${tableName}" SET ${keys} WHERE id = $${Object.keys(data).length + 1} RETURNING *;`,
-            [...Object.values(data), id]
-        );
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.delete('/api/tables/:tableName/:id', async (req, res) => {
-    const { tableName, id } = req.params;
-    try {
-        await pool.query(`DELETE FROM "${tableName}" WHERE id = $1;`, [id]);
-        res.json({ success: true, message: 'Registro excluído' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 // ===================== INICIALIZAÇÃO =====================
 
 app.listen(PORT, () => {
@@ -734,27 +620,13 @@ else
   cp "$NGINX_CONF" "$NGINX_BKP_VAL"
   sed -i "s|^NGINX_BKP=.*|NGINX_BKP=$NGINX_BKP_VAL|" "$INSTALL_DIR/.env"
 
-  # SSL cert paths dinâmicos
-  SSL_DIR="/etc/letsencrypt/live"
-  SSL_CERT=""
-  SSL_KEY=""
-  for d in "$SSL_DIR"/*/; do
+  SSL_CERT=""; SSL_KEY=""
+  for d in /etc/letsencrypt/live/*/; do
     [ -f "${d}fullchain.pem" ] || continue
-    if echo "$d" | grep -qi "$(echo "$APP_DOMAIN" | sed 's/^www\.//')"; then
-      SSL_CERT="${d}fullchain.pem"
-      SSL_KEY="${d}privkey.pem"
-      break
-    fi
+    SSL_CERT="${d}fullchain.pem"
+    SSL_KEY="${d}privkey.pem"
+    echo "$d" | grep -qi "$(echo "$APP_DOMAIN" | sed 's/^www\.//')" && break
   done
-  # Fallback: primeiro certificado encontrado
-  if [ -z "$SSL_CERT" ]; then
-    for d in "$SSL_DIR"/*/; do
-      [ -f "${d}fullchain.pem" ] || continue
-      SSL_CERT="${d}fullchain.pem"
-      SSL_KEY="${d}privkey.pem"
-      break
-    done
-  fi
 
   # Se APP_LOCATION for sub-path (ex: /amoranimal/), proxy_pass precisa de trailing slash
   PROXY_TRAIL="/"
@@ -784,25 +656,21 @@ server {
     server_name $APP_DOMAIN;
 
 NGINXEOF
+  SSL_BLOCK=""
   if [ -n "$SSL_CERT" ]; then
-    cat >> "$NGINX_CONF" <<NGINXEOF
-    ssl_certificate $SSL_CERT;
+    SSL_BLOCK="    ssl_certificate $SSL_CERT;
     ssl_certificate_key $SSL_KEY;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-NGINXEOF
+    ssl_ciphers HIGH:!aNULL:!MD5;"
   else
-    cat >> "$NGINX_CONF" <<NGINXEOF
-    # SSL: certifique-se de gerar certificado para $APP_DOMAIN
+    SSL_BLOCK="    # SSL: certifique-se de gerar certificado para $APP_DOMAIN
     # ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;
-
-NGINXEOF
+    # ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;"
   fi
 
-  cat >> "$NGINX_CONF" <<NGINXEOF
-    # CORS gerenciado pelo Express (via middleware) — não duplicar headers aqui
+    cat >> "$NGINX_CONF" <<NGINXEOF
+$SSL_BLOCK
+
     location /.well-known/acme-challenge/ {
         root /var/www;
     }
@@ -1096,97 +964,38 @@ $PM2_AS_USER pm2 start "$INSTALL_DIR/src/server.js" --name "$PM2_APP_NAME" && \
 info "Testando e recarregando Nginx"
 nginx -t && systemctl reload nginx && info "Nginx recarregado com sucesso!" || warn "Falha no nginx — execute manualmente: sudo nginx -t && sudo systemctl reload nginx"
 
-INSTALL_OK=1
-
 # --------------------------------------------------------------
 # Final
 # --------------------------------------------------------------
 echo ""
-info "==========================================="
-info " Instalação concluída!"
-info "==========================================="
+info "===== Instalação concluída! ====="
 echo ""
-echo "  Domínio:   $APP_DOMAIN"
-echo "  Location:  $APP_LOCATION"
-echo "  Porta:     $APP_PORT"
-echo "  PM2:       $PM2_APP_NAME"
+echo "  Domínio: $APP_DOMAIN  |  Location: $APP_LOCATION  |  Porta: $APP_PORT"
+echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
+echo "  PM2:     $PM2_APP_NAME ($PM2_USER)"
+echo "  .env:    $INSTALL_DIR/.env"
+echo "  Migração: $MIGRATION_FILE"
 echo ""
-echo "  Endpoints da API:"
-echo "    GET    ${APP_LOCATION}"
-echo "    GET    ${APP_LOCATION}health"
-echo "    POST   ${APP_LOCATION}auth/login"
-echo "    GET    ${APP_LOCATION}settings"
-echo ""
-echo "  Tabelas (CRUD automático):"
-echo "    GET    ${APP_LOCATION}animais"
-echo "    GET    ${APP_LOCATION}adocoes"
-echo "    GET    ${APP_LOCATION}castracoes"
-echo "    GET    ${APP_LOCATION}doacoes"
-echo "    GET    ${APP_LOCATION}eventos"
-echo "    GET    ${APP_LOCATION}parcerias"
-echo "    GET    ${APP_LOCATION}procura_se"
-echo "    GET    ${APP_LOCATION}usuarios"
-echo "    POST   ${APP_LOCATION}:tabela             (inserir)"
-echo "    PUT    ${APP_LOCATION}:tabela/:id         (atualizar)"
-echo "    DELETE ${APP_LOCATION}:tabela/:id         (excluir)"
-echo ""
-echo "  Portal da Transparência:"
-echo "    GET    ${APP_LOCATION}transparencia"
-echo "    POST   ${APP_LOCATION}transparencia"
-echo ""
-echo "  Relatório:"
-echo "    GET    ${APP_LOCATION}relatorio/tabelas"
-echo "    GET    ${APP_LOCATION}relatorio/backups"
-echo "    POST   ${APP_LOCATION}relatorio/backup"
-echo "    POST   ${APP_LOCATION}relatorio/restore"
-echo "    POST   ${APP_LOCATION}relatorio/maintenance"
-echo ""
-echo "  Admin:  $ADMIN_EMAIL / $ADMIN_PASS"
-echo ""
-echo "  .env:  $INSTALL_DIR/.env"
-echo "  PM2:   $PM2_USER (usuário do processo)"
-echo "  Migration:  $MIGRATION_FILE"
 
-info "Testando API..."
-sleep 2
+info "Testando API..." && sleep 2
 BASE="http://127.0.0.1:$APP_PORT/"
-
-health_resp=$(curl -s "${BASE}health" 2>/dev/null) || health_resp=""
-if echo "$health_resp" | grep -q '"healthy"\|"connected"'; then
-  info "Health:    ✓ $health_resp"
-else
-  warn "Health:    ✗ $health_resp"
-fi
-
-root_resp=$(curl -s "${BASE}" 2>/dev/null) || root_resp=""
-if echo "$root_resp" | grep -q '"OK"\|"Running"'; then
-  info "Root:      ✓ $root_resp"
-else
-  warn "Root:      ✗ $root_resp"
-fi
-
-settings_resp=$(curl -s "${BASE}settings" 2>/dev/null) || settings_resp=""
-if echo "$settings_resp" | grep -q '"clinica_baixo"\|\[\]\|\[\|"chave"'; then
-  info "Settings:  ✓ $settings_resp"
-else
-  warn "Settings:  ✗ $settings_resp"
-fi
+for endpoint in "health" ""; do
+  resp=$(curl -s "${BASE}${endpoint}" 2>/dev/null) || resp=""
+  case "$endpoint" in
+    health) echo "$resp" | grep -q '"healthy"\|"connected"' && info "Health:    ✓" || warn "Health:    ✗ $resp" ;;
+    "")     echo "$resp" | grep -q '"OK"\|"Running"'      && info "Root:      ✓" || warn "Root:      ✗ $resp" ;;
+  esac
+done
 
 login_resp=$(curl -s -X POST "${BASE}auth/login" \
   -H "Content-Type: application/json" \
   -d "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" 2>/dev/null) || login_resp=""
-if echo "$login_resp" | grep -q '"success":true\|"token"'; then
-  info "Login:     ✓ autenticado"
-else
-  warn "Login:     ✗ $login_resp"
-fi
+echo "$login_resp" | grep -q '"success":true\|"token"' && info "Login:     ✓ autenticado" || warn "Login:     ✗ $login_resp"
 
+echo && info "Testes concluídos!"
 echo ""
-info "Testes concluídos!"
-
-echo ""
-echo "  Comandos PM2 (rodando como $PM2_USER — sem sudo do seu shell):"
-echo "    status:  pm2 status"
-echo "    logs:    pm2 logs $PM2_APP_NAME"
-echo "    restart: pm2 restart $PM2_APP_NAME"
+echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
+echo "  PM2:     pm2 {status|logs|restart} $PM2_APP_NAME"
+echo "  .env:    $INSTALL_DIR/.env"
+echo "  Migração: $MIGRATION_FILE"
 echo ""
