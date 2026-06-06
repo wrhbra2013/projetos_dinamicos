@@ -34,8 +34,6 @@ PM2_AS_USER=""
 # Uninstall
 # ==============================================================
 uninstall() {
-  [ -f "$INSTALL_DIR/.env" ] && . "$INSTALL_DIR/.env" || true
-
   rm -rf "$INSTALL_DIR"
   info "Desinstalação concluída! $INSTALL_DIR removido."
 }
