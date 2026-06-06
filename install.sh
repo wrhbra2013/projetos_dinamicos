@@ -13,8 +13,6 @@ INSTALL_DIR="/var/www/amoranimal"
 SRC_DIR="$INSTALL_DIR/src"
 NGINX_AVAILABLE="/etc/nginx/sites-available"
 NGINX_CONF="$NGINX_AVAILABLE/default"
-BACKUP_ROOT="/var/backups/amoranimal"
-
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 warn()  { printf "${YELLOW}[WARN]${NC} %s\n" "$1" >&2; }
@@ -35,79 +33,25 @@ PM2_AS_USER=""
 # ==============================================================
 # Uninstall
 # ==============================================================
-uninstall_app() {
-  [ -f "$INSTALL_DIR/.env" ] || error ".env não encontrado em $INSTALL_DIR"
-
-  # shellcheck source=/dev/null
-  . "$INSTALL_DIR/.env"
-  local upm2="${PM2_APP_NAME:-amoranimal}"
-
-  info "Parando PM2 ($upm2)"
-  $PM2_AS_USER pm2 delete "$upm2" 2>/dev/null || true
-  $PM2_AS_USER pm2 save --force 2>/dev/null || true
-
-  if [ -n "${NGINX_BKP:-}" ] && [ -f "$NGINX_BKP" ]; then
-    info "Restaurando nginx de $NGINX_BKP"
-    cp "$NGINX_BKP" "$NGINX_CONF"
-    nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null
-  else
-    cp "$NGINX_CONF" "$NGINX_CONF.bkp.$(date +%Y%m%d_%H%M%S)"
-    sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
-    nginx -t 2>/dev/null && systemctl reload nginx 2>/dev/null || true
-  fi
-
-  if [ -n "${DB_NAME:-}" ]; then
-    info "Removendo banco $DB_NAME..."
-    export PGPASSWORD="${DB_PASS:-}"
-    psql -h "${DB_HOST:-localhost}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" -d "$DB_NAME" \
-      -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null | while read -r tbl; do
-      [ -n "$tbl" ] && psql -h "${DB_HOST:-localhost}" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" -d "$DB_NAME" \
-        -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
-    done
-    unset PGPASSWORD
-    sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$DB_NAME\";" 2>/dev/null || true
-  fi
+uninstall() {
+  [ -f "$INSTALL_DIR/.env" ] && . "$INSTALL_DIR/.env" || true
 
   rm -rf "$INSTALL_DIR"
-  info "Desinstalação concluída!"
+  info "Desinstalação concluída! $INSTALL_DIR removido."
 }
 
 case "${1:-}" in
-  uninstall) uninstall_app; exit 0 ;;
+  uninstall) uninstall; exit 0 ;;
 esac
 
-# ==============================================================
-# Rollback automático em caso de erro na instalação
-# ==============================================================
-ROLLBACK_DIR=""
 cleanup_on_error() {
   [ $? -eq 0 ] && return 0
   warn "ERRO: Instalação falhou — revertendo..."
-  if [ -n "$ROLLBACK_DIR" ] && [ -d "$ROLLBACK_DIR" ]; then
-    [ -d "$ROLLBACK_DIR/src.bkp" ] && rm -rf "$SRC_DIR" && cp -r "$ROLLBACK_DIR/src.bkp" "$SRC_DIR" 2>/dev/null || true
-    for f in env.bkp package.json.bkp nginx_default.bkp; do
-      [ -f "$ROLLBACK_DIR/$f" ] && cp "$ROLLBACK_DIR/$f" "$INSTALL_DIR/${f%.bkp}" 2>/dev/null || true
-    done
-  else
-    $PM2_AS_USER pm2 delete "$PM2_APP_NAME" 2>/dev/null || true
-    rm -rf "$INSTALL_DIR" 2>/dev/null || true
-  fi
+  rm -rf "$INSTALL_DIR" 2>/dev/null || true
   exit 1
 }
 trap cleanup_on_error EXIT
-trap 'error "Instalação interrompida"' INT TERM
-trap 'cleanup_on_error' EXIT
 trap 'error "Instalação interrompida pelo usuário"' INT TERM
-
-if [ -d "$INSTALL_DIR" ] || [ -f "$NGINX_CONF" ]; then
-  ROLLBACK_DIR="$BACKUP_ROOT/preinstall_$(date +%Y%m%d_%H%M%S)"
-  mkdir -p "$ROLLBACK_DIR"
-  info "Backup pré-instalação em $ROLLBACK_DIR"
-  for f in "$INSTALL_DIR/.env" "$INSTALL_DIR/package.json" "$NGINX_CONF"; do
-    [ -f "$f" ] && cp "$f" "$ROLLBACK_DIR/$(basename "$f").bkp" 2>/dev/null || true
-  done
-  [ -d "$SRC_DIR" ] && cp -r "$SRC_DIR" "$ROLLBACK_DIR/src.bkp" 2>/dev/null || true
-fi
 
 command -v node >/dev/null 2>&1 || error "Node.js não encontrado"
 command -v npm  >/dev/null 2>&1 || error "npm não encontrado"
