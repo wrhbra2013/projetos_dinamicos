@@ -34,8 +34,62 @@ PM2_AS_USER=""
 # Uninstall
 # ==============================================================
 uninstall() {
+  echo "============ Desinstalação ============"
+
+  [ -f "$INSTALL_DIR/.env" ] && . "$INSTALL_DIR/.env" || true
+
+  upm2="${PM2_APP_NAME:-amoranimal}"
+  db_name="${DB_NAME:-amoranimal_db}"
+  db_user="${DB_USER:-postgres}"
+  db_pass="${DB_PASS:-wander}"
+  db_host="${DB_HOST:-localhost}"
+  db_port="${DB_PORT:-5432}"
+
+  echo ""
+  info "[1/5] Parando e removendo app do PM2 ($upm2)..."
+  if $PM2_AS_USER pm2 delete "$upm2" 2>/dev/null; then
+    info "PM2: app $upm2 removido"
+  else
+    warn "PM2: app $upm2 não encontrado ou já removido"
+  fi
+  $PM2_AS_USER pm2 save --force 2>/dev/null || true
+
+  echo ""
+  info "[2/5] Restaurando nginx a partir do backup..."
+  if [ -f "$NGINX_CONF.bkp" ]; then
+    cp "$NGINX_CONF.bkp" "$NGINX_CONF"
+    info "Nginx restaurado de $NGINX_CONF.bkp"
+    if nginx -t 2>/dev/null; then
+      systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
+    else
+      warn "Configuração do nginx inválida — verifique manualmente"
+    fi
+  else
+    warn "Backup nginx $NGINX_CONF.bkp não encontrado — pulando"
+  fi
+
+  echo ""
+  info "[3/5] Removendo banco de dados ($db_name)..."
+  export PGPASSWORD="$db_pass"
+  psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
+    -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null | while read -r tbl; do
+    [ -n "$tbl" ] && psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
+      -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
+  done
+  unset PGPASSWORD
+  if sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$db_name\";" 2>/dev/null; then
+    info "Banco $db_name removido (usuário mantido)"
+  else
+    warn "Banco $db_name não encontrado ou já removido"
+  fi
+
+  echo ""
+  info "[4/5] Removendo diretório $INSTALL_DIR..."
   rm -rf "$INSTALL_DIR"
-  info "Desinstalação concluída! $INSTALL_DIR removido."
+  info "Diretório removido"
+
+  echo ""
+  info "[5/5] Desinstalação concluída com sucesso!"
 }
 
 case "${1:-}" in
@@ -558,9 +612,8 @@ if grep -q "^# BEGIN $PM2_APP_NAME\$" "$NGINX_CONF"; then
   warn "Bloco # BEGIN $PM2_APP_NAME já existe em $NGINX_CONF — pulando"
 else
   # Backup antes de alterar
-  NGINX_BKP_VAL="$NGINX_CONF.bkp.$(date +%Y%m%d_%H%M%S)"
-  cp "$NGINX_CONF" "$NGINX_BKP_VAL"
-  sed -i "s|^NGINX_BKP=.*|NGINX_BKP=$NGINX_BKP_VAL|" "$INSTALL_DIR/.env"
+  cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null || true
+  info "Backup de nginx criado: $NGINX_CONF.bkp"
 
   SSL_CERT=""; SSL_KEY=""
   for d in /etc/letsencrypt/live/*/; do
@@ -644,22 +697,16 @@ fi
 # --------------------------------------------------------------
 # PostgreSQL — criar usuário e banco
 # --------------------------------------------------------------
-info "Criando usuário e banco PostgreSQL"
+info "Criando banco PostgreSQL ($DB_NAME)"
 if command -v sudo >/dev/null 2>&1 && sudo -u postgres psql -c "SELECT 1" >/dev/null 2>&1; then
-  if [ "$DB_USER" != "postgres" ]; then
-    if [ -n "$DB_PASS" ]; then
-      sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';" 2>/dev/null || warn "Usuário $DB_USER já existe"
-    else
-      sudo -u postgres psql -c "CREATE USER $DB_USER;" 2>/dev/null || warn "Usuário $DB_USER já existe"
-    fi
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;" 2>/dev/null
+  if sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>&1; then
+    info "Banco $DB_NAME criado"
+  else
+    warn "Banco $DB_NAME já existe ou erro ao criar"
   fi
-  sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>/dev/null || warn "Banco $DB_NAME já existe"
-  info "Usuário/banco criados com sucesso"
 else
   warn "Não foi possível acessar o PostgreSQL como superusuário (postgres)"
   warn "Crie manualmente:"
-  warn "  sudo -u postgres createuser $DB_USER -P"
   warn "  sudo -u postgres createdb $DB_NAME -O $DB_USER"
 fi
 
@@ -876,14 +923,9 @@ ON CONFLICT (email) DO NOTHING;
 SQLEOF
 
 # Executar migration
-if command -v sudo >/dev/null 2>&1 && sudo -u postgres psql -c "SELECT 1" >/dev/null 2>&1; then
-  PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$MIGRATION_FILE" 2>/dev/null && \
-    info "Migration executada com sucesso!" || warn "Erro ao executar migration — execute manualmente: psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
-else
-  warn "Migration não executada automaticamente."
-  warn "Execute manualmente:"
-  warn "  psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
-fi
+info "Executando migration..."
+PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$MIGRATION_FILE" 2>&1 && \
+  info "Migration executada com sucesso!" || warn "Erro ao executar migration — execute manualmente: psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
 
 # --------------------------------------------------------------
 # Instalar dependências
@@ -896,15 +938,27 @@ npm install --prefix "$INSTALL_DIR" --production
 # --------------------------------------------------------------
 info "Registrando app no PM2 (usuário: $PM2_USER)"
 $PM2_AS_USER pm2 delete "$PM2_APP_NAME" 2>/dev/null || true
-$PM2_AS_USER pm2 start "$INSTALL_DIR/src/server.js" --name "$PM2_APP_NAME" && \
-  $PM2_AS_USER pm2 save --force && \
+if $PM2_AS_USER pm2 start "$INSTALL_DIR/src/server.js" --name "$PM2_APP_NAME" 2>&1; then
+  $PM2_AS_USER pm2 save --force 2>&1
   info "PM2: app registrado e salvo"
+else
+  warn "Erro ao iniciar app no PM2 — execute manualmente: pm2 start $INSTALL_DIR/src/server.js --name $PM2_APP_NAME"
+fi
 
 # --------------------------------------------------------------
 # Nginx reload
 # --------------------------------------------------------------
 info "Testando e recarregando Nginx"
-nginx -t && systemctl reload nginx && info "Nginx recarregado com sucesso!" || warn "Falha no nginx — execute manualmente: sudo nginx -t && sudo systemctl reload nginx"
+if nginx -t 2>&1; then
+  info "Nginx: configuração válida"
+  if systemctl reload nginx.service 2>&1; then
+    info "Nginx recarregado com sucesso!"
+  else
+    warn "Erro ao recarregar nginx — execute manualmente: sudo systemctl reload nginx.service"
+  fi
+else
+  warn "Configuração do nginx inválida — execute manualmente: sudo nginx -t"
+fi
 
 # --------------------------------------------------------------
 # Final
