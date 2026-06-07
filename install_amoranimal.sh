@@ -9,6 +9,7 @@ set -eu
 # API REST genérica com PostgreSQL.
 # ==============================================================
 
+SCRIPT_DIR="$(dirname "$0")"
 INSTALL_DIR="/var/www/amoranimal"
 SRC_DIR="$INSTALL_DIR/src"
 NGINX_AVAILABLE="/etc/nginx/sites-available"
@@ -57,17 +58,13 @@ uninstall() {
   $PM2_AS_USER pm2 save --force 2>/dev/null || true
 
   echo ""
-  info "[2/5] Removendo location /$upm2/ do nginx..."
-  LOC_MARKER_BEGIN="# LOCATION_BEGIN $upm2"
-  LOC_MARKER_END="# LOCATION_END $upm2"
-  if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
-    sed -i "/^$LOC_MARKER_BEGIN\$/,/^$LOC_MARKER_END\$/d" "$NGINX_CONF" && info "Location /$upm2/ removido do nginx" || warn "Falha ao remover location /$upm2/ do nginx"
+  info "[2/5] Restaurando nginx a partir do backup..."
+  if [ -f "$NGINX_CONF.bkp" ]; then
+    cp "$NGINX_CONF.bkp" "$NGINX_CONF" && info "Nginx restaurado de $NGINX_CONF.bkp" || warn "Falha ao restaurar nginx"
   else
-    warn "Marcador $LOC_MARKER_BEGIN não encontrado — pulando"
-  fi
-  # Remove old-style server block se presente (instalações antigas)
-  if grep -q "^# BEGIN $upm2\$" "$NGINX_CONF"; then
-    sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" && info "Server block antigo (# BEGIN $upm2) removido" || warn "Falha ao remover server block antigo"
+    warn "Backup $NGINX_CONF.bkp não encontrado — removendo marcador manualmente"
+    sed -i "/^# LOCATION_BEGIN $upm2\$/,/^# LOCATION_END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
+    sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
   fi
   if nginx -t 2>/dev/null; then
     systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
@@ -610,69 +607,21 @@ info "Ajustando porta padrão no server.js..."
 sed -i "s/process\.env\.PORT || 3000/process.env.PORT || $APP_PORT/" "$SRC_DIR/server.js" && info "Porta ajustada para $APP_PORT" || warn "Falha ao ajustar porta no server.js"
 
 # --------------------------------------------------------------
-# Nginx — adiciona location no server block existente
+# Nginx — gera config completa com crebortoli + amoranimal_site + amoranimal api
 # --------------------------------------------------------------
 LOC_MARKER_BEGIN="# LOCATION_BEGIN $PM2_APP_NAME"
 LOC_MARKER_END="# LOCATION_END $PM2_APP_NAME"
 
 info "Configurando Nginx"
 
-if [ ! -f "$NGINX_CONF" ]; then
-  warn "$NGINX_CONF não encontrado — criando arquivo vazio"
-  echo "# Nginx default — $PM2_APP_NAME API" > "$NGINX_CONF"
-fi
+# Backup do nginx atual no servidor
+info "Criando backup do nginx atual..."
+cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null && info "Backup criado: $NGINX_CONF.bkp" || warn "Falha ao criar backup"
 
-# Backup antes de qualquer alteração (sempre)
-info "Criando backup do nginx..."
-sudo cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null && info "Backup de nginx criado: $NGINX_CONF.bkp" || warn "Falha ao criar backup em $NGINX_CONF.bkp"
+info "Gerando configuracao nginx..."
 
-# Remove old-style server block se presente (instalações standalone antigas)
-if grep -q "^# BEGIN $PM2_APP_NAME\$" "$NGINX_CONF"; then
-  info "Removendo server block antigo (# BEGIN $PM2_APP_NAME)..."
-  sed -i "/^# BEGIN $PM2_APP_NAME\$/,/^# END $PM2_APP_NAME\$/d" "$NGINX_CONF"
-  info "Server block antigo removido"
-fi
-
-# Remove location block antigo (instalações anteriores com fallback incorreto)
-if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
-  info "Removendo location block antigo ($LOC_MARKER_BEGIN)..."
-  sed -i "/^$LOC_MARKER_BEGIN\$/,/^$LOC_MARKER_END\$/d" "$NGINX_CONF"
-  info "Location block antigo removido"
-fi
-
-# Remove location /$PM2_APP_NAME/ sem marcadores (ex: dentro do server block crebortoli)
-info "Removendo location /$PM2_APP_NAME/ antigo (sem CORS) do server block..."
-sed -i "/^    location \/$PM2_APP_NAME\/ {/,/^    }$/d" "$NGINX_CONF" && info "Location antigo removido" || warn "Falha ao remover location antigo"
-
-if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
-  warn "Location /$PM2_APP_NAME/ já configurado em $NGINX_CONF — pulando"
-else
-  # Procura server block existente com server_name + listen 443 ssl
-  # Nota: server_name e listen estão em linhas diferentes, por isso flags separadas
-  SERVER_CLOSE=$(awk -v d="$APP_DOMAIN" '
-    /^server \{/ { depth=1; has_name=0; has_443=0 }
-    { if (depth>0) {
-        if ($0 ~ "server_name.*"d) has_name=1
-        if ($0 ~ /listen.*443/) has_443=1
-      }
-    }
-    /\{/ { if (depth>0) depth++ }
-    /\}/ { if (depth>0) { depth--; if (depth==0 && has_name && has_443) { print NR; exit } } }
-  ' "$NGINX_CONF")
-
-  if [ -z "$SERVER_CLOSE" ]; then
-    # Nenhum server block existente — cria um novo (fallback standalone)
-    warn "Server block para $APP_DOMAIN:443 não encontrado em $NGINX_CONF — criando novo"
-    SSL_CERT=""; SSL_KEY=""
-    for d in /etc/letsencrypt/live/*/; do
-      [ -f "${d}fullchain.pem" ] || continue
-      SSL_CERT="${d}fullchain.pem"
-      SSL_KEY="${d}privkey.pem"
-      echo "$d" | grep -qi "$(echo "$APP_DOMAIN" | sed 's/^www\.//')" && break
-    done
-
-    SERVER_BLOCK="
-$LOC_MARKER_BEGIN
+cat > "$NGINX_CONF" <<NGINXEOF
+# BEGIN crebortoli
 server {
     listen 80;
     listen [::]:80;
@@ -682,37 +631,27 @@ server {
         root /var/www;
     }
 
-    location $APP_LOCATION {
-        return 301 https://\$host\$request_uri;
-    }
-}
+    location /crebortoli/ {
+        add_header Access-Control-Allow-Origin \$http_origin always;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
 
-server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    http2 on;
-    server_name $APP_DOMAIN;
-"
-    if [ -n "$SSL_CERT" ]; then
-      SERVER_BLOCK="$SERVER_BLOCK
-    ssl_certificate $SSL_CERT;
-    ssl_certificate_key $SSL_KEY;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;"
-    else
-      SERVER_BLOCK="$SERVER_BLOCK
-    # SSL: certifique-se de gerar certificado para $APP_DOMAIN
-    # ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;"
-    fi
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$http_origin always;
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+            return 204;
+        }
 
-    SERVER_BLOCK="$SERVER_BLOCK
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
+        proxy_pass http://127.0.0.1:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    location $APP_LOCATION {
+    location /$PM2_APP_NAME/ {
         add_header Access-Control-Allow-Origin \$http_origin always;
         add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
         add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
@@ -731,40 +670,149 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name $APP_DOMAIN;
+
+    ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location /crebortoli/ {
+        add_header Access-Control-Allow-Origin \$http_origin always;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$http_origin always;
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+            return 204;
+        }
+
+        proxy_pass http://127.0.0.1:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+$LOC_MARKER_BEGIN
+    location /$PM2_APP_NAME/ {
+        add_header Access-Control-Allow-Origin \$http_origin always;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$http_origin always;
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+            return 204;
+        }
+
+        proxy_pass http://127.0.0.1:$APP_PORT/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+$LOC_MARKER_END
 
     client_max_body_size 15M;
 }
-$LOC_MARKER_END
-"
-    echo "$SERVER_BLOCK" >> "$NGINX_CONF"
-    info "Server block criado em $NGINX_CONF"
-  else
-    # Insere location block dentro do server block existente
-    sed -i "${SERVER_CLOSE}i\\
-$LOC_MARKER_BEGIN\\
-location /$PM2_APP_NAME/ {\\
-    add_header Access-Control-Allow-Origin \$http_origin always;\\
-    add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;\\
-    add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;\\
-\\
-    if (\$request_method = OPTIONS) {\\
-        add_header Access-Control-Allow-Origin \$http_origin always;\\
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;\\
-        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;\\
-        return 204;\\
-    }\\
-\\
-    proxy_pass http://127.0.0.1:$APP_PORT/;\\
-    proxy_http_version 1.1;\\
-    proxy_set_header Host \$host;\\
-    proxy_set_header X-Real-IP \$remote_addr;\\
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\\
-    proxy_set_header X-Forwarded-Proto \$scheme;\\
-}\\
-$LOC_MARKER_END" "$NGINX_CONF"
-    info "Location /$PM2_APP_NAME/ adicionado ao server block existente em $NGINX_CONF"
-  fi
-fi
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.crebortoli.com.br crebortoli.com.br;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+}
+# END crebortoli
+
+# BEGIN amoranimal_site
+server {
+    listen 80;
+    listen [::]:80;
+    server_name 201.54.22.122;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        return 301 https://www.amoranimal.ong.br\$request_uri;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.amoranimal.ong.br amoranimal.ong.br;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.amoranimal.ong.br amoranimal.ong.br 201.54.22.122;
+
+    ssl_certificate /etc/letsencrypt/live/amoranimal.ong.br-0001/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/amoranimal.ong.br-0001/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    client_max_body_size 15M;
+}
+# END amoranimal_site
+NGINXEOF
+
+info "Configuracao nginx gerada em $NGINX_CONF"
 
 # --------------------------------------------------------------
 # PostgreSQL — criar usuário e banco
