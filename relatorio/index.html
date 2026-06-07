@@ -415,8 +415,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      const params = new URLSearchParams(window.location.search);
-      const tbl = params.get('tabela');
+      var stored = sessionStorage.getItem('relatorio_tabela');
+      var tbl;
+      if (stored) {
+        sessionStorage.removeItem('relatorio_tabela');
+        tbl = stored;
+      } else {
+        tbl = new URLSearchParams(window.location.search).get('tabela');
+      }
       if (tbl) carregarTabela(tbl);
     });
   </script>

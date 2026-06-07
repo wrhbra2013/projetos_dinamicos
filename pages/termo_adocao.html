@@ -417,13 +417,27 @@ function gerarPDFTermo() {
 }
 
 (function() {
-  var p = new URLSearchParams(location.search);
-  var nome = p.get('pet_nome');
+  var petData = (function() {
+    var stored = sessionStorage.getItem('termo_pet');
+    if (stored) {
+      sessionStorage.removeItem('termo_pet');
+      return JSON.parse(stored);
+    }
+    var p = new URLSearchParams(location.search);
+    return p.get('pet_nome') ? {
+      nome: p.get('pet_nome'),
+      especie: p.get('pet_especie'),
+      porte: p.get('pet_porte'),
+      idade: p.get('pet_idade'),
+      caracteristicas: p.get('pet_caracteristicas')
+    } : null;
+  })();
+  var nome = petData && petData.nome;
   if (nome) {
     document.getElementById('termo-pet-nome').value = nome;
-    var especie = p.get('pet_especie');
-    var porte = p.get('pet_porte');
-    var idade = p.get('pet_idade');
+    var especie = petData.especie;
+    var porte = petData.porte;
+    var idade = petData.idade;
     if (especie) {
       var sel = document.getElementById('termo-pet-especie');
       for (var i = 0; i < sel.options.length; i++) {

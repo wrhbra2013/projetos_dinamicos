@@ -769,12 +769,14 @@ async function gerarComprovante(btn) {
 
 <script>
 function abrirTermo(el) {
-  var q = '?pet_nome=' + encodeURIComponent(el.dataset.nome || '') +
-    '&pet_especie=' + encodeURIComponent(el.dataset.especie || '') +
-    '&pet_porte=' + encodeURIComponent(el.dataset.porte || '') +
-    '&pet_idade=' + encodeURIComponent(el.dataset.idade || '') +
-    '&pet_caracteristicas=' + encodeURIComponent(el.dataset.caracteristicas || '');
-  location.href = 'pages/termo_adocao.html' + q;
+  sessionStorage.setItem('termo_pet', JSON.stringify({
+    nome: el.dataset.nome || '',
+    especie: el.dataset.especie || '',
+    porte: el.dataset.porte || '',
+    idade: el.dataset.idade || '',
+    caracteristicas: el.dataset.caracteristicas || ''
+  }));
+  location.href = 'pages/termo_adocao.html';
 }
 
 </script>

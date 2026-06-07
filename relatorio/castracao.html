@@ -529,10 +529,14 @@
       var columns = ['ticket', 'tutor_nome', 'pet_nome', 'pet_especie', 'pet_sexo', 'pet_idade', 'clinica', 'data_agendamento', 'tipo', 'status'];
       var labels = ['Ticket', 'Responsável', 'Pet', 'Espécie', 'Sexo', 'Idade', 'Clínica', 'Data', 'Tipo', 'Status'];
 
-      var params = new URLSearchParams(window.location.search);
+      var ev = window._eventoRelatorio || null;
+      if (!ev) {
+        var p = new URLSearchParams(window.location.search);
+        if (p.get('data')) ev = { data: p.get('data'), local: p.get('local') };
+      }
       var tituloEvento = '';
-      if (params.get('data') && params.get('local')) {
-        tituloEvento = ' - ' + decodeURIComponent(params.get('local')) + ' (' + params.get('data') + ')';
+      if (ev) {
+        tituloEvento = ' - ' + decodeURIComponent(ev.local) + ' (' + ev.data + ')';
       }
 
       var html = `
@@ -592,19 +596,23 @@
         return;
       }
 
-      var params = new URLSearchParams(window.location.search);
-      var dataParam = params.get('data');
-      var localParam = params.get('local');
+      var ev = (function() {
+        var s = sessionStorage.getItem('relatorio_evento');
+        if (s) { sessionStorage.removeItem('relatorio_evento'); return JSON.parse(s); }
+        var p = new URLSearchParams(window.location.search);
+        return p.get('data') ? { data: p.get('data'), local: p.get('local') } : null;
+      })();
+      window._eventoRelatorio = ev;
 
-      if (dataParam) {
-        var iso = converterDataBR(dataParam);
+      if (ev) {
+        var iso = converterDataBR(ev.data);
         document.getElementById('filter-data-inicio').value = iso;
         document.getElementById('filter-data-fim').value = iso;
         document.getElementById('filter-tipo').value = 'mutirao';
 
-        if (localParam) {
+        if (ev.local) {
           document.querySelector('.section-title').innerHTML =
-            '<i class="bi bi-table me-2"></i>Inscrições — ' + decodeURIComponent(localParam) + ' (' + dataParam + ')';
+            '<i class="bi bi-table me-2"></i>Inscrições — ' + decodeURIComponent(ev.local) + ' (' + ev.data + ')';
         }
 
         carregarDados();

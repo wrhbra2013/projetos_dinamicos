@@ -216,15 +216,21 @@ var pets = [];
 var eventoData = {};
 var vagasTotal = 0;
 
-var params = new URLSearchParams(location.search);
-eventoData = {
-  data: params.get('data') || '',
-  local: params.get('local') || '',
-  endereco: params.get('endereco') || '',
-  vagas: parseInt(params.get('vagas')) || 0,
-  dataLimite: params.get('data_limite') || '',
-  status: params.get('status') || 'aberto'
-};
+var stored = sessionStorage.getItem('mutirao_evento');
+if (stored) {
+  eventoData = JSON.parse(stored);
+  sessionStorage.removeItem('mutirao_evento');
+} else {
+  var params = new URLSearchParams(location.search);
+  eventoData = {
+    data: params.get('data') || '',
+    local: params.get('local') || '',
+    endereco: params.get('endereco') || '',
+    vagas: parseInt(params.get('vagas')) || 0,
+    dataLimite: params.get('data_limite') || '',
+    status: params.get('status') || 'aberto'
+  };
+}
 
 vagasTotal = eventoData.vagas;
 
