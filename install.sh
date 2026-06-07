@@ -34,7 +34,9 @@ PM2_AS_USER=""
 # Uninstall
 # ==============================================================
 uninstall() {
-  echo "============ Desinstalação ============"
+  echo ""
+  info "===== Iniciando desinstalação da API Amor Animal ====="
+  echo ""
 
   [ -f "$INSTALL_DIR/.env" ] && . "$INSTALL_DIR/.env" || true
 
@@ -57,8 +59,7 @@ uninstall() {
   echo ""
   info "[2/5] Restaurando nginx a partir do backup..."
   if [ -f "$NGINX_CONF.bkp" ]; then
-    cp "$NGINX_CONF.bkp" "$NGINX_CONF"
-    info "Nginx restaurado de $NGINX_CONF.bkp"
+    sudo cp "$NGINX_CONF.bkp" "$NGINX_CONF" && info "Nginx restaurado de $NGINX_CONF.bkp" || warn "Falha ao restaurar nginx de $NGINX_CONF.bkp"
     if nginx -t 2>/dev/null; then
       systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
     else
@@ -70,12 +71,14 @@ uninstall() {
 
   echo ""
   info "[3/5] Removendo banco de dados ($db_name)..."
+  info "Limpando tabelas existentes..."
   export PGPASSWORD="$db_pass"
   psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
     -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null | while read -r tbl; do
     [ -n "$tbl" ] && psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
       -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
   done
+  info "Tabelas removidas"
   unset PGPASSWORD
   if sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$db_name\";" 2>/dev/null; then
     info "Banco $db_name removido (usuário mantido)"
@@ -85,8 +88,7 @@ uninstall() {
 
   echo ""
   info "[4/5] Removendo diretório $INSTALL_DIR..."
-  rm -rf "$INSTALL_DIR"
-  info "Diretório removido"
+  rm -rf "$INSTALL_DIR" && info "Diretório $INSTALL_DIR removido com sucesso" || warn "Falha ao remover diretório $INSTALL_DIR"
 
   echo ""
   info "[5/5] Desinstalação concluída com sucesso!"
@@ -99,7 +101,7 @@ esac
 cleanup_on_error() {
   [ $? -eq 0 ] && return 0
   warn "ERRO: Instalação falhou — revertendo..."
-  rm -rf "$INSTALL_DIR" 2>/dev/null || true
+  rm -rf "$INSTALL_DIR" 2>/dev/null && warn "Diretório $INSTALL_DIR removido durante rollback" || true
   exit 1
 }
 trap cleanup_on_error EXIT
@@ -110,11 +112,9 @@ command -v npm  >/dev/null 2>&1 || error "npm não encontrado"
 command -v psql >/dev/null 2>&1 || warn "psql não encontrado"
 command -v pm2  >/dev/null 2>&1 || warn "pm2 não encontrado — será instalado via npm"
 
-mkdir -p "$SRC_DIR" "$INSTALL_DIR/uploads/transparencia" "$INSTALL_DIR/backups"
-
-# --------------------------------------------------------------
-# Inputs do usuário
-# --------------------------------------------------------------
+echo ""
+info "===== Iniciando instalação da API Amor Animal ====="
+echo ""
 echo "============ Configuração da instalação ============"
 _check_port() {
   local p=$1
@@ -147,14 +147,15 @@ while :; do
   fi
   break
 done
+info "Porta definida: $APP_PORT"
 printf "Nome do banco de dados PostgreSQL [amoranimal_db]: "; read -r DB_NAME
-DB_NAME=${DB_NAME:-amoranimal_db}
+DB_NAME=${DB_NAME:-amoranimal_db}; info "DB_NAME: $DB_NAME"
 printf "Nome do app no PM2 [amoranimal]: "; read -r PM2_APP_NAME
-PM2_APP_NAME=${PM2_APP_NAME:-amoranimal}
+PM2_APP_NAME=${PM2_APP_NAME:-amoranimal}; info "PM2_APP_NAME: $PM2_APP_NAME"
 printf "Email do administrador [amoranimalmariliadev@gmail.com]: "; read -r ADMIN_EMAIL
-ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}
+ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}; info "ADMIN_EMAIL: $ADMIN_EMAIL"
 printf "Nome do administrador [$ADMIN_EMAIL]: "; read -r ADMIN_NOME
-ADMIN_NOME=${ADMIN_NOME:-$ADMIN_EMAIL}
+ADMIN_NOME=${ADMIN_NOME:-$ADMIN_EMAIL}; info "ADMIN_NOME: $ADMIN_NOME"
 printf "Senha do administrador [@admin]: "; stty -echo; read -r ADMIN_PASS; stty echo; echo ""
 ADMIN_PASS=${ADMIN_PASS:-@admin}
 DB_USER=postgres
@@ -163,6 +164,9 @@ DB_HOST=localhost
 DB_PORT=5432
 APP_DOMAIN=api.projetosdinamicos.com.br
 APP_LOCATION=/$PM2_APP_NAME/
+
+info "Criando diretórios..."
+mkdir -p "$SRC_DIR" "$INSTALL_DIR/uploads/transparencia" "$INSTALL_DIR/backups" && info "Diretórios criados: $SRC_DIR" || warn "Erro ao criar diretórios"
 
 # --------------------------------------------------------------
 # .env
@@ -184,8 +188,8 @@ ADMIN_EMAIL=$ADMIN_EMAIL
 ADMIN_NOME=$ADMIN_NOME
 ADMIN_PASS=$ADMIN_PASS
 ENVEOF
-chmod 600 "$INSTALL_DIR/.env"
-chown "$PM2_USER" "$INSTALL_DIR/.env"
+chmod 600 "$INSTALL_DIR/.env" && info "Permissões do .env ajustadas (600)" || warn "Falha ao ajustar permissões do .env"
+chown "$PM2_USER" "$INSTALL_DIR/.env" && info "Proprietário do .env definido: $PM2_USER" || warn "Falha ao definir proprietário do .env"
 info ".env criado com PORT=$APP_PORT"
 
 # --------------------------------------------------------------
@@ -238,8 +242,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // CORS — permite requisições do frontend hospedado em outro domínio
-// ATENÇÃO: o nginx NÃO deve ter add_header Access-Control-Allow-Origin
-// pois headers duplicados causam erro de CORS no browser
+// O nginx TEM add_header correspondente (em install.sh) como fallback
+// Headers duplicados (nginx + Node) são aceitos pelo browser sem erro
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
@@ -596,7 +600,8 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 SVREOF
-sed -i "s/process\.env\.PORT || 3000/process.env.PORT || $APP_PORT/" "$SRC_DIR/server.js"
+info "Ajustando porta padrão no server.js..."
+sed -i "s/process\.env\.PORT || 3000/process.env.PORT || $APP_PORT/" "$SRC_DIR/server.js" && info "Porta ajustada para $APP_PORT" || warn "Falha ao ajustar porta no server.js"
 
 # --------------------------------------------------------------
 # Nginx — adiciona server block único para este app
@@ -608,13 +613,13 @@ if [ ! -f "$NGINX_CONF" ]; then
   echo "# Nginx default — Amor Animal API" > "$NGINX_CONF"
 fi
 
+# Backup antes de qualquer alteração (sempre)
+info "Criando backup do nginx..."
+sudo cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null && info "Backup de nginx criado: $NGINX_CONF.bkp" || warn "Falha ao criar backup em $NGINX_CONF.bkp"
+
 if grep -q "^# BEGIN $PM2_APP_NAME\$" "$NGINX_CONF"; then
   warn "Bloco # BEGIN $PM2_APP_NAME já existe em $NGINX_CONF — pulando"
 else
-  # Backup antes de alterar
-  cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null || true
-  info "Backup de nginx criado: $NGINX_CONF.bkp"
-
   SSL_CERT=""; SSL_KEY=""
   for d in /etc/letsencrypt/live/*/; do
     [ -f "${d}fullchain.pem" ] || continue
@@ -671,7 +676,18 @@ $SSL_BLOCK
     }
 
     location $APP_LOCATION {
-        # CORS tratado exclusivamente pelo Node.js (server.js)
+        # CORS — headers duplicados (nginx + Node) não causam erro no browser
+        add_header Access-Control-Allow-Origin \$http_origin always;
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$http_origin always;
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
+            return 204;
+        }
+
         proxy_pass http://127.0.0.1:$APP_PORT$PROXY_TRAIL;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -690,8 +706,9 @@ fi
 # --------------------------------------------------------------
 # PostgreSQL — criar usuário e banco
 # --------------------------------------------------------------
-info "Criando banco PostgreSQL ($DB_NAME)"
+info "Criando banco PostgreSQL ($DB_NAME)..."
 if command -v sudo >/dev/null 2>&1 && sudo -u postgres psql -c "SELECT 1" >/dev/null 2>&1; then
+  info "PostgreSQL acessível via sudo -u postgres"
   if sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>&1; then
     info "Banco $DB_NAME criado"
   else
@@ -708,7 +725,7 @@ fi
 # --------------------------------------------------------------
 info "Executando migration — criando tabelas..."
 MIGRATION_FILE="$INSTALL_DIR/migrations/001_create_tables.sql"
-mkdir -p "$INSTALL_DIR/migrations"
+mkdir -p "$INSTALL_DIR/migrations" && info "Diretório de migrations criado" || warn "Erro ao criar diretório de migrations"
 
 cat > "$MIGRATION_FILE" <<SQLEOF
 -- ============================================================
@@ -916,15 +933,22 @@ ON CONFLICT (email) DO NOTHING;
 SQLEOF
 
 # Executar migration
-info "Executando migration..."
-PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$MIGRATION_FILE" 2>&1 && \
-  info "Migration executada com sucesso!" || warn "Erro ao executar migration — execute manualmente: psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
+info "Executando migration ($MIGRATION_FILE)..."
+if PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$MIGRATION_FILE" 2>&1; then
+  info "Migration executada com sucesso!"
+else
+  warn "Erro ao executar migration — execute manualmente: psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
+fi
 
 # --------------------------------------------------------------
 # Instalar dependências
 # --------------------------------------------------------------
-info "Instalando dependências npm"
-npm install --prefix "$INSTALL_DIR" --production
+info "Instalando dependências npm..."
+if npm install --prefix "$INSTALL_DIR" --production 2>&1; then
+  info "Dependências npm instaladas com sucesso"
+else
+  warn "Erro ao instalar dependências — execute manualmente: npm install --prefix $INSTALL_DIR"
+fi
 
 # --------------------------------------------------------------
 # PM2
