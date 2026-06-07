@@ -11,108 +11,49 @@
 </head>
 <body>
 
-<div class="login-container">
-  <a href="../index.html" class="back-link"><i class="bi bi-arrow-left"></i> Voltar</a>
-  <div class="login-card">
-    <div class="login-header">
-      <img src="../static/css/imagem/ong.jpg" alt="ONG Amor Animal">
-      <h3 style="margin:0;color:white;">Acesso ao Sistema</h3>
-      <p>ONG Amor Animal Marília</p>
-    </div>
-    <div class="login-body">
-      <form id="loginForm" autocomplete="off" novalidate>
-        <div class="form-group-modern">
-          <label for="usuario" class="form-label-modern">Usuário:</label>
-          <input type="text" id="usuario" name="usuario" class="form-input-modern" required>
-        </div>
-        <div class="form-group-modern">
-          <label for="senha" class="form-label-modern">Senha:</label>
-          <div style="position: relative;">
-            <input type="password" id="senha" name="senha" class="form-input-modern" required style="padding-right: 40px;">
-            <span onclick="toggleSenha()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; z-index: 2;">&#x1F441;</span>
-          </div>
-          <div class="checkbox-modern">
-            <input type="checkbox" class="checkbox-input" id="mostrarSenha" onchange="document.getElementById('senha').type = this.checked ? 'text' : 'password'">
-            <label class="checkbox-label" for="mostrarSenha">Mostrar Senha</label>
-          </div>
-        </div>
-        <button type="submit" class="login-button">Login</button>
-      </form>
-      <div id="messageContainer" style="margin-top:15px;"></div>
-    </div>
-  </div>
+<div class="container">
+    <a href="../index.html" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Voltar para a página inicial</a>
 </div>
 
-<script>
-function toggleSenha() {
-  const s = document.getElementById('senha');
-  s.type = s.type === 'password' ? 'text' : 'password';
-}
-</script>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-center" style="margin:0;">Acesso ao Sistema</h3>
+        </div>
+        <div class="card-body login-body">
+            <form id="loginForm" autocomplete="off" novalidate>
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Usuário:</label>
+                    <input type="text" id="usuario" name="usuario" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha:</label>
+                    <div style="position: relative;">
+                        <input type="password" id="senha" name="senha" class="form-control" required style="padding-right: 40px;">
+                        <span onclick="toggleSenha()" class="password-toggle"
+                              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; z-index: 2;">&#x1F441;</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                        <input type="checkbox" id="mostrarSenha"
+                            onchange="document.getElementById('senha').type = this.checked ? 'text' : 'password'"
+                            style="width: 18px; height: 18px; accent-color: var(--brand-teal); cursor: pointer;">
+                        <label for="mostrarSenha" style="cursor: pointer; user-select: none; color: var(--text-color); font-size: 0.95em;">Mostrar Senha</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+            </form>
+            <div id="messageContainer" style="margin-top:15px;"></div>
+        </div>
+        <div class="card-footer text-center">
+            <p class="mb-0"></p>
+        </div>
+    </div>
+</div>
 
 <script src="../static/js/api.js"></script>
 <script src="../static/js/login.js"></script>
-<script>
-
-LoginFormHandler.prototype.setLoadingState = function(isLoading) {
-  if (!this.submitButton) return;
-  this.submitButton.disabled = isLoading;
-  this.submitButton.classList.toggle('loading', isLoading);
-  if (isLoading) {
-    this.submitButton.innerHTML = '<span style="opacity:0;">Login</span>';
-  } else {
-    this.submitButton.innerHTML = 'Login';
-  }
-};
-
-LoginFormHandler.prototype.handleSubmit = function(e) {
-  e.preventDefault();
-  const isUsuarioValid = this.validateField(this.usuarioInput);
-  const isSenhaValid = this.validateField(this.senhaInput);
-  if (!isUsuarioValid || !isSenhaValid) {
-    this.showMessage('Por favor, preencha todos os campos corretamente.', 'danger');
-    return;
-  }
-  this.setLoadingState(true);
-
-  const valor = this.usuarioInput.value.trim();
-  const senha = this.senhaInput.value;
-
-  fetch(API_BASE + '/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: valor, email: valor, senha })
-  })
-  .then(function(r) {
-    if (!r.ok) {
-      if (r.status === 401) throw new Error('Usuário ou senha inválidos.');
-      if (r.status === 0) throw new Error('Erro de conexão com o servidor (CORS).');
-      throw new Error('Erro no servidor.');
-    }
-    return r.json();
-  })
-  .then(function(data) {
-    localStorage.setItem('amoranimal_token', data.token);
-    localStorage.setItem('amoranimal_usuario', JSON.stringify(data.usuario));
-    window.loginHandler?.showMessage('Login realizado! Redirecionando...', 'success');
-    setTimeout(function() { window.location.href = '/relatorio/index.html'; }, 1000);
-  })
-  .catch(function(err) {
-    var msg = err.message;
-    if (err.name === 'TypeError' && msg.indexOf('fetch') !== -1) {
-      msg = 'Erro de conexão com o servidor. Verifique se a API está acessível (possível bloqueio CORS).';
-    }
-    window.loginHandler?.showMessage(msg, 'danger');
-    window.loginHandler?.setLoadingState(false);
-  });
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  if (localStorage.getItem('amoranimal_token')) {
-    window.location.href = '/relatorio/index.html';
-  }
-});
-</script>
 
 </body>
 </html>
