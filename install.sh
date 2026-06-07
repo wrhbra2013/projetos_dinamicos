@@ -57,16 +57,22 @@ uninstall() {
   $PM2_AS_USER pm2 save --force 2>/dev/null || true
 
   echo ""
-  info "[2/5] Restaurando nginx a partir do backup..."
-  if [ -f "$NGINX_CONF.bkp" ]; then
-    sudo cp "$NGINX_CONF.bkp" "$NGINX_CONF" && info "Nginx restaurado de $NGINX_CONF.bkp" || warn "Falha ao restaurar nginx de $NGINX_CONF.bkp"
-    if nginx -t 2>/dev/null; then
-      systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
-    else
-      warn "Configuração do nginx inválida — verifique manualmente"
-    fi
+  info "[2/5] Removendo location /$upm2/ do nginx..."
+  LOC_MARKER_BEGIN="# LOCATION_BEGIN $upm2"
+  LOC_MARKER_END="# LOCATION_END $upm2"
+  if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
+    sed -i "/^$LOC_MARKER_BEGIN\$/,/^$LOC_MARKER_END\$/d" "$NGINX_CONF" && info "Location /$upm2/ removido do nginx" || warn "Falha ao remover location /$upm2/ do nginx"
   else
-    warn "Backup nginx $NGINX_CONF.bkp não encontrado — pulando"
+    warn "Marcador $LOC_MARKER_BEGIN não encontrado — pulando"
+  fi
+  # Remove old-style server block se presente (instalações antigas)
+  if grep -q "^# BEGIN $upm2\$" "$NGINX_CONF"; then
+    sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" && info "Server block antigo (# BEGIN $upm2) removido" || warn "Falha ao remover server block antigo"
+  fi
+  if nginx -t 2>/dev/null; then
+    systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
+  else
+    warn "Configuração do nginx inválida — verifique manualmente"
   fi
 
   echo ""
@@ -604,37 +610,53 @@ info "Ajustando porta padrão no server.js..."
 sed -i "s/process\.env\.PORT || 3000/process.env.PORT || $APP_PORT/" "$SRC_DIR/server.js" && info "Porta ajustada para $APP_PORT" || warn "Falha ao ajustar porta no server.js"
 
 # --------------------------------------------------------------
-# Nginx — adiciona server block único para este app
+# Nginx — adiciona location no server block existente
 # --------------------------------------------------------------
+LOC_MARKER_BEGIN="# LOCATION_BEGIN $PM2_APP_NAME"
+LOC_MARKER_END="# LOCATION_END $PM2_APP_NAME"
+
 info "Configurando Nginx"
 
 if [ ! -f "$NGINX_CONF" ]; then
   warn "$NGINX_CONF não encontrado — criando arquivo vazio"
-  echo "# Nginx default — Amor Animal API" > "$NGINX_CONF"
+  echo "# Nginx default — $PM2_APP_NAME API" > "$NGINX_CONF"
 fi
 
 # Backup antes de qualquer alteração (sempre)
 info "Criando backup do nginx..."
 sudo cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null && info "Backup de nginx criado: $NGINX_CONF.bkp" || warn "Falha ao criar backup em $NGINX_CONF.bkp"
 
+# Remove old-style server block se presente (instalações standalone antigas)
 if grep -q "^# BEGIN $PM2_APP_NAME\$" "$NGINX_CONF"; then
-  warn "Bloco # BEGIN $PM2_APP_NAME já existe em $NGINX_CONF — pulando"
+  info "Removendo server block antigo (# BEGIN $PM2_APP_NAME)..."
+  sed -i "/^# BEGIN $PM2_APP_NAME\$/,/^# END $PM2_APP_NAME\$/d" "$NGINX_CONF"
+  info "Server block antigo removido"
+fi
+
+if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
+  warn "Location /$PM2_APP_NAME/ já configurado em $NGINX_CONF — pulando"
 else
-  SSL_CERT=""; SSL_KEY=""
-  for d in /etc/letsencrypt/live/*/; do
-    [ -f "${d}fullchain.pem" ] || continue
-    SSL_CERT="${d}fullchain.pem"
-    SSL_KEY="${d}privkey.pem"
-    echo "$d" | grep -qi "$(echo "$APP_DOMAIN" | sed 's/^www\.//')" && break
-  done
+  # Procura server block existente com server_name + listen 443 ssl
+  SERVER_CLOSE=$(awk -v d="$APP_DOMAIN" '
+    /^server \{/ { depth=1; match_block=0 }
+    { if (depth>0 && !match_block && $0 ~ "server_name.*"d && $0 ~ /listen.*443/) match_block=1 }
+    /\{/ { if (depth>0) depth++ }
+    /\}/ { if (depth>0) { depth--; if (depth==0 && match_block) { print NR; exit } } }
+  ' "$NGINX_CONF")
 
-  # Se APP_LOCATION for sub-path (ex: /amoranimal/), proxy_pass precisa de trailing slash
-  PROXY_TRAIL="/"
-  [ "$APP_LOCATION" = "/" ] && PROXY_TRAIL=""
+  if [ -z "$SERVER_CLOSE" ]; then
+    # Nenhum server block existente — cria um novo (fallback standalone)
+    warn "Server block para $APP_DOMAIN:443 não encontrado em $NGINX_CONF — criando novo"
+    SSL_CERT=""; SSL_KEY=""
+    for d in /etc/letsencrypt/live/*/; do
+      [ -f "${d}fullchain.pem" ] || continue
+      SSL_CERT="${d}fullchain.pem"
+      SSL_KEY="${d}privkey.pem"
+      echo "$d" | grep -qi "$(echo "$APP_DOMAIN" | sed 's/^www\.//')" && break
+    done
 
-  cat >> "$NGINX_CONF" <<NGINXEOF
-
-# BEGIN $PM2_APP_NAME
+    SERVER_BLOCK="
+$LOC_MARKER_BEGIN
 server {
     listen 80;
     listen [::]:80;
@@ -654,29 +676,27 @@ server {
     listen [::]:443 ssl;
     http2 on;
     server_name $APP_DOMAIN;
-
-NGINXEOF
-  SSL_BLOCK=""
-  if [ -n "$SSL_CERT" ]; then
-    SSL_BLOCK="    ssl_certificate $SSL_CERT;
+"
+    if [ -n "$SSL_CERT" ]; then
+      SERVER_BLOCK="$SERVER_BLOCK
+    ssl_certificate $SSL_CERT;
     ssl_certificate_key $SSL_KEY;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;"
-  else
-    SSL_BLOCK="    # SSL: certifique-se de gerar certificado para $APP_DOMAIN
+    else
+      SERVER_BLOCK="$SERVER_BLOCK
+    # SSL: certifique-se de gerar certificado para $APP_DOMAIN
     # ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
     # ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;"
-  fi
+    fi
 
-    cat >> "$NGINX_CONF" <<NGINXEOF
-$SSL_BLOCK
+    SERVER_BLOCK="$SERVER_BLOCK
 
     location /.well-known/acme-challenge/ {
         root /var/www;
     }
 
     location $APP_LOCATION {
-        # CORS — headers duplicados (nginx + Node) não causam erro no browser
         add_header Access-Control-Allow-Origin \$http_origin always;
         add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
         add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
@@ -688,7 +708,7 @@ $SSL_BLOCK
             return 204;
         }
 
-        proxy_pass http://127.0.0.1:$APP_PORT$PROXY_TRAIL;
+        proxy_pass http://127.0.0.1:$APP_PORT/;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -698,9 +718,36 @@ $SSL_BLOCK
 
     client_max_body_size 15M;
 }
-# END $PM2_APP_NAME
-NGINXEOF
-  info "Server block # BEGIN $PM2_APP_NAME inserido em $NGINX_CONF"
+$LOC_MARKER_END
+"
+    echo "$SERVER_BLOCK" >> "$NGINX_CONF"
+    info "Server block criado em $NGINX_CONF"
+  else
+    # Insere location block dentro do server block existente
+    sed -i "${SERVER_CLOSE}i\\
+$LOC_MARKER_BEGIN\\
+location /$PM2_APP_NAME/ {\\
+    add_header Access-Control-Allow-Origin \$http_origin always;\\
+    add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;\\
+    add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;\\
+\\
+    if (\$request_method = OPTIONS) {\\
+        add_header Access-Control-Allow-Origin \$http_origin always;\\
+        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;\\
+        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;\\
+        return 204;\\
+    }\\
+\\
+    proxy_pass http://127.0.0.1:$APP_PORT/;\\
+    proxy_http_version 1.1;\\
+    proxy_set_header Host \$host;\\
+    proxy_set_header X-Real-IP \$remote_addr;\\
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\\
+    proxy_set_header X-Forwarded-Proto \$scheme;\\
+}\\
+$LOC_MARKER_END" "$NGINX_CONF"
+    info "Location /$PM2_APP_NAME/ adicionado ao server block existente em $NGINX_CONF"
+  fi
 fi
 
 # --------------------------------------------------------------
