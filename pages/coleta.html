@@ -12,6 +12,7 @@
 
 <script>var ROOT='..';</script>
 <script src="../components/header.js"></script>
+<script src="../static/js/api.js"></script>
 
 <main class="container mt-4 mb-5">
   <nav style="margin-bottom:1rem;font-size:0.85rem;">
@@ -202,7 +203,7 @@ document.getElementById('form-coleta').addEventListener('submit', function(e) {
     estado: document.getElementById('estado').value,
     mensagem: document.getElementById('mensagem').value
   };
-  fetch('https://api.projetosdinamicos.com.br/amoranimal/coleta', {
+  fetch(window.API_BASE + '/coleta', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)

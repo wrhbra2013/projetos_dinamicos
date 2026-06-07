@@ -19,6 +19,7 @@
 
 <script>var ROOT='..';</script>
 <script src="../components/header.js"></script>
+<script src="../static/js/api.js"></script>
 
 <main class="container mt-4 mb-5">
   <nav style="margin-bottom:1rem;font-size:0.85rem;">
@@ -182,9 +183,9 @@
 </main>
 
 <script>
-const API_BASE_BC = 'https://api.projetosdinamicos.com.br/amoranimal';
+const API_BASE = window.API_BASE;
 
-fetch(API_BASE_BC + '/settings')
+fetch(API_BASE + '/settings')
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (data['clinica_baixo']) document.getElementById('b_clinica').value = data['clinica_baixo'];
@@ -282,7 +283,7 @@ function cadastrarBaixoCusto(e) {
   btn.disabled = true; btn.textContent = 'Enviando...';
 
   const promises = petsBC.map(function(pet) {
-    return fetch(API_BASE_BC + '/castracoes', {
+    return fetch(API_BASE + '/castracoes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

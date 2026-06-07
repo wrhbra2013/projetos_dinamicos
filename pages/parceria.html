@@ -12,6 +12,7 @@
 
 <script>var ROOT='..';</script>
 <script src="../components/header.js"></script>
+<script src="../static/js/api.js"></script>
 
 <div class="container mt-4 mb-4">
   <div class="page-header mb-3 text-center">
@@ -106,7 +107,7 @@
 </div>
 
 <script>
-var API_BASE = 'https://api.projetosdinamicos.com.br/amoranimal';
+var API_BASE = window.API_BASE;
 
 function carregarParcerias() {
   var tbody = document.getElementById('parcerias-tbody');
