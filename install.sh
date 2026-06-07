@@ -633,15 +633,31 @@ if grep -q "^# BEGIN $PM2_APP_NAME\$" "$NGINX_CONF"; then
   info "Server block antigo removido"
 fi
 
+# Remove location block antigo (instalações anteriores com fallback incorreto)
+if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
+  info "Removendo location block antigo ($LOC_MARKER_BEGIN)..."
+  sed -i "/^$LOC_MARKER_BEGIN\$/,/^$LOC_MARKER_END\$/d" "$NGINX_CONF"
+  info "Location block antigo removido"
+fi
+
+# Remove location /$PM2_APP_NAME/ sem marcadores (ex: dentro do server block crebortoli)
+info "Removendo location /$PM2_APP_NAME/ antigo (sem CORS) do server block..."
+sed -i "/^    location \/$PM2_APP_NAME\/ {/,/^    }$/d" "$NGINX_CONF" && info "Location antigo removido" || warn "Falha ao remover location antigo"
+
 if grep -q "^$LOC_MARKER_BEGIN\$" "$NGINX_CONF"; then
   warn "Location /$PM2_APP_NAME/ já configurado em $NGINX_CONF — pulando"
 else
   # Procura server block existente com server_name + listen 443 ssl
+  # Nota: server_name e listen estão em linhas diferentes, por isso flags separadas
   SERVER_CLOSE=$(awk -v d="$APP_DOMAIN" '
-    /^server \{/ { depth=1; match_block=0 }
-    { if (depth>0 && !match_block && $0 ~ "server_name.*"d && $0 ~ /listen.*443/) match_block=1 }
+    /^server \{/ { depth=1; has_name=0; has_443=0 }
+    { if (depth>0) {
+        if ($0 ~ "server_name.*"d) has_name=1
+        if ($0 ~ /listen.*443/) has_443=1
+      }
+    }
     /\{/ { if (depth>0) depth++ }
-    /\}/ { if (depth>0) { depth--; if (depth==0 && match_block) { print NR; exit } } }
+    /\}/ { if (depth>0) { depth--; if (depth==0 && has_name && has_443) { print NR; exit } } }
   ' "$NGINX_CONF")
 
   if [ -z "$SERVER_CLOSE" ]; then
