@@ -245,8 +245,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // CORS — permite requisições do frontend hospedado em outro domínio
-// O nginx TEM add_header correspondente (em install.sh) como fallback
-// Headers duplicados (nginx + Node) são aceitos pelo browser sem erro
+// O nginx não define mais Access-Control-Allow-Origin para evitar
+// headers duplicados que o browser rejeita (CORS spec exige valor único)
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
@@ -652,17 +652,6 @@ server {
     }
 
     location /$PM2_APP_NAME/ {
-        add_header Access-Control-Allow-Origin \$http_origin always;
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-
-        if (\$request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin \$http_origin always;
-            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-            return 204;
-        }
-
         proxy_pass http://127.0.0.1:$APP_PORT/;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -682,9 +671,6 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
-
-    add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
-    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
 
     location /.well-known/acme-challenge/ {
         root /var/www;
@@ -712,17 +698,6 @@ server {
 
 $LOC_MARKER_BEGIN
     location /$PM2_APP_NAME/ {
-        add_header Access-Control-Allow-Origin \$http_origin always;
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-
-        if (\$request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin \$http_origin always;
-            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-            return 204;
-        }
-
         proxy_pass http://127.0.0.1:$APP_PORT/;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
