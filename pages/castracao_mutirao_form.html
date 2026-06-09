@@ -356,6 +356,15 @@ document.getElementById('f_cpf').addEventListener('input', function(e) {
   e.target.value = f;
 });
 
+document.getElementById('f_contato').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g, '').slice(0, 11);
+  var f = '';
+  if (v.length > 0) f = '(' + v.slice(0, 2);
+  if (v.length > 2) f += ') ' + v.slice(2, 7);
+  if (v.length > 7) f += '-' + v.slice(7, 11);
+  e.target.value = f;
+});
+
 document.getElementById('f_btn_add_pet').addEventListener('click', function() {
   var nome = document.getElementById('f_pet_nome').value.trim();
   var especie = document.getElementById('f_pet_especie').value;

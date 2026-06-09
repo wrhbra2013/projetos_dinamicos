@@ -28,7 +28,10 @@
     '<header class="main-header">' +
     '  <main class="main-header-controls"></main>' +
     '  <div style="text-align:center;padding:10px 0 0">' +
-    '    <a href="' + ROOT + '/login/index.html" style="color:var(--brand-teal);text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
+    '    <span id="admin-access-area">' +
+    '      <a href="' + ROOT + '/login/index.html" id="admin-login-link" style="color:var(--brand-teal);text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
+    '      <a href="#" id="admin-logout-link" style="display:none;color:var(--brand-coral);text-decoration:none;font-weight:600;margin-left:12px" onclick="event.preventDefault();adminLogout()"><i class="bi bi-box-arrow-right"></i> Sair</a>' +
+    '    </span>' +
     '  </div>' +
     '  <div class="nav-container">' +
     '    <img src="' + ROOT + '/static/css/imagem/ong.jpg" alt="Logo ONG AMOR ANIMAL MARILIA" />' +
@@ -265,6 +268,21 @@
     });
   }
 
+  function initAdminUI() {
+    var token = localStorage.getItem('amoranimal_token');
+    var loginLink = document.getElementById('admin-login-link');
+    var logoutLink = document.getElementById('admin-logout-link');
+    if (loginLink && logoutLink) {
+      if (token) {
+        loginLink.style.display = 'none';
+        logoutLink.style.display = 'inline';
+      } else {
+        loginLink.style.display = 'inline';
+        logoutLink.style.display = 'none';
+      }
+    }
+  }
+
   function initContrast() {
     var t = document.getElementById('contrast-toggle');
     if (!t) return;
@@ -285,10 +303,12 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
+      initAdminUI();
       initSearch();
       initContrast();
     });
   } else {
+    initAdminUI();
     initSearch();
     initContrast();
   }

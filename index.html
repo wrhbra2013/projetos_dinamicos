@@ -779,6 +779,49 @@ function abrirTermo(el) {
 }
 
 </script>
+<section id="admin-section" class="landing-section" style="display:none;background:var(--bg-alt);border-top:3px solid var(--brand-teal);">
+  <div class="landing-container">
+    <h2 class="text-center mb-4" style="color: var(--heading-color);">
+      <i class="bi bi-shield-lock" style="color:var(--brand-teal);"></i> Administração
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+      <a href="relatorio/index.html" class="btn btn-primary" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-bar-chart" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Relatórios Gerais
+      </a>
+      <a href="relatorio/index.html?tabela=animais" class="btn btn-outline" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-paw" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Animais
+      </a>
+      <a href="relatorio/index.html?tabela=adocoes" class="btn btn-outline" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-heart" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Adoções
+      </a>
+      <a href="relatorio/index.html?tabela=castracoes" class="btn btn-outline" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-person-heart" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Castrações
+      </a>
+      <a href="relatorio/index.html?tabela=voluntarios" class="btn btn-outline" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-people" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Voluntários
+      </a>
+      <a href="relatorio/castracao.html" class="btn btn-outline" style="padding:1.5rem;text-align:center;">
+        <i class="bi bi-calendar-check" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        Castração Detalhado
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  var adminSection = document.getElementById('admin-section');
+  if (adminSection && localStorage.getItem('amoranimal_token')) {
+    adminSection.style.display = '';
+  }
+})();
+</script>
+
 <script src="components/footer.js"></script>
 </body>
 </html>
