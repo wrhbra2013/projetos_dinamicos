@@ -900,6 +900,17 @@ nav.main-nav {
     padding: 10px 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
+
+body.admin-mode nav.main-nav {
+    background: linear-gradient(135deg, var(--warning), #e0a800);
+}
+
+body.admin-mode #admin-access-area {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
  nav.main-nav ul {
    list-style: none;
    padding: 0;
