@@ -281,6 +281,12 @@
     }
   }
 
+  window.adminLogout = function() {
+    localStorage.removeItem('amoranimal_token');
+    localStorage.removeItem('amoranimal_usuario');
+    window.location.href = window.location.origin + '/index.html';
+  };
+
   function initContrast() {
     var t = document.getElementById('contrast-toggle');
     if (!t) return;
