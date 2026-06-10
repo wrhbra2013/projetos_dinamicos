@@ -143,7 +143,7 @@ class LoginFormHandler {
         localStorage.setItem('amoranimal_token', data.token);
         localStorage.setItem('amoranimal_usuario', JSON.stringify(data.usuario));
         window.loginHandler?.showMessage('Login realizado! Redirecionando...', 'success');
-        setTimeout(function() { window.location.href = '/relatorio/index.html'; }, 1000);
+        setTimeout(function() { window.location.href = '/index.html'; }, 1000);
       })
       .catch(function(err) {
         var isNetworkError = err.name === 'TypeError' && err.message.indexOf('fetch') !== -1;
@@ -151,7 +151,7 @@ class LoginFormHandler {
           localStorage.setItem('amoranimal_token', 'admin-static-token');
           localStorage.setItem('amoranimal_usuario', JSON.stringify({ nome: valor, admin: true, static: true }));
           window.loginHandler?.showMessage('Modo administrador local ativado! Redirecionando...', 'success');
-          setTimeout(function() { window.location.href = '/relatorio/index.html'; }, 1000);
+          setTimeout(function() { window.location.href = '/index.html'; }, 1000);
         } else {
           var msg = err.message;
           if (isNetworkError) {
@@ -250,7 +250,7 @@ class LoginFormHandler {
 
 document.addEventListener('DOMContentLoaded', function() {
     if (localStorage.getItem('amoranimal_token')) {
-      window.location.href = '/relatorio/index.html';
+      window.location.href = '/index.html';
       return;
     }
 

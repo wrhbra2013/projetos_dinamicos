@@ -30,7 +30,10 @@
     '  <div style="text-align:center;padding:10px 0 0">' +
     '    <span id="admin-access-area">' +
     '      <a href="' + ROOT + '/login/index.html" id="admin-login-link" style="color:var(--brand-teal);text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
-    '      <a href="#" id="admin-logout-link" style="display:none;color:var(--brand-coral);text-decoration:none;font-weight:600;margin-left:12px" onclick="event.preventDefault();adminLogout()"><i class="bi bi-box-arrow-right"></i> Sair</a>' +
+    '      <span id="admin-logged-in" style="display:none">' +
+    '        <span style="color:var(--brand-teal);font-weight:700;margin-right:8px"><i class="bi bi-shield-lock"></i> ADMINISTRADOR</span>' +
+    '        <a href="#" id="admin-logout-link" style="color:var(--brand-coral);text-decoration:none;font-weight:600" onclick="event.preventDefault();adminLogout()"><i class="bi bi-box-arrow-right"></i> Sair</a>' +
+    '      </span>' +
     '    </span>' +
     '  </div>' +
     '  <div class="nav-container">' +
@@ -271,15 +274,10 @@
   function initAdminUI() {
     var token = localStorage.getItem('amoranimal_token');
     var loginLink = document.getElementById('admin-login-link');
-    var logoutLink = document.getElementById('admin-logout-link');
-    if (loginLink && logoutLink) {
-      if (token) {
-        loginLink.style.display = 'none';
-        logoutLink.style.display = 'inline';
-      } else {
-        loginLink.style.display = 'inline';
-        logoutLink.style.display = 'none';
-      }
+    var loggedIn = document.getElementById('admin-logged-in');
+    if (loginLink && loggedIn) {
+      loginLink.style.display = token ? 'none' : 'inline';
+      loggedIn.style.display = token ? 'inline' : 'none';
     }
   }
 
