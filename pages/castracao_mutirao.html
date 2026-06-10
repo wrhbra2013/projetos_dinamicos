@@ -18,9 +18,11 @@
   .card-text { margin-top:0; margin-bottom:1rem; }
   .h-100 { height:100%; }
   .w-100 { width:100%; }
-  .btn { display:inline-block; padding:0.5rem 1rem; border-radius:5px; cursor:pointer; text-decoration:none; text-align:center; }
-  .btn-primary { background:var(--brand-teal); color:white; border:none; }
-  .btn-secondary { background:linear-gradient(135deg,#64748b,#475569); color:white; border:none; }
+  .btn { display:inline-block; padding:0.5rem 1rem; border-radius:5px; cursor:pointer; text-decoration:none; text-align:center; border:none; }
+  .btn-primary { background:var(--brand-teal); color:white; }
+  .btn-secondary { background:linear-gradient(135deg,#64748b,#475569); color:white; }
+  .btn-warning { background:#f59e0b; color:white; }
+  .btn-danger { background:#ef4444; color:white; }
   .mb-4 { margin-bottom:1.5rem; }
   .mb-2 { margin-bottom:0.5rem; }
   .me-1 { margin-right:0.25rem; }
@@ -29,6 +31,22 @@
   .mt-4 { margin-top:1.5rem; }
   .text-muted { color:var(--muted-color); }
   .small { font-size:0.85rem; }
+  .admin-form-row { display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem; }
+  .admin-form-row > div { flex:1; min-width:200px; }
+  .admin-form-row label { display:block; margin-bottom:4px; font-size:0.85rem; font-weight:600; }
+  .admin-form-row input, .admin-form-row select { width:100%; padding:8px; border:1px solid var(--input-border); border-radius:6px; box-sizing:border-box; }
+  .modal-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem; }
+  .modal-content { background:var(--container-bg);border-radius:8px;max-width:900px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3); }
+  .modal-header { display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);position:sticky;top:0;background:var(--container-bg);z-index:1; }
+  .modal-header h3 { margin:0;font-size:1.1rem; }
+  .modal-close { background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted-color);padding:0 4px; }
+  .modal-close:hover { color:var(--text-color); }
+  .modal-body { padding:1.25rem; }
+  .modal-body table { width:100%;border-collapse:collapse;font-size:0.85rem; }
+  .modal-body th { padding:8px 6px;text-align:left;border-bottom:2px solid var(--border-color);background:var(--bg-alt);position:sticky;top:0; }
+  .modal-body td { padding:8px 6px;border-bottom:1px solid var(--border-color); }
+  .modal-loading { text-align:center;padding:3rem 1rem;color:var(--muted-color); }
+  .btn-sm { padding:0.3rem 0.6rem;font-size:0.8rem; }
   @media (min-width:768px) { .col-md-6 { flex:0 0 50%; max-width:50%; } }
   @media (min-width:992px) { .col-lg-4 { flex:0 0 33.333333%; max-width:33.333333%; } }
   </style>
@@ -37,6 +55,7 @@
 
 <script>var ROOT='..';</script>
 <script src="../components/header.js"></script>
+<script src="../static/js/api.js"></script>
 
 <main class="container mt-4 mb-5">
   <nav style="margin-bottom:1rem;font-size:0.85rem;">
@@ -52,92 +71,359 @@
     </div>
   </section>
 
+  <div id="admin-section" class="card shadow-sm mt-3" style="display:none;">
+    <div class="card-header" style="background:#f59e0b;color:white;">
+      <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Administração - Cadastrar Novo Mutirão</h5>
+    </div>
+    <div class="card-body">
+      <p class="text-muted small">Preencha os dados para cadastrar uma nova data de mutirão.</p>
+      <form id="admin-form" onsubmit="return cadastrarEventoAdmin(event)">
+        <div class="admin-form-row">
+          <div>
+            <label>Data do Mutirão *</label>
+            <input type="date" id="admin-data" required>
+          </div>
+          <div>
+            <label>Local *</label>
+            <input type="text" id="admin-local" placeholder="Nome do local" required>
+          </div>
+          <div>
+            <label>Endereço *</label>
+            <input type="text" id="admin-endereco" placeholder="Rua, Nº - Bairro, Cidade/UF" required>
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div>
+            <label>Vagas *</label>
+            <input type="number" id="admin-vagas" placeholder="30" min="1" required>
+          </div>
+          <div>
+            <label>Data Limite Inscrição *</label>
+            <input type="date" id="admin-data-limite" required>
+          </div>
+          <div>
+            <label>Espécie Padrão</label>
+            <select id="admin-especie-padrao">
+              <option value="">Gatos e Cachorros</option>
+              <option value="Gato">Exclusivo Gato</option>
+              <option value="Cachorro">Exclusivo Cachorro</option>
+            </select>
+            <small class="text-muted">Define qual espécie será pré-selecionada no formulário público</small>
+          </div>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <button type="submit" class="btn btn-warning"><i class="bi bi-plus-circle me-1"></i>Cadastrar Mutirão</button>
+        </div>
+      </form>
+      <hr style="margin:1.25rem 0;">
+      <h6>Mutirões Cadastrados <small class="text-muted" id="admin-count"></small></h6>
+      <div id="admin-eventos-list"></div>
+    </div>
+  </div>
+
   <section class="card shadow-sm mt-3">
     <div class="card-body">
       <h3 class="card-title">Próximos Mutirões</h3>
       <p class="text-muted">Participe dos nossos mutirões de castração com condições especiais.</p>
-      <div class="row">
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title">
-                <i class="bi bi-calendar-event text-primary me-2"></i>12/07/2026
-              </h5>
-              <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>E O BICHO</h6>
-              <p class="card-text small text-muted">Rua Principal, 123 - Centro, Marília/SP</p>
-              <p class="card-text">
-                <span class="badge badge-success"><i class="bi bi-people-fill me-1"></i>30 vagas disponíveis</span>
-              </p>
-              <p class="text-muted small"><i class="bi bi-clock me-1"></i>Inscrições até: 05/07/2026</p>
-              <a href="castracao_mutirao_form.html" onclick="event.preventDefault();sessionStorage.setItem('mutirao_evento',JSON.stringify({data:'12/07/2026',local:'E O BICHO',endereco:'Rua Principal, 123 - Centro, Marília/SP',vagas:30,dataLimite:'05/07/2026'}));location.href=this.href;" class="btn btn-primary w-100">
-                <i class="bi bi-pencil-square me-2"></i>Inscrever-se
-              </a>
-              <a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem('relatorio_evento',JSON.stringify({data:'12/07/2026',local:'E O BICHO'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1">
-                <i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title">
-                <i class="bi bi-calendar-event text-primary me-2"></i>26/07/2026
-              </h5>
-              <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>Clínica PetCare</h6>
-              <p class="card-text small text-muted">Av. das Nações, 500 - Bairro Alto, Marília/SP</p>
-              <p class="card-text">
-                <span class="badge badge-success"><i class="bi bi-people-fill me-1"></i>25 vagas disponíveis</span>
-              </p>
-              <p class="text-muted small"><i class="bi bi-clock me-1"></i>Inscrições até: 19/07/2026</p>
-              <a href="castracao_mutirao_form.html" onclick="event.preventDefault();sessionStorage.setItem('mutirao_evento',JSON.stringify({data:'26/07/2026',local:'Clínica PetCare',endereco:'Av. das Nações, 500 - Bairro Alto, Marília/SP',vagas:25,dataLimite:'19/07/2026'}));location.href=this.href;" class="btn btn-primary w-100">
-                <i class="bi bi-pencil-square me-2"></i>Inscrever-se
-              </a>
-              <a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem('relatorio_evento',JSON.stringify({data:'26/07/2026',local:'Clínica PetCare'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1">
-                <i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card h-100" style="opacity:0.7;">
-            <div class="card-body">
-              <h5 class="card-title">
-                <i class="bi bi-calendar-event text-primary me-2"></i>09/08/2026
-              </h5>
-              <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>Hospital VetLife</h6>
-              <p class="card-text small text-muted">Rua dos Veterinários, 50 - Jardim América, Marília/SP</p>
-              <p class="card-text">
-                <span class="badge badge-info"><i class="bi bi-clock me-1"></i>Em breve</span>
-              </p>
-              <p class="text-muted small"><i class="bi bi-info-circle me-1"></i>Aguardando confirmação</p>
-              <span class="badge badge-secondary"><i class="bi bi-x-circle me-1"></i>Indisponível</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-4 mb-4" style="opacity:0.6;">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title">
-                <i class="bi bi-calendar-check text-muted me-2"></i>15/06/2026
-              </h5>
-              <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>E O BICHO</h6>
-              <p class="card-text small text-muted">Rua Principal, 123 - Centro, Marília/SP</p>
-              <p class="card-text">
-                <span class="badge badge-secondary"><i class="bi bi-check-circle me-1"></i>Encerrado</span>
-              </p>
-              <p class="text-muted small"><i class="bi bi-clock me-1"></i>Evento realizado</p>
-              <span class="badge badge-secondary d-block text-center"><i class="bi bi-x-circle me-2"></i>Encerrado</span>
-              <a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem('relatorio_evento',JSON.stringify({data:'15/06/2026',local:'E O BICHO'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1">
-                <i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="eventos-container" class="row"></div>
     </div>
   </section>
+<div id="modal-relatorio" class="modal-overlay" style="display:none;" onclick="if(event.target===this)fecharModal()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="bi bi-bar-chart-steps me-2"></i>Relatório Geral - <span id="modal-titulo"></span></h3>
+      <button class="modal-close" onclick="fecharModal()">&times;</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
 </main>
+
+<script>
+var API_BASE = window.API_BASE;
+
+var EVENTOS_PADRAO = [
+  {data:'12/07/2026',local:'E O BICHO',endereco:'Rua Principal, 123 - Centro, Marília/SP',vagas:30,dataLimite:'05/07/2026',especiePadrao:'',status:'aberto'},
+  {data:'26/07/2026',local:'Clínica PetCare',endereco:'Av. das Nações, 500 - Bairro Alto, Marília/SP',vagas:25,dataLimite:'19/07/2026',especiePadrao:'',status:'aberto'},
+  {data:'09/08/2026',local:'Hospital VetLife',endereco:'Rua dos Veterinários, 50 - Jardim América, Marília/SP',vagas:0,dataLimite:'',especiePadrao:'',status:'indisponivel'},
+  {data:'15/06/2026',local:'E O BICHO',endereco:'Rua Principal, 123 - Centro, Marília/SP',vagas:0,dataLimite:'',especiePadrao:'',status:'encerrado'}
+];
+
+function salvarEventosAdmin(eventos) {
+  var apenasAdmin = eventos.filter(function(e) { return e._admin; });
+  localStorage.setItem('mutirao_eventos_admin', JSON.stringify(apenasAdmin));
+}
+
+function formatarDataISO(dataISO) {
+  if (!dataISO) return '';
+  var partes = dataISO.split('-');
+  return partes[2] + '/' + partes[1] + '/' + partes[0];
+}
+
+var isAdmin = false;
+
+function renderizarEventos() {
+  var container = document.getElementById('eventos-container');
+  var eventos = carregarEventos();
+  var html = '';
+
+  eventos.forEach(function(ev, idx) {
+    var isAberto = ev.status === 'aberto' || !ev.status;
+    var isIndisponivel = ev.status === 'indisponivel';
+    var isEncerrado = ev.status === 'encerrado';
+    var opacidade = isEncerrado ? 'style="opacity:0.6;"' : (isIndisponivel ? 'style="opacity:0.7;"' : '');
+
+    var badgeHtml = '';
+    var botoesHtml = '';
+    var especieLabel = '';
+    if (ev.especiePadrao === 'Gato') especieLabel = '<span class="badge" style="background:#a855f7;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Gatos</span>';
+    else if (ev.especiePadrao === 'Cachorro') especieLabel = '<span class="badge" style="background:#f59e0b;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Cachorros</span>';
+    else especieLabel = '<span class="badge" style="background:#10b981;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Gatos e Cachorros</span>';
+
+    if (isIndisponivel) {
+      badgeHtml = '<span class="badge badge-info"><i class="bi bi-clock me-1"></i>Em breve</span>';
+      botoesHtml = '<span class="badge badge-secondary d-block text-center mt-2"><i class="bi bi-x-circle me-1"></i>Indisponível</span>';
+    } else if (isEncerrado) {
+      badgeHtml = '<span class="badge badge-secondary"><i class="bi bi-check-circle me-1"></i>Encerrado</span>';
+      botoesHtml = '<span class="badge badge-secondary d-block text-center mt-2"><i class="bi bi-x-circle me-2"></i>Encerrado</span>';
+      botoesHtml += '<a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem(\'relatorio_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local + '\'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1"><i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições</a>';
+    } else {
+      badgeHtml = '<span class="badge badge-success"><i class="bi bi-people-fill me-1"></i>' + ev.vagas + ' vagas disponíveis</span>';
+      botoesHtml = '<a href="castracao_mutirao_form.html" onclick="event.preventDefault();sessionStorage.setItem(\'mutirao_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local.replace(/'/g,"\\'") + '\',endereco:\'' + ev.endereco.replace(/'/g,"\\'") + '\',vagas:' + ev.vagas + ',dataLimite:\'' + ev.dataLimite + '\',especiePadrao:\'' + ev.especiePadrao + '\'}));location.href=this.href;" class="btn btn-primary w-100"><i class="bi bi-pencil-square me-2"></i>Inscrever-se</a>';
+      botoesHtml += '<a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem(\'relatorio_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local.replace(/'/g,"\\'") + '\'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1"><i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições</a>';
+    }
+
+    if (isAdmin) {
+      var dataEscaped = ev.data.replace(/'/g,"\\'");
+      var localEscaped = ev.local.replace(/'/g,"\\'");
+      botoesHtml += '<div style="display:flex;gap:4px;margin-top:6px;">' +
+        '<button onclick="mostrarRelatorioGeral(\'' + dataEscaped + '\',\'' + localEscaped + '\')" class="btn btn-warning btn-sm" style="flex:1;"><i class="bi bi-file-text me-1"></i>Relatório Geral</button>' +
+        '<button onclick="excluirEvento(' + idx + ',this)" class="btn btn-danger btn-sm" style="flex:1;"><i class="bi bi-trash me-1"></i>Excluir</button>' +
+        '</div>';
+    }
+
+    html += '<div class="col-md-6 col-lg-4 mb-4" ' + opacidade + '>' +
+      '<div class="card h-100">' +
+        '<div class="card-body">' +
+          '<h5 class="card-title"><i class="bi bi-calendar-event text-primary me-2"></i>' + ev.data + '</h5>' +
+          '<h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>' + ev.local + '</h6>' +
+          '<p class="card-text small text-muted">' + ev.endereco + '</p>' +
+          '<p class="card-text">' + badgeHtml + '</p>' +
+          especieLabel +
+          (ev.dataLimite ? '<p class="text-muted small mt-2"><i class="bi bi-clock me-1"></i>Inscrições até: ' + ev.dataLimite + '</p>' : '<p class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i>' + (isIndisponivel ? 'Aguardando confirmação' : 'Evento realizado') + '</p>') +
+          botoesHtml +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+
+  container.innerHTML = html || '<div class="col-12"><p class="text-muted">Nenhum mutirão agendado no momento.</p></div>';
+}
+
+function mostrarRelatorioGeral(data, local) {
+  document.getElementById('modal-titulo').textContent = data + ' - ' + local;
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><i class="bi bi-hourglass-split" style="font-size:2rem;"></i><p>Carregando inscrições...</p></div>';
+  document.getElementById('modal-relatorio').style.display = 'flex';
+
+  fetch(API_BASE + '/castracoes')
+    .then(function(r) { return r.json(); })
+    .then(function(items) {
+      var inscricoes = Array.isArray(items) ? items : [];
+      var filtradas = inscricoes.filter(function(item) {
+        return item.tipo === 'mutirao' && item.agenda === data;
+      });
+
+      if (filtradas.length === 0) {
+        document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><i class="bi bi-inbox" style="font-size:2rem;"></i><p>Nenhuma inscrição encontrada para este mutirão.</p></div>';
+        return;
+      }
+
+      var html = '<p><strong>Total de inscrições: ' + filtradas.length + '</strong></p>';
+      html += '<div style="overflow-x:auto;"><table>' +
+        '<thead><tr>' +
+        '<th>#</th><th>Tutor</th><th>Contato</th><th>Pet</th><th>Espécie</th><th>Sexo</th><th>Idade</th><th>Peso</th><th>Vacinado</th><th>Ticket</th><th>Status</th>' +
+        '</tr></thead><tbody>';
+
+      filtradas.forEach(function(ins, i) {
+        html += '<tr>' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td>' + (ins.tutor_nome || '-') + '</td>' +
+          '<td>' + (ins.tutor_telefone || '-') + '</td>' +
+          '<td>' + (ins.pet_nome || '-') + '</td>' +
+          '<td>' + (ins.pet_especie || '-') + '</td>' +
+          '<td>' + (ins.pet_sexo || '-') + '</td>' +
+          '<td>' + (ins.pet_idade || '-') + '</td>' +
+          '<td>' + (ins.pet_peso || '-') + '</td>' +
+          '<td>' + (ins.pet_vacinado ? 'Sim' : 'N\u00e3o') + '</td>' +
+          '<td>' + (ins.ticket || '-') + '</td>' +
+          '<td>' + (ins.status || 'PENDENTE') + '</td>' +
+          '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      document.getElementById('modal-body').innerHTML = html;
+    })
+    .catch(function() {
+      document.getElementById('modal-body').innerHTML = '<div class="modal-loading"><i class="bi bi-exclamation-triangle-fill" style="font-size:2rem;color:#f59e0b;"></i><p>Erro ao carregar inscrições. Verifique a conexão com a API.</p></div>';
+    });
+}
+
+function fecharModal() {
+  document.getElementById('modal-relatorio').style.display = 'none';
+}
+
+function excluirEvento(index, btn) {
+  var eventos = carregarEventos();
+  var ev = eventos[index];
+  if (!ev) return;
+  if (!confirm('Excluir mutirão de ' + ev.data + ' (' + ev.local + ')?\n\nTodas as inscrições deste mutirão também serão excluídas permanentemente.')) return;
+
+  var token = localStorage.getItem('amoranimal_token');
+  if (!token) { alert('Faça login primeiro.'); return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Excluindo...'; }
+
+  fetch(API_BASE + '/castracoes')
+    .then(function(r) { return r.json(); })
+    .then(function(items) {
+      var inscricoes = Array.isArray(items) ? items : [];
+      var paraExcluir = inscricoes.filter(function(item) {
+        return item.tipo === 'mutirao' && item.agenda === ev.data;
+      });
+
+      if (paraExcluir.length === 0) {
+        removerEventoLocal(ev);
+        if (btn) btn.disabled = false;
+        return;
+      }
+
+      var headers = { 'Authorization': 'Bearer ' + token };
+      var deletes = paraExcluir.map(function(ins) {
+        return fetch(API_BASE + '/castracoes/' + ins.id, { method: 'DELETE', headers: headers })
+          .then(function(r) { if (!r.ok) throw new Error('Erro ao excluir inscrição'); });
+      });
+
+      return Promise.all(deletes).then(function() {
+        removerEventoLocal(ev);
+      });
+    })
+    .catch(function(err) {
+      alert('Erro ao excluir: ' + err.message);
+      if (btn) btn.disabled = false;
+    });
+}
+
+function removerEventoLocal(ev) {
+  var eventos = carregarEventos();
+  if (ev._admin) {
+    var adminEventos = eventos.filter(function(e) { return e._admin; });
+    var target = adminEventos.indexOf(ev);
+    if (target > -1) {
+      adminEventos.splice(target, 1);
+      salvarEventosAdmin(adminEventos);
+    }
+  } else {
+    var ocultos = JSON.parse(localStorage.getItem('mutirao_eventos_ocultos') || '[]');
+    ocultos.push(ev.data + '|' + ev.local);
+    localStorage.setItem('mutirao_eventos_ocultos', JSON.stringify(ocultos));
+  }
+  renderizarEventos();
+  atualizarAdminLista();
+}
+
+function carregarEventos() {
+  var salvos = localStorage.getItem('mutirao_eventos_admin');
+  var adminEventos = salvos ? JSON.parse(salvos) : [];
+  var ocultos = JSON.parse(localStorage.getItem('mutirao_eventos_ocultos') || '[]');
+  return EVENTOS_PADRAO.concat(adminEventos).filter(function(ev) {
+    return ocultos.indexOf(ev.data + '|' + ev.local) === -1;
+  });
+}
+
+function cadastrarEventoAdmin(e) {
+  e.preventDefault();
+  var dataISO = document.getElementById('admin-data').value;
+  var dataLimiteISO = document.getElementById('admin-data-limite').value;
+  if (!dataISO || !dataLimiteISO) { alert('Preencha a data e a data limite.'); return false; }
+  if (dataLimiteISO >= dataISO) { alert('A data limite deve ser anterior à data do mutirão.'); return false; }
+
+  var evento = {
+    _admin: true,
+    data: formatarDataISO(dataISO),
+    local: document.getElementById('admin-local').value.trim(),
+    endereco: document.getElementById('admin-endereco').value.trim(),
+    vagas: parseInt(document.getElementById('admin-vagas').value) || 30,
+    dataLimite: formatarDataISO(dataLimiteISO),
+    especiePadrao: document.getElementById('admin-especie-padrao').value,
+    status: 'aberto'
+  };
+
+  if (!evento.local || !evento.endereco) { alert('Preencha o local e endereço.'); return false; }
+
+  var eventos = carregarEventos();
+  eventos.push(evento);
+  salvarEventosAdmin(eventos);
+  renderizarEventos();
+  atualizarAdminLista();
+  document.getElementById('admin-form').reset();
+  alert('Mutirão cadastrado com sucesso!');
+  return false;
+}
+
+function removerEventoAdmin(index) {
+  var eventos = carregarEventos();
+  var adminEventos = eventos.filter(function(e) { return e._admin; });
+  var target = adminEventos[index];
+  var idx = eventos.indexOf(target);
+  if (idx === -1) return;
+  if (!confirm('Remover mutirão de ' + target.data + ' (' + target.local + ')?')) return;
+  eventos.splice(idx, 1);
+  salvarEventosAdmin(eventos);
+  renderizarEventos();
+  atualizarAdminLista();
+}
+
+function atualizarAdminLista() {
+  var eventos = carregarEventos();
+  var adminEventos = eventos.filter(function(e) { return e._admin; });
+  document.getElementById('admin-count').textContent = '(' + adminEventos.length + ' cadastrado(s))';
+  var container = document.getElementById('admin-eventos-list');
+  if (adminEventos.length === 0) {
+    container.innerHTML = '<p class="text-muted small">Nenhum mutirão cadastrado pela administração.</p>';
+    return;
+  }
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">' +
+    '<thead><tr style="background:var(--bg-alt);">' +
+    '<th style="padding:6px;text-align:left;border-bottom:1px solid var(--border-color);">Data</th>' +
+    '<th style="padding:6px;text-align:left;border-bottom:1px solid var(--border-color);">Local</th>' +
+    '<th style="padding:6px;text-align:left;border-bottom:1px solid var(--border-color);">Espécie</th>' +
+    '<th style="padding:6px;text-align:left;border-bottom:1px solid var(--border-color);">Vagas</th>' +
+    '<th style="padding:6px;text-align:center;border-bottom:1px solid var(--border-color);">Ações</th>' +
+    '</tr></thead><tbody>';
+  adminEventos.forEach(function(ev, i) {
+    var especieLabel = ev.especiePadrao || 'Gatos e Cachorros';
+    html += '<tr>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border-color);">' + ev.data + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border-color);">' + ev.local + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border-color);">' + especieLabel + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border-color);">' + ev.vagas + '</td>' +
+      '<td style="padding:6px;border-bottom:1px solid var(--border-color);text-align:center;"><button onclick="removerEventoAdmin(' + i + ')" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('amoranimal_token')) {
+    isAdmin = true;
+    document.getElementById('admin-section').style.display = 'block';
+    atualizarAdminLista();
+  }
+  renderizarEventos();
+});
+</script>
 
 <script src="../components/footer.js"></script>
 

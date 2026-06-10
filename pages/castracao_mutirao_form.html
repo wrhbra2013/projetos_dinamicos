@@ -229,7 +229,8 @@ if (stored) {
     endereco: params.get('endereco') || '',
     vagas: parseInt(params.get('vagas')) || 0,
     dataLimite: params.get('data_limite') || '',
-    status: params.get('status') || 'aberto'
+    status: params.get('status') || 'aberto',
+    especiePadrao: params.get('especiePadrao') || ''
   };
 }
 
@@ -260,6 +261,7 @@ if (!eventoData.data) {
       eventoData.status === 'encerrado' ? 'Este evento já foi realizado.' : 'Este mutirão ainda não está disponível para inscrições.';
   } else {
     verificarVagas();
+    aplicarRestricaoEspecie();
   }
 }
 
@@ -315,6 +317,19 @@ function toggleMedicamento() {
   var show = document.getElementById('f_pet_medicamento_tem').value === 'sim';
   document.getElementById('f_pet_medicamento_div').style.display = show ? 'block' : 'none';
   if (!show) document.getElementById('f_pet_medicamento').value = '';
+}
+
+function aplicarRestricaoEspecie() {
+  var select = document.getElementById('f_pet_especie');
+  var especie = eventoData.especiePadrao || '';
+  if (especie === 'Gato' || especie === 'Cachorro') {
+    select.innerHTML = '<option value="' + especie + '">' + especie + '</option>';
+    select.value = especie;
+    select.disabled = true;
+  } else {
+    select.innerHTML = '<option value="">Selecione</option><option value="Gato">Gato</option><option value="Cachorro">Cachorro</option>';
+    select.disabled = false;
+  }
 }
 
 function buscarCep() {
@@ -393,6 +408,7 @@ document.getElementById('f_btn_add_pet').addEventListener('click', function() {
   document.getElementById('f_pet_medicamento_div').style.display = 'none';
   document.getElementById('f_pet_medicamento').value = '';
   document.getElementById('f_btn_clear_pet').style.display = 'inline-block';
+  aplicarRestricaoEspecie();
 });
 
 document.getElementById('f_btn_clear_pet').addEventListener('click', function() {
