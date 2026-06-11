@@ -85,11 +85,18 @@
           </div>
           <div>
             <label>Local *</label>
-            <input type="text" id="admin-local" placeholder="Nome do local" required>
+            <div style="display:flex;gap:6px;">
+              <select id="admin-local" required style="flex:1;">
+                <option value="">Selecione uma clínica...</option>
+              </select>
+              <button type="button" id="btn-add-clinica" class="btn btn-primary btn-sm" style="white-space:nowrap;" title="Cadastrar nova clínica"><i class="bi bi-plus-circle"></i></button>
+            </div>
           </div>
           <div>
             <label>Endereço *</label>
-            <input type="text" id="admin-endereco" placeholder="Rua, Nº - Bairro, Cidade/UF" required>
+            <select id="admin-endereco" required>
+              <option value="">Selecione o endereço...</option>
+            </select>
           </div>
         </div>
         <div class="admin-form-row">
@@ -135,6 +142,30 @@
       <button class="modal-close" onclick="fecharModal()">&times;</button>
     </div>
     <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<div id="modal-clinica" class="modal-overlay" style="display:none;" onclick="if(event.target===this)fecharModalClinica()">
+  <div class="modal-content" style="max-width:450px;">
+    <div class="modal-header">
+      <h3><i class="bi bi-building me-2"></i>Nova Clínica</h3>
+      <button class="modal-close" onclick="fecharModalClinica()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted small">Cadastre uma nova clínica para usar nos mutirões.</p>
+      <div style="margin-bottom:0.75rem;">
+        <label style="display:block;margin-bottom:4px;font-weight:600;font-size:0.85rem;">Nome da Clínica *</label>
+        <input type="text" id="input-clinica-nome" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;box-sizing:border-box;" placeholder="Nome da clínica">
+      </div>
+      <div style="margin-bottom:1.25rem;">
+        <label style="display:block;margin-bottom:4px;font-weight:600;font-size:0.85rem;">Endereço *</label>
+        <input type="text" id="input-clinica-endereco" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;box-sizing:border-box;" placeholder="Rua, Nº - Bairro, Cidade/UF">
+      </div>
+      <div style="text-align:right;">
+        <button onclick="fecharModalClinica()" class="btn btn-secondary btn-sm me-2">Cancelar</button>
+        <button onclick="salvarNovaClinica()" class="btn btn-primary btn-sm"><i class="bi bi-check-lg me-1"></i>Salvar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -341,6 +372,109 @@ function carregarEventos() {
   });
 }
 
+var clinicasCache = [];
+
+function carregarClinicas() {
+  return fetch(API_BASE + '/clinicas')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      clinicasCache = Array.isArray(data) ? data : [];
+      return clinicasCache;
+    })
+    .catch(function() {
+      clinicasCache = [];
+      return clinicasCache;
+    });
+}
+
+function popularSelectsClinicas() {
+  var selectLocal = document.getElementById('admin-local');
+  var selectEndereco = document.getElementById('admin-endereco');
+  var selectedLocal = selectLocal.value;
+  var selectedEndereco = selectEndereco.value;
+
+  selectLocal.innerHTML = '<option value="">Carregando...</option>';
+  selectEndereco.innerHTML = '<option value="">Carregando...</option>';
+
+  carregarClinicas().then(function(clinicas) {
+    selectLocal.innerHTML = '<option value="">Selecione uma clínica...</option>';
+    selectEndereco.innerHTML = '<option value="">Selecione o endereço...</option>';
+
+    clinicas.forEach(function(c) {
+      var opt1 = document.createElement('option');
+      opt1.value = c.nome;
+      opt1.textContent = c.nome;
+      if (c.nome === selectedLocal) opt1.selected = true;
+      selectLocal.appendChild(opt1);
+
+      var opt2 = document.createElement('option');
+      opt2.value = c.endereco;
+      opt2.textContent = c.endereco;
+      opt2.dataset.clinica = c.nome;
+      if (c.endereco === selectedEndereco) opt2.selected = true;
+      selectEndereco.appendChild(opt2);
+    });
+  });
+}
+
+function abrirModalClinica() {
+  document.getElementById('input-clinica-nome').value = '';
+  document.getElementById('input-clinica-endereco').value = '';
+  document.getElementById('modal-clinica').style.display = 'flex';
+  document.getElementById('input-clinica-nome').focus();
+}
+
+function fecharModalClinica() {
+  document.getElementById('modal-clinica').style.display = 'none';
+}
+
+function salvarNovaClinica() {
+  var nome = document.getElementById('input-clinica-nome').value.trim();
+  var endereco = document.getElementById('input-clinica-endereco').value.trim();
+  if (!nome || !endereco) { alert('Preencha o nome e endereço da clínica.'); return; }
+
+  if (clinicasCache.some(function(c) { return c.nome.toLowerCase() === nome.toLowerCase(); })) {
+    alert('Esta clínica já está cadastrada.');
+    return;
+  }
+
+  var token = localStorage.getItem('amoranimal_token');
+  if (!token) { alert('Faça login primeiro.'); return; }
+
+  var btn = document.querySelector('#modal-clinica .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = 'Salvando...';
+
+  fetch(API_BASE + '/clinicas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ nome: nome, endereco: endereco })
+  })
+    .then(function(r) { return r.json().then(function(d) { if (!r.ok) throw new Error(d.erro || 'Erro ao salvar'); return d; }); })
+    .then(function() {
+      popularSelectsClinicas();
+      document.getElementById('admin-local').value = nome;
+      document.getElementById('admin-endereco').value = endereco;
+      fecharModalClinica();
+    })
+    .catch(function(err) {
+      alert('Erro ao cadastrar clínica: ' + err.message);
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Salvar';
+    });
+}
+
+document.getElementById('admin-local').addEventListener('change', function() {
+  var selected = clinicasCache.find(function(c) { return c.nome === this.value; }.bind(this));
+  if (selected) {
+    document.getElementById('admin-endereco').value = selected.endereco;
+  }
+});
+
+document.getElementById('btn-add-clinica').addEventListener('click', abrirModalClinica);
+
 function cadastrarEventoAdmin(e) {
   e.preventDefault();
   var dataISO = document.getElementById('admin-data').value;
@@ -419,6 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('amoranimal_token')) {
     isAdmin = true;
     document.getElementById('admin-section').style.display = 'block';
+    popularSelectsClinicas();
     atualizarAdminLista();
   }
   renderizarEventos();
