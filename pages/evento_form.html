@@ -85,10 +85,10 @@ document.getElementById('form-evento').addEventListener('submit', function(e) {
   function enviar() {
     var body = {
       titulo: document.getElementById('titulo').value.trim(),
-      data: document.getElementById('data').value,
+      data_evento: document.getElementById('data').value,
       local: document.getElementById('local').value.trim() || null,
       descricao: document.getElementById('descricao').value.trim() || null,
-      foto_url: fotoBase64 || null
+      fotos: fotoBase64 || null
     };
 
     fetch(API_BASE + '/eventos', {
