@@ -36,12 +36,12 @@ _check_port() {
 
 _diagnostic_api() {
   echo ""
-  warn "===== DIAGNÓSTICO DE FALHA ====="
+  warn "===== DIAGNÓSTICO DE FALHA ($APP_NAME) ====="
   if docker ps --format '{{.Names}}' 2>/dev/null | grep -q 'amoranimal-api'; then
     local actual_port
     actual_port=$(docker logs amoranimal-api 2>&1 | grep -oP 'port \K\d+' | tail -1)
     if [ -n "$actual_port" ]; then
-      warn "API está ouvindo na porta interna: $actual_port"
+      warn "API $APP_NAME está ouvindo na porta interna: $actual_port"
       warn "Porta externa configurada: ${PORT:-?}"
       if [ "$actual_port" != "3000" ]; then
         warn "MISMATCH: a API deveria ouvir na porta 3000 (container), mas está em $actual_port"
@@ -51,7 +51,7 @@ _diagnostic_api() {
     warn "--- Últimas 20 linhas do log da API ---"
     docker logs amoranimal-api --tail 20 2>&1
   else
-    warn "Container amoranimal-api não está rodando"
+    warn "Container amoranimal-api ($APP_NAME) não está rodando"
     warn "--- Status dos containers ---"
     docker compose -f "$SCRIPT_DIR/docker-compose.yml" ps 2>&1
     warn "--- Logs completos da API ---"
@@ -420,6 +420,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      APP_NAME: ${APP_NAME:-amoranimal}
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-amoranimal_db}
@@ -484,6 +485,7 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PROJETO = process.env.APP_NAME || 'amoranimal';
 
 const pool = new Pool({
     host: process.env.DB_HOST || 'db',
@@ -571,17 +573,18 @@ app.get('/', (req, res) => {
     res.json({
         message: 'API Running',
         status: 'OK',
-        project: 'Amor Animal API',
+        project: PROJETO,
         timestamp: new Date().toISOString()
     });
 });
 
 app.get('/health', async (req, res) => {
+    const base = { status: 'healthy', project: PROJETO, timestamp: new Date().toISOString() };
     try {
         await pool.query('SELECT 1');
-        res.json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
+        res.json({ ...base, database: 'connected' });
     } catch (err) {
-        res.json({ status: 'unhealthy', database: 'disconnected', error: err.message });
+        res.json({ ...base, status: 'unhealthy', database: 'disconnected', error: err.message });
     }
 });
 
@@ -1097,6 +1100,7 @@ EOF
   echo ""
   info "===== Instalação concluída! ====="
   echo ""
+  echo "  Projeto:   $APP_NAME"
   echo "  API:       http://localhost:$APP_PORT"
   echo "  Health:    http://localhost:$APP_PORT/health"
   echo "  Admin:     $ADMIN_EMAIL / $ADMIN_PASS"
@@ -1109,7 +1113,7 @@ EOF
   MAX_RETRY=3
   while [ "$RETRY" -lt "$MAX_RETRY" ]; do
     echo ""
-    info "Testando endpoints (tentativa $((RETRY+1))/$MAX_RETRY)..."
+    info "Testando $APP_NAME (tentativa $((RETRY+1))/$MAX_RETRY)..."
     [ "$RETRY" -gt 0 ] && sleep 5
 
     BASE="http://127.0.0.1:$APP_PORT/"
@@ -1159,14 +1163,15 @@ EOF
   echo ""
   info "Testes concluídos!"
   echo ""
-  echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
+  echo "  Projeto:  $APP_NAME"
+  echo "  Admin:    $ADMIN_EMAIL / $ADMIN_PASS"
   echo ""
   info "Comandos úteis:"
   echo "  docker compose logs -f api   (ver logs da API)"
   echo "  docker compose logs -f db    (ver logs do banco)"
   echo "  docker compose restart api   (reiniciar API)"
   echo "  docker compose down          (parar tudo)"
-  echo "  docker compose down -v       (parar e apagar volumes)"
+  echo "  curl http://localhost:$APP_PORT/health"
 }
 
 # ==============================================================
