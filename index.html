@@ -290,35 +290,7 @@
   <div class="landing-container">
     <div class="events-grid">
 
-      <div class="event-card-hover">
-        <button class="btn-delete-evento admin-only" data-evento="Feira de Adoção" title="Excluir evento"><i class="bi bi-x-lg"></i></button>
-        <div class="event-info">
-          <h3 class="event-titulo" style="margin-bottom: 10px;">Feira de Adoção</h3>
-          <div class="event-meta">
-            <span><i class="bi bi-calendar-event"></i> 15 de Junho de 2026</span>
-            <span><i class="bi bi-geo-alt"></i> Praça Central, Marília</span>
-          </div>
-          <p class="event-descricao">Venha conhecer nossos animais e encontrar seu novo melhor amigo! Teremos diversos pets esperando por um lar amoroso. Leve seu documento e prepare-se para se apaixonar.</p>
-        </div>
-        <div class="event-fotos-area" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#94a3b8; font-size:3rem;">
-          <i class="bi bi-calendar-event"></i>
-        </div>
-      </div>
-
-      <div class="event-card-hover">
-        <button class="btn-delete-evento admin-only" data-evento="Mutirão de Castração" title="Excluir evento"><i class="bi bi-x-lg"></i></button>
-        <div class="event-info">
-          <h3 class="event-titulo" style="margin-bottom: 10px;">Mutirão de Castração</h3>
-          <div class="event-meta">
-            <span><i class="bi bi-calendar-event"></i> 22 de Junho de 2026</span>
-            <span><i class="bi bi-geo-alt"></i> Clínica E O Bicho</span>
-          </div>
-          <p class="event-descricao">Mutirão de castração a baixo custo. Agende seu horário e contribua para o controle populacional de animais. Vagas limitadas.</p>
-        </div>
-        <div class="event-fotos-area" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#94a3b8; font-size:3rem;">
-          <i class="bi bi-calendar-event"></i>
-        </div>
-      </div>
+      <!-- Eventos carregados dinamicamente via API -->
 
     </div>
     <div class="text-center mt-4">
@@ -352,56 +324,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr data-ticket="001" data-pet="Rex" data-responsavel="Ana Paula" data-especie="Cão" data-sexo="Macho" data-porte="Grande" data-idade="3" data-clinica="E O BICHO" data-data="22/06/2026" data-status="Pendente" data-contato="(14) 99999-0001" data-tipo="Baixo Custo" data-dia="segunda-feira" data-cpf="123.456.789-00" data-endereco="Rua das Flores" data-numero="123" data-bairro="Centro" data-cidade="Marília" data-estado="SP" data-cep="17500-000">
-          <td><strong>#001</strong></td>
-          <td>Rex</td>
-          <td>Ana Paula</td>
-          <td><span class="badge badge-info">Cão</span></td>
-          <td>E O BICHO</td>
-          <td>22/06/2026</td>
-          <td><span class="badge badge-warning">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> <button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-ticket="001" title="Excluir"><i class="bi bi-trash"></i> Excluir</button></td>
-        </tr>
-        <tr data-ticket="002" data-pet="Mimi" data-responsavel="Carlos Eduardo" data-especie="Gato" data-sexo="Fêmea" data-porte="Pequeno" data-idade="2" data-clinica="E O BICHO" data-data="22/06/2026" data-status="Pendente" data-contato="(14) 99999-0002" data-tipo="Baixo Custo" data-dia="terça-feira" data-cpf="987.654.321-00" data-endereco="Av. Sampaio Vidal" data-numero="456" data-bairro="Centro" data-cidade="Marília" data-estado="SP" data-cep="17500-001">
-          <td><strong>#002</strong></td>
-          <td>Mimi</td>
-          <td>Carlos Eduardo</td>
-          <td><span class="badge" style="background:#8b5cf6;color:white;">Gato</span></td>
-          <td>E O BICHO</td>
-          <td>22/06/2026</td>
-          <td><span class="badge badge-warning">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> <button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-ticket="002" title="Excluir"><i class="bi bi-trash"></i> Excluir</button></td>
-        </tr>
-        <tr data-ticket="003" data-pet="Thor" data-responsavel="Maria Silva" data-especie="Cão" data-sexo="Macho" data-porte="Médio" data-idade="1" data-clinica="E O BICHO" data-data="29/06/2026" data-status="Pendente" data-contato="(14) 99999-0003" data-tipo="Baixo Custo" data-dia="quarta-feira" data-cpf="111.222.333-44" data-endereco="Rua dos Jacarandás" data-numero="789" data-bairro="Jardim Europa" data-cidade="Marília" data-estado="SP" data-cep="17510-000">
-          <td><strong>#003</strong></td>
-          <td>Thor</td>
-          <td>Maria Silva</td>
-          <td><span class="badge badge-info">Cão</span></td>
-          <td>E O BICHO</td>
-          <td>29/06/2026</td>
-          <td><span class="badge badge-warning">⏳ Pendente</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> <button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-ticket="003" title="Excluir"><i class="bi bi-trash"></i> Excluir</button></td>
-        </tr>
-        <tr class="status-atendido" style="display:none;" data-ticket="004" data-pet="Pretinha" data-responsavel="João Oliveira" data-especie="Cão" data-sexo="Fêmea" data-porte="Médio" data-idade="4" data-clinica="E O BICHO" data-data="15/06/2026" data-status="Atendido" data-contato="(14) 99999-0004" data-tipo="Baixo Custo" data-dia="segunda-feira" data-cpf="555.666.777-88" data-endereco="Rua dos Lírios" data-numero="321" data-bairro="Jardim Primavera" data-cidade="Marília" data-estado="SP" data-cep="17520-000">
-          <td><strong>#004</strong></td>
-          <td>Pretinha</td>
-          <td>João Oliveira</td>
-          <td><span class="badge badge-info">Cão</span></td>
-          <td>E O BICHO</td>
-          <td>15/06/2026</td>
-          <td><span class="badge badge-success">✓ Atendido</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> <button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-ticket="004" title="Excluir"><i class="bi bi-trash"></i> Excluir</button></td>
-        </tr>
-        <tr class="status-atendido" style="display:none;" data-ticket="005" data-pet="Bolinha" data-responsavel="Rafael Oliveira" data-especie="Gato" data-sexo="Macho" data-porte="Pequeno" data-idade="2" data-clinica="E O BICHO" data-data="08/06/2026" data-status="Atendido" data-contato="(14) 99999-0005" data-tipo="Baixo Custo" data-dia="sexta-feira" data-cpf="999.888.777-66" data-endereco="Rua das Acácias" data-numero="654" data-bairro="Jardim América" data-cidade="Marília" data-estado="SP" data-cep="17530-000">
-          <td><strong>#005</strong></td>
-          <td>Bolinha</td>
-          <td>Rafael Oliveira</td>
-          <td><span class="badge" style="background:#8b5cf6;color:white;">Gato</span></td>
-          <td>E O BICHO</td>
-          <td>08/06/2026</td>
-          <td><span class="badge badge-success">✓ Atendido</span></td>
-          <td><button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> <button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-ticket="005" title="Excluir"><i class="bi bi-trash"></i> Excluir</button></td>
-        </tr>
+        <!-- Castrações carregadas dinamicamente via API -->
       </tbody>
     </table>
   </div>
@@ -422,106 +345,11 @@
       <p style="color: var(--text-color);">Encontre seu novo melhor amigo! Estes são os pets que aguardam uma família amorosa.</p>
     </div>
 
-    <div class="pet-carousel-wrapper">
+      <div class="pet-carousel-wrapper">
       <div class="pet-carousel" id="petsGrid">
-        <div class="pet-carousel-item" data-nome="Bolinha" data-especie="cachorro" data-porte="medio" data-idade="2 anos" data-caracteristicas="Amigável, brincalhão" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/1.jpg" alt="Bolinha" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Bolinha</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 2 anos</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Médio</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Amigável, brincalhão</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Mimi" data-especie="gato" data-porte="pequeno" data-idade="3 anos" data-caracteristicas="Calma, carinhosa" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/2.jpg" alt="Mimi" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Mimi</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 3 anos</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Pequeno</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Calma, carinhosa</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Thor" data-especie="cachorro" data-porte="grande" data-idade="1 ano" data-caracteristicas="Protetor, leal" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/3.jpg" alt="Thor" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Thor</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 1 ano</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Grande</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Protetor, leal</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Luna" data-especie="gato" data-porte="pequeno" data-idade="6 meses" data-caracteristicas="Brincalhona, curiosa" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/4.jpg" alt="Luna" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Luna</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 6 meses</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Pequeno</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Brincalhona, curiosa</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Bolinha" data-especie="cachorro" data-porte="medio" data-idade="2 anos" data-caracteristicas="Amigável, brincalhão" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/1.jpg" alt="Bolinha" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Bolinha</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 2 anos</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Médio</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Amigável, brincalhão</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Mimi" data-especie="gato" data-porte="pequeno" data-idade="3 anos" data-caracteristicas="Calma, carinhosa" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/2.jpg" alt="Mimi" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Mimi</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 3 anos</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Pequeno</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Calma, carinhosa</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Thor" data-especie="cachorro" data-porte="grande" data-idade="1 ano" data-caracteristicas="Protetor, leal" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/3.jpg" alt="Thor" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Thor</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 1 ano</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Grande</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Protetor, leal</div>
-          </div>
-        </div>
-        <div class="pet-carousel-item" data-nome="Luna" data-especie="gato" data-porte="pequeno" data-idade="6 meses" data-caracteristicas="Brincalhona, curiosa" onclick="abrirTermo(this)">
-          <div class="carousel-img-wrap" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-            <img src="static/css/imagem/4.jpg" alt="Luna" style="width: 100%; height: 100%; object-fit: cover;">
-            <span class="carousel-badge badge badge-success" style="position: absolute; top: 10px; left: 10px; border-radius: 20px;">Disponível</span>
-          </div>
-          <div class="carousel-info" style="padding: 1rem;">
-            <div class="carousel-name" style="font-size: 1.1rem; font-weight: 700; color: var(--heading-color); margin-bottom: 0.5rem;">Luna</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Idade:</span> 6 meses</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color); margin-bottom: 0.25rem;"><span style="font-weight: 600;">Porte:</span> Pequeno</div>
-            <div class="carousel-detail" style="font-size: 0.85rem; color: var(--text-color);"><span style="font-weight: 600;">Características:</span> Brincalhona, curiosa</div>
-          </div>
-        </div>
+        <!-- Pets carregados dinamicamente via API -->
       </div>
-    </div>
+      </div>
 
     <div class="text-center mt-4">
       <a href="pages/adocao.html#cadastro-pet" class="btn btn-primary">+ Novo Pet</a>
@@ -537,38 +365,7 @@
     <p class="text-center text-muted mb-4">Conheça as pessoas que fazem essa obra acontecer</p>
 
     <div class="voluntarios-carrossel" style="display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem;">
-      <div class="voluntario-card" style="flex:0 0 280px; width:280px;">
-        <div style="padding:1.25rem; text-align:center;">
-          <div style="width:60px; height:60px; border-radius:50%; background:var(--brand-teal); color:white; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; margin:0 auto 10px;">A</div>
-          <div style="font-weight:bold;">Ana Paula</div>
-          <div style="font-size:0.85rem; color:var(--muted-color);">Resgate e primeiros socorros</div>
-          <div style="font-size:0.8rem; font-style:italic; margin-top:8px;">"Cada animal resgatado é uma vitória!"</div>
-        </div>
-      </div>
-      <div class="voluntario-card" style="flex:0 0 280px; width:280px;">
-        <div style="padding:1.25rem; text-align:center;">
-          <div style="width:60px; height:60px; border-radius:50%; background:var(--brand-coral); color:white; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; margin:0 auto 10px;">C</div>
-          <div style="font-weight:bold;">Carlos Eduardo</div>
-          <div style="font-size:0.85rem; color:var(--muted-color);">Transporte e logística</div>
-          <div style="font-size:0.8rem; font-style:italic; margin-top:8px;">"Juntos podemos fazer a diferença."</div>
-        </div>
-      </div>
-      <div class="voluntario-card" style="flex:0 0 280px; width:280px;">
-        <div style="padding:1.25rem; text-align:center;">
-          <div style="width:60px; height:60px; border-radius:50%; background:var(--brand-purple); color:white; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; margin:0 auto 10px;">M</div>
-          <div style="font-weight:bold;">Marina Silva</div>
-          <div style="font-size:0.85rem; color:var(--muted-color);">Administração e eventos</div>
-          <div style="font-size:0.8rem; font-style:italic; margin-top:8px;">"A solidariedade move o mundo."</div>
-        </div>
-      </div>
-      <div class="voluntario-card" style="flex:0 0 280px; width:280px;">
-        <div style="padding:1.25rem; text-align:center;">
-          <div style="width:60px; height:60px; border-radius:50%; background:var(--brand-blue); color:white; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; margin:0 auto 10px;">R</div>
-          <div style="font-weight:bold;">Rafael Oliveira</div>
-          <div style="font-size:0.85rem; color:var(--muted-color);">Fotografia e divulgação</div>
-          <div style="font-size:0.8rem; font-style:italic; margin-top:8px;">"Cada foto é uma chance de encontrar um lar."</div>
-        </div>
-      </div>
+      <!-- Voluntários carregados dinamicamente via API -->
     </div>
 
     <div class="text-center mt-4">
@@ -849,34 +646,29 @@ function abrirTermo(el) {
 </script>
 
 <script>
-(function() {
-  var token = localStorage.getItem('amoranimal_token');
-  if (!token) return;
-
-  document.querySelectorAll('.btn-delete-evento').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var nome = this.dataset.evento;
-      if (!confirm('Tem certeza que deseja excluir o evento "' + nome + '"?')) return;
-      fetch(window.API_BASE + '/eventos/' + encodeURIComponent(nome), { method: 'DELETE' })
-        .then(function(r) {
-          if (!r.ok) throw new Error('Erro ao excluir');
-          var card = btn.closest('.event-card-hover');
-          if (card) card.remove();
-        })
-        .catch(function(err) {
-          alert('Erro ao excluir evento: ' + err.message);
-        });
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.btn-delete-evento');
+  if (!btn) return;
+  e.stopPropagation();
+  var id = btn.dataset.id;
+  if (!confirm('Tem certeza que deseja excluir este evento?')) return;
+  fetch(window.API_BASE + '/eventos/' + encodeURIComponent(id), { method: 'DELETE' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Erro ao excluir');
+      var card = btn.closest('.event-card-hover');
+      if (card) card.remove();
+    })
+    .catch(function(err) {
+      alert('Erro ao excluir evento: ' + err.message);
     });
-  });
-})();
+});
 </script>
 
 <script>
 function excluirCastracao(btn) {
-  var ticket = btn.dataset.ticket;
-  if (!confirm('Tem certeza que deseja excluir o agendamento #' + ticket + '?')) return;
-  fetch(window.API_BASE + '/castracoes/' + encodeURIComponent(ticket), { method: 'DELETE' })
+  var id = btn.dataset.id;
+  if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
+  fetch(window.API_BASE + '/castracoes/' + encodeURIComponent(id), { method: 'DELETE' })
     .then(function(r) {
       if (!r.ok) throw new Error('Erro ao excluir');
       var tr = btn.closest('tr');
@@ -888,6 +680,7 @@ function excluirCastracao(btn) {
 }
 </script>
 
+<script src="static/js/load_home.js"></script>
 <script src="components/footer.js"></script>
 </body>
 </html>

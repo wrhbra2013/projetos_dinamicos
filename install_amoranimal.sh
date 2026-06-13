@@ -76,6 +76,69 @@ _test_endpoint() {
 }
 
 # ==============================================================
+# migrate_schema — criar tabelas ausentes do espelho e migrar dados
+# ==============================================================
+migrate_schema() {
+  [ -f "$SCRIPT_DIR/.env" ] && . "$SCRIPT_DIR/.env" || true
+  local DB_CONTAINER="${APP_NAME}-db"
+  local DB_NAME="${APP_NAME}_db"
+  local DB_USER="postgres"
+
+  info "Verificando schema do banco de dados..."
+
+  # Tabelas que a API hardcoded espera (singular, do espelho)
+  # 1. login (substitui usuarios)
+  docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -tAc \
+    "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='login');" 2>/dev/null | grep -q 't' || {
+    info "Criando tabela 'login' a partir de 'usuarios'..."
+    docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" <<-'SQLEOS'
+      CREATE TABLE IF NOT EXISTS login (
+          id SERIAL PRIMARY KEY,
+          usuario VARCHAR(255) NOT NULL UNIQUE,
+          senha VARCHAR(255) NOT NULL,
+          isadmin BOOLEAN DEFAULT false,
+          origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      INSERT INTO login (usuario, senha, isadmin)
+      SELECT COALESCE(email, nome), senha, (tipo = 'admin')
+      FROM usuarios
+      WHERE NOT EXISTS (SELECT 1 FROM login LIMIT 1)
+      ON CONFLICT (usuario) DO NOTHING;
+SQLEOS
+    info "Tabela 'login' criada com dados migrados de 'usuarios'."
+  }
+
+  # 2. home (substitui settings — estrutura diferente)
+  docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -tAc \
+    "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name='home');" 2>/dev/null | grep -q 't' || {
+    info "Criando tabela 'home'..."
+    docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" <<-'SQLEOS'
+      CREATE TABLE IF NOT EXISTS home (
+          id SERIAL PRIMARY KEY,
+          origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          arquivo VARCHAR(255),
+          titulo VARCHAR(255),
+          mensagem TEXT,
+          link VARCHAR(2083)
+      );
+SQLEOS
+    info "Tabela 'home' criada."
+  }
+
+  # 3. Tentar restaurar dump do espelho se existir
+  if [ -f /tmp/${APP_NAME}_dump.sql ]; then
+    info "Dump encontrado em /tmp/${APP_NAME}_dump.sql. Restaurando..."
+    docker cp /tmp/${APP_NAME}_dump.sql "$DB_CONTAINER":/tmp/dump.sql
+    docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -f /tmp/dump.sql 2>/dev/null && {
+      info "Dump restaurado com sucesso!"
+    } || warn "Falha ao restaurar dump (pode ser conflito com tabelas existentes)"
+  fi
+
+  info "Migração concluída."
+}
+
+# ==============================================================
 # Uninstall
 # ==============================================================
 uninstall() {
@@ -1095,6 +1158,13 @@ EOF
   echo ""
 
   # ==============================================================
+  # Migrar schema do banco (criar tabelas login, home e restaurar dump)
+  # ==============================================================
+  info "Aguardando banco de dados ficar pronto..."
+  sleep 5
+  migrate_schema 2>/dev/null || warn "Migração automática falhou (pode executar manualmente depois)"
+
+  # ==============================================================
   # Testes com curl e diagnóstico automático
   # ==============================================================
   RETRY=0
@@ -1176,6 +1246,7 @@ menu() {
     echo "  5. Ver logs da API"
     echo "  6. Parar containers"
     echo "  7. Desinstalar"
+    echo "  8. Migrar banco (tabelas login/home)"
     echo "  0. Sair"
     echo ""
     printf "Escolha: "; read -r OPT
@@ -1187,6 +1258,7 @@ menu() {
       5) logs_api ;;
       6) stop_containers ;;
       7) uninstall ;;
+      8) migrate_schema; info "Migração concluída." ;;
       0) info "Saindo..."; exit 0 ;;
       *) warn "Opção inválida" ;;
     esac
@@ -1204,6 +1276,7 @@ case "${1:-}" in
   free-ports) free_ports ;;
   logs) logs_api ;;
   stop) stop_containers ;;
+  migrate) migrate_schema ;;
   menu|"") menu ;;
-  *) error "Uso: $0 {install|uninstall|reconfig|recreate|free-ports|logs|stop|menu}" ;;
+  *) error "Uso: $0 {install|uninstall|reconfig|recreate|free-ports|logs|stop|migrate|menu}" ;;
 esac
