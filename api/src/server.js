@@ -6,6 +6,7 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PROJETO = process.env.APP_NAME || 'amoranimal';
 
 const pool = new Pool({
     host: process.env.DB_HOST || 'db',
@@ -93,17 +94,18 @@ app.get('/', (req, res) => {
     res.json({
         message: 'API Running',
         status: 'OK',
-        project: 'Amor Animal API',
+        project: PROJETO,
         timestamp: new Date().toISOString()
     });
 });
 
 app.get('/health', async (req, res) => {
+    const base = { status: 'healthy', project: PROJETO, timestamp: new Date().toISOString() };
     try {
         await pool.query('SELECT 1');
-        res.json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
+        res.json({ ...base, database: 'connected' });
     } catch (err) {
-        res.json({ status: 'unhealthy', database: 'disconnected', error: err.message });
+        res.json({ ...base, status: 'unhealthy', database: 'disconnected', error: err.message });
     }
 });
 
@@ -357,7 +359,7 @@ app.post('/relatorio/maintenance', async (req, res) => {
                 logs.push('Dependências instaladas');
                 break;
             case '5':
-                logs.push('Docker: reinicie o container: docker-compose restart api');
+                logs.push('Docker: reinicie o container: docker compose restart api');
                 break;
             default:
                 logs.push('Opção não implementada: ' + option);

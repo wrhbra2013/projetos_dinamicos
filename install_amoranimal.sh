@@ -1045,9 +1045,9 @@ psql -v ON_ERROR_STOP=1 --username "\$POSTGRES_USER" --dbname "\$POSTGRES_DB" <<
     INSERT INTO settings (chave, valor) VALUES ('clinica_baixo', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
     INSERT INTO settings (chave, valor) VALUES ('clinica_pets', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
 
-    INSERT INTO usuarios (nome, email, senha, tipo)
-    VALUES ('${ADMIN_NOME}', '${ADMIN_EMAIL}', '${ADMIN_PASS}', 'admin')
-    ON CONFLICT (email) DO NOTHING;
+    INSERT INTO login (usuario, senha, isadmin)
+    VALUES ('${ADMIN_EMAIL}', '${ADMIN_PASS}', true)
+    ON CONFLICT (usuario) DO NOTHING;
 EOSQL
 SEEDEOF
   chmod +x "$SCRIPT_DIR/db/init/02-seed.sh"
@@ -1110,7 +1110,7 @@ EOF
     _test_endpoint "${BASE}health"   "Health"    GET "" '"healthy"\|"connected"' || OK_ALL=false
     _test_endpoint "${BASE}"         "Root"      GET "" '"OK"\|"Running"'      || OK_ALL=false
     _test_endpoint "${BASE}auth/login" "Login"   POST \
-      "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" \
+      "{\"usuario\":\"$ADMIN_EMAIL\",\"senha\":\"$ADMIN_PASS\"}" \
       '"success":true\|"token"' || OK_ALL=false
 
     if $OK_ALL; then
@@ -1139,7 +1139,7 @@ EOF
           _test_endpoint "${BASE}health"   "Health" GET "" '"healthy"\|"connected"' || warn "Health:    FALHA"
           _test_endpoint "${BASE}"         "Root"   GET "" '"OK"\|"Running"'      || warn "Root:      FALHA"
           _test_endpoint "${BASE}auth/login" "Login" POST \
-            "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" \
+            "{\"usuario\":\"$ADMIN_EMAIL\",\"senha\":\"$ADMIN_PASS\"}" \
             '"success":true\|"token"' || warn "Login:     FALHA"
           ;;
       esac
