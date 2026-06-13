@@ -97,8 +97,68 @@ uninstall() {
   info "[5/5] Desinstalação concluída com sucesso!"
 }
 
+# ==============================================================
+# Docker install mode
+# ==============================================================
+install_docker() {
+  echo ""
+  info "===== Instalação via Docker ====="
+  echo ""
+
+  command -v docker >/dev/null 2>&1 || error "Docker não encontrado"
+  command -v docker compose >/dev/null 2>&1 || error "docker compose não encontrado"
+
+  SCRIPT_DIR="$(dirname "$0")"
+  [ -f "$SCRIPT_DIR/docker-compose.yml" ] || error "docker-compose.yml não encontrado em $SCRIPT_DIR"
+  [ -f "$SCRIPT_DIR/api/Dockerfile" ] || error "Dockerfile não encontrado em $SCRIPT_DIR/api/"
+  [ -f "$SCRIPT_DIR/db/init/01-schema.sql" ] || error "01-schema.sql não encontrado em $SCRIPT_DIR/db/init/"
+
+  printf "Porta da API [3000]: "; read -r APP_PORT
+  APP_PORT=${APP_PORT:-3000}
+  printf "Nome do banco de dados [amoranimal_db]: "; read -r DB_NAME
+  DB_NAME=${DB_NAME:-amoranimal_db}
+  printf "Senha do banco [postgres]: "; stty -echo; read -r DB_PASS; stty echo; echo ""
+  DB_PASS=${DB_PASS:-postgres}
+  printf "Email do administrador [amoranimalmariliadev@gmail.com]: "; read -r ADMIN_EMAIL
+  ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}
+  printf "Nome do administrador [$ADMIN_EMAIL]: "; read -r ADMIN_NOME
+  ADMIN_NOME=${ADMIN_NOME:-$ADMIN_EMAIL}
+  printf "Senha do administrador [@admin]: "; stty -echo; read -r ADMIN_PASS; stty echo; echo ""
+  ADMIN_PASS=${ADMIN_PASS:-@admin}
+
+  info "Criando .env em $SCRIPT_DIR/.env"
+  cat > "$SCRIPT_DIR/.env" <<EOF
+PORT=$APP_PORT
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=$DB_NAME
+DB_USER=postgres
+DB_PASS=$DB_PASS
+ADMIN_EMAIL=$ADMIN_EMAIL
+ADMIN_NOME=$ADMIN_NOME
+ADMIN_PASS=$ADMIN_PASS
+EOF
+
+  info "Construindo e iniciando containers..."
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build
+
+  echo ""
+  info "===== Instalação Docker concluída! ====="
+  echo ""
+  echo "  API:       http://localhost:$APP_PORT"
+  echo "  Health:    http://localhost:$APP_PORT/health"
+  echo "  Admin:     $ADMIN_EMAIL / $ADMIN_PASS"
+  echo ""
+  info "Comandos úteis:"
+  echo "  docker compose logs -f api   (ver logs da API)"
+  echo "  docker compose logs -f db    (ver logs do banco)"
+  echo "  docker compose restart api   (reiniciar API)"
+  echo "  docker compose down          (parar tudo)"
+}
+
 case "${1:-}" in
   uninstall) uninstall; exit 0 ;;
+  --docker|-d) install_docker; exit 0 ;;
 esac
 
 cleanup_on_error() {
@@ -275,6 +335,26 @@ function gerarTicket(tipo, seq) {
     return prefixo + String(seq).padStart(3, '0');
 }
 
+// Cria automaticamente colunas que não existem na tabela (evita erro 500)
+async function garantirColunas(tabela, data, pool) {
+    const chaves = Object.keys(data);
+    if (chaves.length === 0) return;
+    try {
+        const result = await pool.query(
+            `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
+            [tabela]
+        );
+        const colunasExistentes = new Set(result.rows.map(r => r.column_name));
+        const novas = chaves.filter(k => !colunasExistentes.has(k));
+        for (const coluna of novas) {
+            await pool.query(`ALTER TABLE "${tabela}" ADD COLUMN "${coluna}" TEXT`);
+            console.log(`Coluna "${coluna}" criada em "${tabela}"`);
+        }
+    } catch (err) {
+        console.error('Erro ao garantir colunas:', err.message);
+    }
+}
+
 // ===================== STATUS / HEALTH =====================
 
 app.get('/', (req, res) => {
@@ -379,6 +459,8 @@ app.post('/:tabela', async (req, res) => {
     }
     const data = req.body;
     try {
+        await garantirColunas(tabela, data, pool);
+
         // Gerar ticket automático para castracoes
         if (tabela === 'castracoes' && !data.ticket) {
             const seqResult = await pool.query("SELECT nextval('castracoes_id_seq')");
@@ -406,6 +488,8 @@ app.put('/:tabela/:id', async (req, res) => {
     }
     const data = req.body;
     try {
+        await garantirColunas(tabela, data, pool);
+
         const keys = Object.keys(data).map((k, i) => `"${k}" = $${i + 1}`).join(', ');
         const result = await pool.query(
             `UPDATE "${tabela}" SET ${keys} WHERE id = $${Object.keys(data).length + 1} RETURNING *;`,
