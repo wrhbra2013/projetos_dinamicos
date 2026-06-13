@@ -589,24 +589,23 @@ app.get('/health', async (req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
-    const { nome, email, senha } = req.body;
-    const login = nome || email;
-    if (!login || !senha) {
-        return res.status(400).json({ error: 'Nome/email e senha são obrigatórios' });
+    const { usuario, senha } = req.body;
+    if (!usuario || !senha) {
+        return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
     try {
         const result = await pool.query(
-            'SELECT id, nome, email, tipo FROM usuarios WHERE (nome = $1 OR email = $1) AND senha = $2',
-            [login, senha]
+            'SELECT id, usuario, isadmin FROM login WHERE usuario = $1 AND senha = $2',
+            [usuario, senha]
         );
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Usuário ou senha inválidos' });
         }
-        const usuario = result.rows[0];
+        const user = result.rows[0];
         const token = crypto.createHash('sha256')
-            .update(usuario.email + Date.now() + 'amoranimal_secret')
+            .update(user.usuario + Date.now() + 'amoranimal_secret')
             .digest('hex');
-        res.json({ success: true, token, usuario });
+        res.json({ success: true, token, usuario: user });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -614,25 +613,24 @@ app.post('/auth/login', async (req, res) => {
 
 app.get('/settings', async (req, res) => {
     try {
-        const result = await pool.query('SELECT chave, valor FROM settings');
-        const settings = {};
-        result.rows.forEach(r => { settings[r.chave] = r.valor; });
-        res.json(settings);
+        const result = await pool.query('SELECT * FROM home ORDER BY id DESC');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 app.post('/settings', async (req, res) => {
-    const pairs = req.body;
+    const { titulo, mensagem, link, arquivo } = req.body;
+    if (!titulo) {
+        return res.status(400).json({ error: 'titulo é obrigatório' });
+    }
     try {
-        for (const chave of Object.keys(pairs)) {
-            await pool.query(
-                'INSERT INTO settings (chave, valor) VALUES ($1, $2) ON CONFLICT (chave) DO UPDATE SET valor = $2',
-                [chave, pairs[chave]]
-            );
-        }
-        res.json({ success: true });
+        const result = await pool.query(
+            `INSERT INTO home (titulo, mensagem, link, arquivo) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [titulo, mensagem || null, link || null, arquivo || null]
+        );
+        res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -711,7 +709,7 @@ app.delete('/:tabela/:id', async (req, res) => {
 
 app.get('/transparencia', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM transparencia ORDER BY ano DESC, created_at DESC');
+        const result = await pool.query('SELECT * FROM transparencia ORDER BY ano DESC, origem DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -730,16 +728,6 @@ app.post('/transparencia', async (req, res) => {
             [titulo, tipo, ano, descricao || null, arquivo || null]
         );
         res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/transparencia/:id/:arquivo', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM transparencia WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Documento excluído' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
