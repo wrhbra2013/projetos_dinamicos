@@ -2,18 +2,18 @@
 set -eu
 
 # ==============================================================
-# Script de instalação — API Amor Animal
-# Uso: sudo bash install.sh          (instalar)
-#       sudo bash install.sh uninstall (desinstalar)
-#
-# API REST genérica com PostgreSQL.
+# Script de instalação — API Amor Animal (Docker)
+# Uso: sudo bash install.sh                          (menu interativo)
+#       sudo bash install.sh install                 (instalar)
+#       sudo bash install.sh uninstall               (desinstalar)
+#       sudo bash install.sh reconfig                (alterar porta)
+#       sudo bash install.sh recreate                (recriar container)
+#       sudo bash install.sh free-ports              (liberar porta)
+#       sudo bash install.sh logs                    (ver logs)
+#       sudo bash install.sh stop                    (parar containers)
 # ==============================================================
 
 SCRIPT_DIR="$(dirname "$0")"
-INSTALL_DIR="/var/www/amoranimal"
-SRC_DIR="$INSTALL_DIR/src"
-NGINX_AVAILABLE="/etc/nginx/sites-available"
-NGINX_CONF="$NGINX_AVAILABLE/default"
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 warn()  { printf "${YELLOW}[WARN]${NC} %s\n" "$1" >&2; }
@@ -21,164 +21,9 @@ error() { printf "${RED}[ERRO]${NC} %s\n" "$1" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || error "Execute como root: sudo bash install.sh"
 
-if [ -n "${SUDO_USER:-}" ]; then
-  PM2_USER="$SUDO_USER"
-else
-  PM2_USER="root"
-fi
-PM2_AS_USER=""
-[ "$PM2_USER" != "root" ] && PM2_AS_USER="sudo -u $PM2_USER"
-
-
-
 # ==============================================================
-# Uninstall
+# Helpers
 # ==============================================================
-uninstall() {
-  echo ""
-  info "===== Iniciando desinstalação da API Amor Animal ====="
-  echo ""
-
-  [ -f "$INSTALL_DIR/.env" ] && . "$INSTALL_DIR/.env" || true
-
-  upm2="${PM2_APP_NAME:-amoranimal}"
-  db_name="${DB_NAME:-amoranimal_db}"
-  db_user="${DB_USER:-postgres}"
-  db_pass="${DB_PASS:-wander}"
-  db_host="${DB_HOST:-localhost}"
-  db_port="${DB_PORT:-5432}"
-
-  echo ""
-  info "[1/5] Parando e removendo app do PM2 ($upm2)..."
-  if $PM2_AS_USER pm2 delete "$upm2" 2>/dev/null; then
-    info "PM2: app $upm2 removido"
-  else
-    warn "PM2: app $upm2 não encontrado ou já removido"
-  fi
-  $PM2_AS_USER pm2 save --force 2>/dev/null || true
-
-  echo ""
-  info "[2/5] Restaurando nginx a partir do backup..."
-  if [ -f "$NGINX_CONF.bkp" ]; then
-    cp "$NGINX_CONF.bkp" "$NGINX_CONF" && info "Nginx restaurado de $NGINX_CONF.bkp" || warn "Falha ao restaurar nginx"
-  else
-    warn "Backup $NGINX_CONF.bkp não encontrado — removendo marcador manualmente"
-    sed -i "/^# LOCATION_BEGIN $upm2\$/,/^# LOCATION_END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
-    sed -i "/^# BEGIN $upm2\$/,/^# END $upm2\$/d" "$NGINX_CONF" 2>/dev/null || true
-  fi
-  if nginx -t 2>/dev/null; then
-    systemctl reload nginx.service 2>/dev/null && info "Nginx recarregado" || warn "Falha ao recarregar nginx"
-  else
-    warn "Configuração do nginx inválida — verifique manualmente"
-  fi
-
-  echo ""
-  info "[3/5] Removendo banco de dados ($db_name)..."
-  info "Limpando tabelas existentes..."
-  export PGPASSWORD="$db_pass"
-  psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
-    -t -c "SELECT tablename FROM pg_tables WHERE schemaname='public';" 2>/dev/null | while read -r tbl; do
-    [ -n "$tbl" ] && psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" \
-      -c "DROP TABLE IF EXISTS \"$tbl\" CASCADE;" 2>/dev/null || true
-  done
-  info "Tabelas removidas"
-  unset PGPASSWORD
-  if sudo -u postgres psql -c "DROP DATABASE IF EXISTS \"$db_name\";" 2>/dev/null; then
-    info "Banco $db_name removido (usuário mantido)"
-  else
-    warn "Banco $db_name não encontrado ou já removido"
-  fi
-
-  echo ""
-  info "[4/5] Removendo diretório $INSTALL_DIR..."
-  rm -rf "$INSTALL_DIR" && info "Diretório $INSTALL_DIR removido com sucesso" || warn "Falha ao remover diretório $INSTALL_DIR"
-
-  echo ""
-  info "[5/5] Desinstalação concluída com sucesso!"
-}
-
-# ==============================================================
-# Docker install mode
-# ==============================================================
-install_docker() {
-  echo ""
-  info "===== Instalação via Docker ====="
-  echo ""
-
-  command -v docker >/dev/null 2>&1 || error "Docker não encontrado"
-  command -v docker compose >/dev/null 2>&1 || error "docker compose não encontrado"
-
-  SCRIPT_DIR="$(dirname "$0")"
-  [ -f "$SCRIPT_DIR/docker-compose.yml" ] || error "docker-compose.yml não encontrado em $SCRIPT_DIR"
-  [ -f "$SCRIPT_DIR/api/Dockerfile" ] || error "Dockerfile não encontrado em $SCRIPT_DIR/api/"
-  [ -f "$SCRIPT_DIR/db/init/01-schema.sql" ] || error "01-schema.sql não encontrado em $SCRIPT_DIR/db/init/"
-
-  printf "Porta da API [3000]: "; read -r APP_PORT
-  APP_PORT=${APP_PORT:-3000}
-  printf "Nome do banco de dados [amoranimal_db]: "; read -r DB_NAME
-  DB_NAME=${DB_NAME:-amoranimal_db}
-  printf "Senha do banco [postgres]: "; stty -echo; read -r DB_PASS; stty echo; echo ""
-  DB_PASS=${DB_PASS:-postgres}
-  printf "Email do administrador [amoranimalmariliadev@gmail.com]: "; read -r ADMIN_EMAIL
-  ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}
-  printf "Nome do administrador [$ADMIN_EMAIL]: "; read -r ADMIN_NOME
-  ADMIN_NOME=${ADMIN_NOME:-$ADMIN_EMAIL}
-  printf "Senha do administrador [@admin]: "; stty -echo; read -r ADMIN_PASS; stty echo; echo ""
-  ADMIN_PASS=${ADMIN_PASS:-@admin}
-
-  info "Criando .env em $SCRIPT_DIR/.env"
-  cat > "$SCRIPT_DIR/.env" <<EOF
-PORT=$APP_PORT
-DB_HOST=db
-DB_PORT=5432
-DB_NAME=$DB_NAME
-DB_USER=postgres
-DB_PASS=$DB_PASS
-ADMIN_EMAIL=$ADMIN_EMAIL
-ADMIN_NOME=$ADMIN_NOME
-ADMIN_PASS=$ADMIN_PASS
-EOF
-
-  info "Construindo e iniciando containers..."
-  docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build
-
-  echo ""
-  info "===== Instalação Docker concluída! ====="
-  echo ""
-  echo "  API:       http://localhost:$APP_PORT"
-  echo "  Health:    http://localhost:$APP_PORT/health"
-  echo "  Admin:     $ADMIN_EMAIL / $ADMIN_PASS"
-  echo ""
-  info "Comandos úteis:"
-  echo "  docker compose logs -f api   (ver logs da API)"
-  echo "  docker compose logs -f db    (ver logs do banco)"
-  echo "  docker compose restart api   (reiniciar API)"
-  echo "  docker compose down          (parar tudo)"
-}
-
-case "${1:-}" in
-  uninstall) uninstall; exit 0 ;;
-  --docker|-d) install_docker; exit 0 ;;
-esac
-
-cleanup_on_error() {
-  [ $? -eq 0 ] && return 0
-  warn "ERRO: Instalação falhou — revertendo..."
-  rm -rf "$INSTALL_DIR" 2>/dev/null && warn "Diretório $INSTALL_DIR removido durante rollback" || true
-  exit 1
-}
-trap cleanup_on_error EXIT
-trap 'error "Instalação interrompida pelo usuário"' INT TERM
-
-command -v node >/dev/null 2>&1 || error "Node.js não encontrado"
-command -v npm  >/dev/null 2>&1 || error "npm não encontrado"
-command -v psql >/dev/null 2>&1 || warn "psql não encontrado"
-command -v pm2  >/dev/null 2>&1 || warn "pm2 não encontrado — será instalado via npm"
-
-echo ""
-info "===== Iniciando instalação da API Amor Animal ====="
-echo ""
-echo "============ Configuração da instalação ============"
 _check_port() {
   local p=$1
   if command -v ss >/dev/null 2>&1; then
@@ -189,77 +34,430 @@ _check_port() {
   return 1
 }
 
-while :; do
-  printf "Porta do app [3002]: "; read -r APP_PORT
-  APP_PORT=${APP_PORT:-3002}
-  if _check_port "$APP_PORT"; then
-    warn "Porta $APP_PORT já está em uso!"
-    printf "  (M)atar processo, (T)rocar porta, (C)ancelar [M/t/c]: "; read -r PORT_ACT
-    case "$PORT_ACT" in
-      [Tt])
-        continue
-        ;;
-      [Cc])
-        error "Instalação cancelada pelo usuário"
-        ;;
-      *)
-        fuser -k "$APP_PORT/tcp" 2>/dev/null && info "Processo na porta $APP_PORT encerrado" || warn "Não foi possível encerrar — tente trocar a porta"
-        sleep 1
+_diagnostic_api() {
+  echo ""
+  warn "===== DIAGNÓSTICO DE FALHA ====="
+  if docker ps --format '{{.Names}}' 2>/dev/null | grep -q 'amoranimal-api'; then
+    local actual_port
+    actual_port=$(docker logs amoranimal-api 2>&1 | grep -oP 'port \K\d+' | tail -1)
+    if [ -n "$actual_port" ]; then
+      warn "API está ouvindo na porta interna: $actual_port"
+      warn "Porta externa configurada: ${PORT:-?}"
+      if [ "$actual_port" != "3000" ]; then
+        warn "MISMATCH: a API deveria ouvir na porta 3000 (container), mas está em $actual_port"
+        warn "Remova a variável PORT do environment no docker-compose.yml"
+      fi
+    fi
+    warn "--- Últimas 20 linhas do log da API ---"
+    docker logs amoranimal-api --tail 20 2>&1
+  else
+    warn "Container amoranimal-api não está rodando"
+    warn "--- Status dos containers ---"
+    docker compose -f "$SCRIPT_DIR/docker-compose.yml" ps 2>&1
+    warn "--- Logs completos da API ---"
+    docker compose -f "$SCRIPT_DIR/docker-compose.yml" logs --tail=30 api 2>&1
+  fi
+  echo ""
+}
+
+_test_endpoint() {
+  local url=$1 label=$2 method=$3 data=$4 expected=$5
+  local resp
+  resp=$(curl -s --max-time 10 -X "${method:-GET}" "$url" \
+    ${data:+-H "Content-Type: application/json" -d "$data"} 2>/dev/null) || resp=""
+  if echo "$resp" | grep -q "$expected"; then
+    info "$label:    OK"
+    return 0
+  else
+    warn "$label:    FALHA"
+    [ -n "$resp" ] && warn "  Resposta: $resp" || warn "  Sem resposta (container pode não estar pronto)"
+    return 1
+  fi
+}
+
+# ==============================================================
+# Uninstall
+# ==============================================================
+uninstall() {
+  echo ""
+  info "===== Iniciando desinstalação da API Amor Animal (Docker) ====="
+  echo ""
+
+  [ -f "$SCRIPT_DIR/.env" ] && . "$SCRIPT_DIR/.env" || true
+
+  echo ""
+  info "[1/3] Parando containers Docker..."
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" down 2>/dev/null || true
+  info "Containers parados."
+
+  echo ""
+  info "[2/3] Removendo .env..."
+  rm -f "$SCRIPT_DIR/.env" && info ".env removido" || warn ".env não encontrado"
+
+  if [ -n "${DATA_DIR:-}" ] && [ -d "$DATA_DIR" ]; then
+    echo ""
+    warn "Diretório de dados encontrado: $DATA_DIR"
+    printf "  Remover todo o diretório $DATA_DIR? (upload, backup, banco) [s/N]: "; read -r RM_DATA
+    case "$RM_DATA" in
+      [Ss])
+        info "Removendo $DATA_DIR..."
+        rm -rf "$DATA_DIR" && info "Diretório removido." || warn "Falha ao remover diretório."
         ;;
     esac
   fi
-  break
-done
-info "Porta definida: $APP_PORT"
-printf "Nome do banco de dados PostgreSQL [amoranimal_db]: "; read -r DB_NAME
-DB_NAME=${DB_NAME:-amoranimal_db}; info "DB_NAME: $DB_NAME"
-printf "Nome do app no PM2 [amoranimal]: "; read -r PM2_APP_NAME
-PM2_APP_NAME=${PM2_APP_NAME:-amoranimal}; info "PM2_APP_NAME: $PM2_APP_NAME"
-printf "Email do administrador [amoranimalmariliadev@gmail.com]: "; read -r ADMIN_EMAIL
-ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}; info "ADMIN_EMAIL: $ADMIN_EMAIL"
-printf "Nome do administrador [$ADMIN_EMAIL]: "; read -r ADMIN_NOME
-ADMIN_NOME=${ADMIN_NOME:-$ADMIN_EMAIL}; info "ADMIN_NOME: $ADMIN_NOME"
-printf "Senha do administrador [@admin]: "; stty -echo; read -r ADMIN_PASS; stty echo; echo ""
-ADMIN_PASS=${ADMIN_PASS:-@admin}
-DB_USER=postgres
-DB_PASS=wander
-DB_HOST=localhost
-DB_PORT=5432
-APP_DOMAIN=api.projetosdinamicos.com.br
-APP_LOCATION=/$PM2_APP_NAME/
 
-info "Criando diretórios..."
-mkdir -p "$SRC_DIR" "$INSTALL_DIR/uploads/transparencia" "$INSTALL_DIR/backups" && info "Diretórios criados: $SRC_DIR" || warn "Erro ao criar diretórios"
+  echo ""
+  info "[3/3] Desinstalação concluída!"
+}
 
-# --------------------------------------------------------------
-# .env
-# --------------------------------------------------------------
-info "Criando .env (PORT=$APP_PORT)"
-cat > "$INSTALL_DIR/.env" <<ENVEOF
-PORT=$APP_PORT
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_NAME=$DB_NAME
-DB_USER=$DB_USER
-DB_PASS=$DB_PASS
-PM2_APP_NAME=$PM2_APP_NAME
-APP_DOMAIN=$APP_DOMAIN
-APP_LOCATION=$APP_LOCATION
-NGINX_BKP=
-PASSWORD=$DB_PASS
-ADMIN_EMAIL=$ADMIN_EMAIL
-ADMIN_NOME=$ADMIN_NOME
-ADMIN_PASS=$ADMIN_PASS
-ENVEOF
-chmod 600 "$INSTALL_DIR/.env" && info "Permissões do .env ajustadas (600)" || warn "Falha ao ajustar permissões do .env"
-chown "$PM2_USER" "$INSTALL_DIR/.env" && info "Proprietário do .env definido: $PM2_USER" || warn "Falha ao definir proprietário do .env"
-info ".env criado com PORT=$APP_PORT"
+# ==============================================================
+# Reconfig — alterar porta e recriar container
+# ==============================================================
+reconfig() {
+  echo ""
+  info "===== Reconfiguração da API Amor Animal ====="
+  echo ""
 
-# --------------------------------------------------------------
-# package.json
-# --------------------------------------------------------------
-info "Criando package.json"
-cat > "$INSTALL_DIR/package.json" <<'JSONEOF'
+  [ -f "$SCRIPT_DIR/.env" ] || error ".env não encontrado. Execute a instalação primeiro."
+
+  # Carregar configuração atual
+  . "$SCRIPT_DIR/.env"
+
+  echo "Configuração atual:"
+  echo "  Porta:      $PORT"
+  echo "  App:        ${APP_NAME:-$DB_NAME}"
+  echo "  Dados:      ${DATA_DIR:-/var/www/${APP_NAME:-amoranimal}}"
+  echo "  Admin:      $ADMIN_EMAIL"
+  echo ""
+
+  while :; do
+    printf "Nova porta da API [%s]: " "$PORT"
+    read -r APP_PORT
+    APP_PORT=${APP_PORT:-$PORT}
+    if _check_port "$APP_PORT" && [ "$APP_PORT" != "$PORT" ]; then
+      warn "Porta $APP_PORT já está em uso!"
+      printf "  (M)atar processo, (T)rocar porta, (C)ancelar [M/t/c]: "; read -r PORT_ACT
+      case "$PORT_ACT" in
+        [Tt]) continue ;;
+        [Cc]) error "Reconfiguração cancelada" ;;
+        *) fuser -k "$APP_PORT/tcp" 2>/dev/null && info "Processo na porta $APP_PORT encerrado" || warn "Não foi possível encerrar"
+           sleep 1 ;;
+      esac
+    fi
+    break
+  done
+
+  if [ "$APP_PORT" = "$PORT" ]; then
+    info "Porta inalterada ($PORT). Nada a fazer."
+    exit 0
+  fi
+
+  # Garantir DATA_DIR no .env (compatibilidade com instalações antigas)
+  if ! grep -q '^DATA_DIR=' "$SCRIPT_DIR/.env" 2>/dev/null; then
+    DATA_DIR="${DATA_DIR:-/var/www/${DB_NAME:-amoranimal}}"
+    echo "DATA_DIR=$DATA_DIR" >> "$SCRIPT_DIR/.env"
+    info "DATA_DIR adicionado ao .env: $DATA_DIR"
+  fi
+
+  # Atualizar .env com a nova porta
+  info "Atualizando .env com porta $APP_PORT..."
+  sed -i "s/^PORT=.*/PORT=$APP_PORT/" "$SCRIPT_DIR/.env"
+
+  # Corrigir docker-compose.yml existente: remover PORT do environment
+  # (versão antiga tinha PORT: \${PORT:-3000} que causava mismatch)
+  if grep -q '^\s*PORT:.*\$' "$SCRIPT_DIR/docker-compose.yml" 2>/dev/null; then
+    info "Corrigindo docker-compose.yml (removendo PORT do environment)..."
+    sed -i '/^\s*PORT:\s*\${/d' "$SCRIPT_DIR/docker-compose.yml"
+  fi
+
+  # Corrigir docker-compose.yml: substituir volumes nomeados por bind mounts
+  if grep -q '^\s*- pgdata:' "$SCRIPT_DIR/docker-compose.yml" 2>/dev/null; then
+    info "Atualizando docker-compose.yml para usar bind mounts..."
+    sed -i "s|^\s*- pgdata:|      - \${DATA_DIR}/pgdata:|" "$SCRIPT_DIR/docker-compose.yml"
+    sed -i "s|^\s*- api_uploads:|      - \${DATA_DIR}/uploads:|" "$SCRIPT_DIR/docker-compose.yml"
+    sed -i "s|^\s*- api_backups:|      - \${DATA_DIR}/backups:|" "$SCRIPT_DIR/docker-compose.yml"
+    sed -i '/^volumes:/,/^[a-z]/ { /^volumes:/d; /^  [a-z].*:$/d; }' "$SCRIPT_DIR/docker-compose.yml" 2>/dev/null || true
+  fi
+
+  info "Recriando container com a nova porta..."
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build || {
+    error "Falha ao recriar container"
+    _diagnostic_api
+    exit 1
+  }
+
+  echo ""
+  info "===== Reconfiguração concluída! ====="
+  echo ""
+  echo "  API:       http://localhost:$APP_PORT"
+  echo ""
+}
+
+# ==============================================================
+# Recreate — recriar container
+# ==============================================================
+recreate() {
+  echo ""
+  info "===== Recriando container da API ====="
+  echo ""
+  [ -f "$SCRIPT_DIR/.env" ] || error ".env não encontrado."
+  . "$SCRIPT_DIR/.env"
+
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" down 2>/dev/null || true
+  info "Container parado. Recriando..."
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build || {
+    error "Falha ao recriar container"
+    _diagnostic_api
+    exit 1
+  }
+  info "Container recriado com sucesso!"
+  echo "  API: http://localhost:$PORT"
+}
+
+# ==============================================================
+# Free ports — liberar porta configurada no .env
+# ==============================================================
+free_ports() {
+  echo ""
+  info "===== Liberando portas ====="
+  echo ""
+  [ -f "$SCRIPT_DIR/.env" ] || error ".env não encontrado."
+  . "$SCRIPT_DIR/.env"
+
+  local port_atual=$PORT
+  if _check_port "$port_atual"; then
+    warn "Porta $port_atual está em uso!"
+    printf "  Encerrar processo na porta $port_atual? [S/n]: "; read -r CONFIRM
+    case "$CONFIRM" in
+      [Nn]) info "Operação cancelada." ;;
+      *)
+        fuser -k "$port_atual/tcp" 2>/dev/null && \
+          info "Processo na porta $port_atual encerrado" || \
+          warn "Não foi possível encerrar processo na porta $port_atual"
+        ;;
+    esac
+  else
+    info "Porta $port_atual já está livre."
+  fi
+
+  # Verificar containers parados com a mesma porta
+  if docker ps -a --format '{{.Ports}}' 2>/dev/null | grep -q "$port_atual"; then
+    warn "A porta $port_atual também está mapeada em um container Docker."
+    printf "  Parar e remover container? [s/N]: "; read -r STOP_DOCKER
+    case "$STOP_DOCKER" in
+      [Ss])
+        docker compose -f "$SCRIPT_DIR/docker-compose.yml" down 2>/dev/null || true
+        info "Container Docker parado."
+        ;;
+    esac
+  fi
+  echo ""
+}
+
+# ==============================================================
+# Logs API — mostrar logs da API
+# ==============================================================
+logs_api() {
+  echo ""
+  info "===== Logs da API (últimas 30 linhas) ====="
+  echo ""
+  if docker ps --format '{{.Names}}' 2>/dev/null | grep -q 'amoranimal-api'; then
+    docker logs amoranimal-api --tail 30 2>&1
+    echo ""
+    info "Para acompanhar em tempo real: docker logs -f amoranimal-api"
+  else
+    warn "Container amoranimal-api não está rodando."
+    docker compose -f "$SCRIPT_DIR/docker-compose.yml" logs --tail=30 api 2>&1 || \
+      warn "Nenhum log disponível."
+  fi
+}
+
+# ==============================================================
+# Stop — parar containers
+# ==============================================================
+stop_containers() {
+  echo ""
+  info "===== Parando containers ====="
+  echo ""
+  if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+    docker compose -f "$SCRIPT_DIR/docker-compose.yml" down 2>/dev/null || true
+    info "Containers parados."
+  else
+    warn "docker-compose.yml não encontrado."
+  fi
+}
+
+# ==============================================================
+# Install
+# ==============================================================
+install_docker_debian() {
+  command -v apt-get >/dev/null 2>&1 || error "apt-get não encontrado"
+
+  dpkg --configure -a 2>/dev/null || true
+  apt-get install -f -y -qq 2>/dev/null || true
+
+  if dpkg -l 2>/dev/null | grep -qE '^iF|^iU'; then
+    info "Removendo pacotes com configuração pendente..."
+    for pkg in $(dpkg -l | awk '/^iF|^iU/{print $2}'); do
+      dpkg --purge --force-depends "$pkg" 2>/dev/null || true
+    done
+    apt-get install -f -y -qq 2>/dev/null || true
+  fi
+
+  info "Adicionando repositório Docker..."
+  apt-get install -y -qq ca-certificates curl
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  chmod a+r /etc/apt/keyrings/docker.asc
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+
+  apt-get update -qq
+  if apt-get install -y -qq docker-ce docker-compose-plugin; then
+    systemctl enable docker.service && systemctl start docker.service
+    info "Docker instalado com sucesso"
+  else
+    warn "Falha ao instalar Docker"
+    warn "  sudo apt-get install docker-ce docker-compose-plugin"
+    error "Instalação do Docker falhou"
+  fi
+}
+
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+  if [ -f /etc/debian_version ]; then
+    printf "Docker não encontrado. Instalar Docker para Debian? [S/n]: "; read -r INSTALL_DOCKER
+    case "$INSTALL_DOCKER" in
+      [Nn]) error "Docker é necessário para instalação" ;;
+      *) install_docker_debian ;;
+    esac
+  else
+    error "Docker não encontrado. Instale Docker e docker compose plugin manualmente"
+  fi
+fi
+
+# ==============================================================
+# install_flow — instalação completa
+# ==============================================================
+install_flow() {
+  echo ""
+  info "===== Instalação da API Amor Animal (Docker) ====="
+  echo ""
+  echo "============ Configuração ============"
+
+  while :; do
+    printf "Porta da API [3000]: "; read -r APP_PORT
+    APP_PORT=${APP_PORT:-3000}
+    if _check_port "$APP_PORT"; then
+      warn "Porta $APP_PORT já está em uso!"
+      printf "  (M)atar processo, (T)rocar porta, (C)ancelar [M/t/c]: "; read -r PORT_ACT
+      case "$PORT_ACT" in
+        [Tt]) continue ;;
+        [Cc]) error "Instalação cancelada" ;;
+        *) fuser -k "$APP_PORT/tcp" 2>/dev/null && info "Processo na porta $APP_PORT encerrado" || warn "Não foi possível encerrar"
+           sleep 1 ;;
+      esac
+    fi
+    break
+  done
+
+  printf "Nome do app (ex: amoranimal): "; read -r APP_NAME
+  APP_NAME=${APP_NAME:-amoranimal}
+  # Sanitizar: lower case, underscores, sem espaços
+  APP_NAME=$(printf '%s' "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9_' '_')
+
+  # Derivar configurações do nome do app
+  DB_NAME=$APP_NAME
+  DB_PASS=postgres
+  DATA_DIR="/var/www/${APP_NAME}"
+
+  printf "Email do administrador [amoranimalmariliadev@gmail.com]: "; read -r ADMIN_EMAIL
+  ADMIN_EMAIL=${ADMIN_EMAIL:-amoranimalmariliadev@gmail.com}
+  printf "Nome do administrador [admin]: "; read -r ADMIN_NOME
+  ADMIN_NOME=${ADMIN_NOME:-admin}
+  printf "Senha do administrador [@admin]: "; stty -echo; read -r ADMIN_PASS; stty echo; echo ""
+  ADMIN_PASS=${ADMIN_PASS:-@admin}
+
+  # ==============================================================
+  # Criar estrutura de diretórios
+  # ==============================================================
+  info "Criando estrutura de diretórios..."
+  mkdir -p "$SCRIPT_DIR/api/src" "$SCRIPT_DIR/db/init" "$DATA_DIR"/{pgdata,uploads,backups}
+
+  # ==============================================================
+  # Gerar arquivos necessários via heredoc
+  # ==============================================================
+
+  info "Gerando docker-compose.yml..."
+  cat > "$SCRIPT_DIR/docker-compose.yml" <<'COMPOSEEOF'
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: amoranimal-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+      POSTGRES_DB: ${DB_NAME:-amoranimal_db}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@amoranimal.ong.br}
+      ADMIN_NOME: ${ADMIN_NOME:-admin}
+      ADMIN_PASS: ${ADMIN_PASS:-@admin}
+    volumes:
+      - ${DATA_DIR}/pgdata:/var/lib/postgresql/data
+      - ./db/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/init/02-seed.sh:/docker-entrypoint-initdb.d/02-seed.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER:-postgres} -d $${DB_NAME:-amoranimal_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: amoranimal-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-amoranimal_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-postgres}
+    volumes:
+      - ${DATA_DIR}/uploads:/app/uploads
+      - ${DATA_DIR}/backups:/app/backups
+    ports:
+      - "${PORT:-3000}:3000"
+COMPOSEEOF
+
+  info "Gerando api/Dockerfile..."
+  cat > "$SCRIPT_DIR/api/Dockerfile" <<'DOCKEREOF'
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install --production
+
+COPY src/ ./src/
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN mkdir -p /app/uploads /app/backups && chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+CMD ["node", "src/server.js"]
+DOCKEREOF
+
+  info "Gerando api/package.json..."
+  cat > "$SCRIPT_DIR/api/package.json" <<'PKGEOF'
 {
   "name": "amoranimal-api",
   "version": "1.0.0",
@@ -274,29 +472,25 @@ cat > "$INSTALL_DIR/package.json" <<'JSONEOF'
     "pg": "^8.12.0"
   }
 }
-JSONEOF
+PKGEOF
 
-# --------------------------------------------------------------
-# src/server.js
-# --------------------------------------------------------------
-info "Criando src/server.js"
-cat > "$SRC_DIR/server.js" <<'SVREOF'
+  info "Gerando api/src/server.js..."
+  cat > "$SCRIPT_DIR/api/src/server.js" <<'SVREOF'
 const { Pool } = require('pg');
 const express = require('express');
 
 const path = require('path');
 const crypto = require('crypto');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.PASSWORD
+    host: process.env.DB_HOST || 'db',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'amoranimal_db',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASS || 'postgres'
 });
 
 pool.on('error', (err) => console.error('DB Error:', err));
@@ -304,9 +498,6 @@ pool.on('error', (err) => console.error('DB Error:', err));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// CORS — permite requisições do frontend hospedado em outro domínio
-// O nginx não define mais Access-Control-Allow-Origin para evitar
-// headers duplicados que o browser rejeita (CORS spec exige valor único)
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
@@ -326,17 +517,22 @@ app.use((req, res, next) => {
     next();
 });
 
-// Servir arquivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Gera ticket único
 function gerarTicket(tipo, seq) {
     const prefixo = tipo === 'mutirao' ? 'M' : tipo === 'pets_rua' ? 'R' : 'B';
     return prefixo + String(seq).padStart(3, '0');
 }
 
-// Cria automaticamente colunas que não existem na tabela (evita erro 500)
-async function garantirColunas(tabela, data, pool) {
+async function tabelaExiste(tabela) {
+    const result = await pool.query(
+        `SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1)`,
+        [tabela]
+    );
+    return result.rows[0].exists;
+}
+
+async function garantirColunas(tabela, data) {
     const chaves = Object.keys(data);
     if (chaves.length === 0) return;
     try {
@@ -355,7 +551,21 @@ async function garantirColunas(tabela, data, pool) {
     }
 }
 
-// ===================== STATUS / HEALTH =====================
+async function garantirTabela(tabela, data) {
+    if (await tabelaExiste(tabela)) return;
+    const cols = Object.keys(data)
+        .filter(k => k !== 'id')
+        .map(k => `"${k}" TEXT`)
+        .join(', ');
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS "${tabela}" (
+            id SERIAL PRIMARY KEY,
+            ${cols},
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    `);
+    console.log(`Tabela "${tabela}" criada dinamicamente`);
+}
 
 app.get('/', (req, res) => {
     res.json({
@@ -374,8 +584,6 @@ app.get('/health', async (req, res) => {
         res.json({ status: 'unhealthy', database: 'disconnected', error: err.message });
     }
 });
-
-// ===================== AUTH =====================
 
 app.post('/auth/login', async (req, res) => {
     const { nome, email, senha } = req.body;
@@ -400,8 +608,6 @@ app.post('/auth/login', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-// ===================== SETTINGS =====================
 
 app.get('/settings', async (req, res) => {
     try {
@@ -429,18 +635,9 @@ app.post('/settings', async (req, res) => {
     }
 });
 
-// ===================== TABELAS DINÂMICAS (CRUD genérico) =====================
-// Mapeia nomes de tabela que o frontend acessa diretamente
-const TABELAS_PERMITIDAS = [
-    'animais', 'adocoes', 'castracoes', 'doacoes',
-    'eventos', 'parcerias', 'procura_se', 'usuarios',
-    'voluntarios', 'coleta'
-];
-
-// GET /:tabela — listar registros
 app.get('/:tabela', async (req, res) => {
     const { tabela } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     try {
@@ -451,17 +648,13 @@ app.get('/:tabela', async (req, res) => {
     }
 });
 
-// POST /:tabela — inserir registro
 app.post('/:tabela', async (req, res) => {
     const { tabela } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
-        return res.status(404).json({ error: 'Tabela não encontrada' });
-    }
     const data = req.body;
     try {
-        await garantirColunas(tabela, data, pool);
+        await garantirTabela(tabela, data);
+        await garantirColunas(tabela, data);
 
-        // Gerar ticket automático para castracoes
         if (tabela === 'castracoes' && !data.ticket) {
             const seqResult = await pool.query("SELECT nextval('castracoes_id_seq')");
             const seq = seqResult.rows[0].nextval;
@@ -480,15 +673,14 @@ app.post('/:tabela', async (req, res) => {
     }
 });
 
-// PUT /:tabela/:id — atualizar registro
 app.put('/:tabela/:id', async (req, res) => {
     const { tabela, id } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     const data = req.body;
     try {
-        await garantirColunas(tabela, data, pool);
+        await garantirColunas(tabela, data);
 
         const keys = Object.keys(data).map((k, i) => `"${k}" = $${i + 1}`).join(', ');
         const result = await pool.query(
@@ -501,10 +693,9 @@ app.put('/:tabela/:id', async (req, res) => {
     }
 });
 
-// DELETE /:tabela/:id — excluir registro
 app.delete('/:tabela/:id', async (req, res) => {
     const { tabela, id } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     try {
@@ -514,8 +705,6 @@ app.delete('/:tabela/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-// ===================== TRANSPARÊNCIA =====================
 
 app.get('/transparencia', async (req, res) => {
     try {
@@ -553,8 +742,6 @@ app.post('/transparencia/:id/:arquivo', async (req, res) => {
     }
 });
 
-// ===================== RELATÓRIO / BACKUP =====================
-
 app.get('/relatorio/tabelas', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -569,7 +756,6 @@ app.get('/relatorio/tabelas', async (req, res) => {
 });
 
 app.post('/relatorio/backup', async (req, res) => {
-    const { action } = req.query;
     try {
         const fs = require('fs');
         const backupDir = path.join(__dirname, '..', 'backups');
@@ -650,27 +836,18 @@ app.post('/relatorio/maintenance', async (req, res) => {
     const logs = [];
     try {
         switch (option) {
-            case '1': // Fluxo completo
-                logs.push('Executando git pull...');
-                try { const o = execSync('git -C ' + path.join(__dirname, '..') + ' pull 2>&1', { timeout: 30000 }); logs.push(o.toString()); } catch (e) { logs.push('Git: ' + e.message); }
-                logs.push('Instalando dependências...');
-                execSync('npm install --prefix ' + path.join(__dirname, '..') + ' 2>&1', { timeout: 60000 });
-                logs.push('npm install concluído');
-                logs.push('Reiniciando app...');
-                execSync('pm2 restart amoranimal 2>&1', { timeout: 10000 });
-                logs.push('App reiniciado');
+            case '1':
+                logs.push('Docker: git pull not supported inside container');
                 break;
-            case '3': // Atualizar código
-                const o = execSync('git -C ' + path.join(__dirname, '..') + ' pull 2>&1', { timeout: 30000 });
-                logs.push(o.toString());
+            case '3':
+                logs.push('Docker: git pull not supported inside container');
                 break;
-            case '4': // Instalar dependências
+            case '4':
                 execSync('npm install --prefix ' + path.join(__dirname, '..') + ' 2>&1', { timeout: 60000 });
                 logs.push('Dependências instaladas');
                 break;
-            case '5': // Reiniciar app
-                execSync('pm2 restart amoranimal 2>&1', { timeout: 10000 });
-                logs.push('App reiniciado via PM2');
+            case '5':
+                logs.push('Docker: reinicie o container: docker compose restart api');
                 break;
             default:
                 logs.push('Opção não implementada: ' + option);
@@ -681,235 +858,18 @@ app.post('/relatorio/maintenance', async (req, res) => {
     }
 });
 
-// ===================== INICIALIZAÇÃO =====================
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 SVREOF
-info "Ajustando porta padrão no server.js..."
-sed -i "s/process\.env\.PORT || 3000/process.env.PORT || $APP_PORT/" "$SRC_DIR/server.js" && info "Porta ajustada para $APP_PORT" || warn "Falha ao ajustar porta no server.js"
 
-# --------------------------------------------------------------
-# Nginx — gera config completa com crebortoli + amoranimal_site + amoranimal api
-# --------------------------------------------------------------
-LOC_MARKER_BEGIN="# LOCATION_BEGIN $PM2_APP_NAME"
-LOC_MARKER_END="# LOCATION_END $PM2_APP_NAME"
-
-info "Configurando Nginx"
-
-# Backup do nginx atual no servidor
-info "Criando backup do nginx atual..."
-cp "$NGINX_CONF" "$NGINX_CONF.bkp" 2>/dev/null && info "Backup criado: $NGINX_CONF.bkp" || warn "Falha ao criar backup"
-
-info "Gerando configuracao nginx..."
-
-cat > "$NGINX_CONF" <<NGINXEOF
-# BEGIN crebortoli
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $APP_DOMAIN;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location /crebortoli/ {
-        add_header Access-Control-Allow-Origin \$http_origin always;
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-
-        if (\$request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin \$http_origin always;
-            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-            return 204;
-        }
-
-        proxy_pass http://127.0.0.1:3001/;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /$PM2_APP_NAME/ {
-        proxy_pass http://127.0.0.1:$APP_PORT/;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-
-server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    http2 on;
-    server_name $APP_DOMAIN;
-
-    ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location /crebortoli/ {
-        add_header Access-Control-Allow-Origin \$http_origin always;
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-
-        if (\$request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin \$http_origin always;
-            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-            add_header Access-Control-Allow-Headers 'Content-Type, Authorization' always;
-            return 204;
-        }
-
-        proxy_pass http://127.0.0.1:3001/;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-$LOC_MARKER_BEGIN
-    location /$PM2_APP_NAME/ {
-        proxy_pass http://127.0.0.1:$APP_PORT/;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-$LOC_MARKER_END
-
-    client_max_body_size 15M;
-}
-
-server {
-    listen 80;
-    listen [::]:80;
-    server_name www.crebortoli.com.br crebortoli.com.br;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-}
-# END crebortoli
-
-# BEGIN amoranimal_site
-server {
-    listen 80;
-    listen [::]:80;
-    server_name 201.54.22.122;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location / {
-        return 301 https://www.amoranimal.ong.br\$request_uri;
-    }
-}
-
-server {
-    listen 80;
-    listen [::]:80;
-    server_name www.amoranimal.ong.br amoranimal.ong.br;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location / {
-        return 301 https://\$host\$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    http2 on;
-    server_name www.amoranimal.ong.br amoranimal.ong.br 201.54.22.122;
-
-    ssl_certificate /etc/letsencrypt/live/amoranimal.ong.br-0001/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/amoranimal.ong.br-0001/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    client_max_body_size 15M;
-}
-# END amoranimal_site
-NGINXEOF
-
-info "Configuracao nginx gerada em $NGINX_CONF"
-
-# --------------------------------------------------------------
-# PostgreSQL — criar usuário e banco
-# --------------------------------------------------------------
-info "Criando banco PostgreSQL ($DB_NAME)..."
-if command -v sudo >/dev/null 2>&1 && sudo -u postgres psql -c "SELECT 1" >/dev/null 2>&1; then
-  info "PostgreSQL acessível via sudo -u postgres"
-  if sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;" 2>&1; then
-    info "Banco $DB_NAME criado"
-  else
-    warn "Banco $DB_NAME já existe ou erro ao criar"
-  fi
-else
-  warn "Não foi possível acessar o PostgreSQL como superusuário (postgres)"
-  warn "Crie manualmente:"
-  warn "  sudo -u postgres createdb $DB_NAME -O $DB_USER"
-fi
-
-# --------------------------------------------------------------
-# Migration — criar todas as tabelas do projeto
-# --------------------------------------------------------------
-info "Executando migration — criando tabelas..."
-MIGRATION_FILE="$INSTALL_DIR/migrations/001_create_tables.sql"
-mkdir -p "$INSTALL_DIR/migrations" && info "Diretório de migrations criado" || warn "Erro ao criar diretório de migrations"
-
-cat > "$MIGRATION_FILE" <<SQLEOF
--- ============================================================
--- Migration 001: Cria todas as tabelas do sistema Amor Animal
--- Execute com: psql -h HOST -p PORT -U USER -d DB -f migrations/001_create_tables.sql
--- ============================================================
-
--- settings: armazenamento chave-valor (config da clínica, etc.)
+  info "Gerando db/init/01-schema.sql..."
+  cat > "$SCRIPT_DIR/db/init/01-schema.sql" <<'SQLEOF'
 CREATE TABLE IF NOT EXISTS settings (
     chave VARCHAR(100) PRIMARY KEY,
     valor TEXT
 );
 
--- animais: pets disponíveis para adoção
 CREATE TABLE IF NOT EXISTS animais (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -923,7 +883,6 @@ CREATE TABLE IF NOT EXISTS animais (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- adocoes: registros de adoção realizadas
 CREATE TABLE IF NOT EXISTS adocoes (
     id SERIAL PRIMARY KEY,
     adotante_nome VARCHAR(255) NOT NULL,
@@ -948,7 +907,6 @@ CREATE TABLE IF NOT EXISTS adocoes (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- castracoes: agendamentos de castração (baixo custo, mutirão, pets de rua)
 CREATE TABLE IF NOT EXISTS castracoes (
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50) NOT NULL,
@@ -982,7 +940,6 @@ CREATE TABLE IF NOT EXISTS castracoes (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- doacoes: registros de doações
 CREATE TABLE IF NOT EXISTS doacoes (
     id SERIAL PRIMARY KEY,
     doador_nome VARCHAR(255),
@@ -993,7 +950,6 @@ CREATE TABLE IF NOT EXISTS doacoes (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- eventos: eventos da ONG
 CREATE TABLE IF NOT EXISTS eventos (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
@@ -1006,7 +962,6 @@ CREATE TABLE IF NOT EXISTS eventos (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- parcerias: empresas parceiras
 CREATE TABLE IF NOT EXISTS parcerias (
     id SERIAL PRIMARY KEY,
     empresa VARCHAR(255) NOT NULL,
@@ -1019,7 +974,6 @@ CREATE TABLE IF NOT EXISTS parcerias (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- procura_se: animais desaparecidos
 CREATE TABLE IF NOT EXISTS procura_se (
     id SERIAL PRIMARY KEY,
     origem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1067,7 +1021,6 @@ CREATE TABLE IF NOT EXISTS coleta (
     mensagem TEXT
 );
 
--- usuarios: usuários do sistema (login, voluntários)
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -1081,7 +1034,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- transparencia: documentos do portal da transparência
 CREATE TABLE IF NOT EXISTS transparencia (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
@@ -1091,94 +1043,174 @@ CREATE TABLE IF NOT EXISTS transparencia (
     arquivo TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
-
--- Insert default settings
-INSERT INTO settings (chave, valor) VALUES ('clinica_baixo', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
-INSERT INTO settings (chave, valor) VALUES ('clinica_pets', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
-
--- Insert admin user (valores fornecidos durante a instalação)
-INSERT INTO usuarios (nome, email, senha, tipo)
-VALUES ('${ADMIN_NOME}', '${ADMIN_EMAIL}', '${ADMIN_PASS}', 'admin')
-ON CONFLICT (email) DO NOTHING;
 SQLEOF
 
-# Executar migration
-info "Executando migration ($MIGRATION_FILE)..."
-if PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$MIGRATION_FILE" 2>&1; then
-  info "Migration executada com sucesso!"
-else
-  warn "Erro ao executar migration — execute manualmente: psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f $MIGRATION_FILE"
-fi
+  info "Gerando db/init/02-seed.sh..."
+  cat > "$SCRIPT_DIR/db/init/02-seed.sh" <<SEEDEOF
+#!/bin/bash
+set -e
 
-# --------------------------------------------------------------
-# Instalar dependências
-# --------------------------------------------------------------
-info "Instalando dependências npm..."
-if npm install --prefix "$INSTALL_DIR" --production 2>&1; then
-  info "Dependências npm instaladas com sucesso"
-else
-  warn "Erro ao instalar dependências — execute manualmente: npm install --prefix $INSTALL_DIR"
-fi
+psql -v ON_ERROR_STOP=1 --username "\$POSTGRES_USER" --dbname "\$POSTGRES_DB" <<-EOSQL
+    INSERT INTO settings (chave, valor) VALUES ('clinica_baixo', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
+    INSERT INTO settings (chave, valor) VALUES ('clinica_pets', 'E O BICHO') ON CONFLICT (chave) DO NOTHING;
 
-# --------------------------------------------------------------
-# PM2
-# --------------------------------------------------------------
-info "Registrando app no PM2 (usuário: $PM2_USER)"
-$PM2_AS_USER pm2 delete "$PM2_APP_NAME" 2>/dev/null || true
-if $PM2_AS_USER pm2 start "$INSTALL_DIR/src/server.js" --name "$PM2_APP_NAME" 2>&1; then
-  $PM2_AS_USER pm2 save --force 2>&1
-  info "PM2: app registrado e salvo"
-else
-  warn "Erro ao iniciar app no PM2 — execute manualmente: pm2 start $INSTALL_DIR/src/server.js --name $PM2_APP_NAME"
-fi
+    INSERT INTO usuarios (nome, email, senha, tipo)
+    VALUES ('${ADMIN_NOME}', '${ADMIN_EMAIL}', '${ADMIN_PASS}', 'admin')
+    ON CONFLICT (email) DO NOTHING;
+EOSQL
+SEEDEOF
+  chmod +x "$SCRIPT_DIR/db/init/02-seed.sh"
 
-# --------------------------------------------------------------
-# Nginx reload
-# --------------------------------------------------------------
-info "Testando e recarregando Nginx"
-if nginx -t 2>&1; then
-  info "Nginx: configuração válida"
-  if systemctl reload nginx.service 2>&1; then
-    info "Nginx recarregado com sucesso!"
-  else
-    warn "Erro ao recarregar nginx — execute manualmente: sudo systemctl reload nginx.service"
+  # ==============================================================
+  info "Criando .env"
+  cat > "$SCRIPT_DIR/.env" <<EOF
+PORT=$APP_PORT
+APP_NAME=$APP_NAME
+DATA_DIR=$DATA_DIR
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=$DB_NAME
+DB_USER=postgres
+DB_PASS=$DB_PASS
+ADMIN_EMAIL=$ADMIN_EMAIL
+ADMIN_NOME=$ADMIN_NOME
+ADMIN_PASS=$ADMIN_PASS
+EOF
+
+  # ==============================================================
+  # Construir e iniciar containers
+  # ==============================================================
+  info "Parando containers existentes (se houver)..."
+  docker compose -f "$SCRIPT_DIR/docker-compose.yml" down 2>/dev/null || true
+
+  info "Construindo e iniciando containers..."
+  if ! docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build; then
+    echo ""
+    error "Falha ao construir/iniciar containers"
+    _diagnostic_api
+    echo ""
+    info "Tente corrigir e executar manualmente:"
+    echo "  sudo docker compose -f $SCRIPT_DIR/docker-compose.yml up -d --build"
+    exit 1
   fi
-else
-  warn "Configuração do nginx inválida — execute manualmente: sudo nginx -t"
-fi
 
-# --------------------------------------------------------------
-# Final
-# --------------------------------------------------------------
-echo ""
-info "===== Instalação concluída! ====="
-echo ""
-echo "  Domínio: $APP_DOMAIN  |  Location: $APP_LOCATION  |  Porta: $APP_PORT"
-echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
-echo "  PM2:     $PM2_APP_NAME ($PM2_USER)"
-echo "  .env:    $INSTALL_DIR/.env"
-echo "  Migração: $MIGRATION_FILE"
-echo ""
+  echo ""
+  info "===== Instalação concluída! ====="
+  echo ""
+  echo "  API:       http://localhost:$APP_PORT"
+  echo "  Health:    http://localhost:$APP_PORT/health"
+  echo "  Admin:     $ADMIN_EMAIL / $ADMIN_PASS"
+  echo ""
 
-info "Testando API..." && sleep 2
-BASE="http://127.0.0.1:$APP_PORT/"
-for endpoint in "health" ""; do
-  resp=$(curl -s "${BASE}${endpoint}" 2>/dev/null) || resp=""
-  case "$endpoint" in
-    health) echo "$resp" | grep -q '"healthy"\|"connected"' && info "Health:    ✓" || warn "Health:    ✗ $resp" ;;
-    "")     echo "$resp" | grep -q '"OK"\|"Running"'      && info "Root:      ✓" || warn "Root:      ✗ $resp" ;;
-  esac
-done
+  # ==============================================================
+  # Testes com curl e diagnóstico automático
+  # ==============================================================
+  RETRY=0
+  MAX_RETRY=3
+  while [ "$RETRY" -lt "$MAX_RETRY" ]; do
+    echo ""
+    info "Testando endpoints (tentativa $((RETRY+1))/$MAX_RETRY)..."
+    [ "$RETRY" -gt 0 ] && sleep 5
 
-login_resp=$(curl -s -X POST "${BASE}auth/login" \
-  -H "Content-Type: application/json" \
-  -d "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" 2>/dev/null) || login_resp=""
-echo "$login_resp" | grep -q '"success":true\|"token"' && info "Login:     ✓ autenticado" || warn "Login:     ✗ $login_resp"
+    BASE="http://127.0.0.1:$APP_PORT/"
+    OK_ALL=true
 
-echo && info "Testes concluídos!"
-echo ""
-echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
-echo "  PM2:     pm2 {status|logs|restart} $PM2_APP_NAME"
-echo "  .env:    $INSTALL_DIR/.env"
-echo "  Migração: $MIGRATION_FILE"
-echo ""
+    _test_endpoint "${BASE}health"   "Health"    GET "" '"healthy"\|"connected"' || OK_ALL=false
+    _test_endpoint "${BASE}"         "Root"      GET "" '"OK"\|"Running"'      || OK_ALL=false
+    _test_endpoint "${BASE}auth/login" "Login"   POST \
+      "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" \
+      '"success":true\|"token"' || OK_ALL=false
+
+    if $OK_ALL; then
+      info "Todos os testes passaram!"
+      break
+    fi
+
+    RETRY=$((RETRY+1))
+    if [ "$RETRY" -ge "$MAX_RETRY" ]; then
+      echo ""
+      warn "Testes falharam após $MAX_RETRY tentativas"
+      _diagnostic_api
+      echo ""
+      info "Deseja recriar os containers e tentar novamente? [s/N]: "
+      read -r RECRIAR
+      case "$RECRIAR" in
+        [Ss])
+          info "Recriando containers..."
+          docker compose -f "$SCRIPT_DIR/docker-compose.yml" down -v 2>/dev/null || true
+          docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d --build || {
+            error "Falha ao recriar containers. Execute manualmente:"
+            echo "  sudo docker compose -f $SCRIPT_DIR/docker-compose.yml up -d --build"
+            exit 1
+          }
+          sleep 5
+          _test_endpoint "${BASE}health"   "Health" GET "" '"healthy"\|"connected"' || warn "Health:    FALHA"
+          _test_endpoint "${BASE}"         "Root"   GET "" '"OK"\|"Running"'      || warn "Root:      FALHA"
+          _test_endpoint "${BASE}auth/login" "Login" POST \
+            "{\"nome\":\"$ADMIN_NOME\",\"senha\":\"$ADMIN_PASS\"}" \
+            '"success":true\|"token"' || warn "Login:     FALHA"
+          ;;
+      esac
+    else
+      warn "Tentando novamente em 5s..."
+    fi
+  done
+
+  echo ""
+  info "Testes concluídos!"
+  echo ""
+  echo "  Admin:   $ADMIN_EMAIL / $ADMIN_PASS"
+  echo ""
+  info "Comandos úteis:"
+  echo "  docker compose logs -f api   (ver logs da API)"
+  echo "  docker compose logs -f db    (ver logs do banco)"
+  echo "  docker compose restart api   (reiniciar API)"
+  echo "  docker compose down          (parar tudo)"
+  echo "  docker compose down -v       (parar e apagar volumes)"
+}
+
+# ==============================================================
+# menu — menu interativo
+# ==============================================================
+menu() {
+  while :; do
+    echo ""
+    info "===== Amor Animal API - Gerenciamento ====="
+    echo "  1. Instalar"
+    echo "  2. Reconfigurar porta"
+    echo "  3. Recriar container"
+    echo "  4. Liberar portas"
+    echo "  5. Ver logs da API"
+    echo "  6. Parar containers"
+    echo "  7. Desinstalar"
+    echo "  0. Sair"
+    echo ""
+    printf "Escolha: "; read -r OPT
+    case "$OPT" in
+      1) install_flow; break ;;
+      2) reconfig ;;
+      3) recreate ;;
+      4) free_ports ;;
+      5) logs_api ;;
+      6) stop_containers ;;
+      7) uninstall ;;
+      0) info "Saindo..."; exit 0 ;;
+      *) warn "Opção inválida" ;;
+    esac
+    echo ""
+    printf "Pressione Enter para voltar ao menu..."; read -r _
+  done
+}
+
+
+case "${1:-}" in
+  install) install_flow ;;
+  uninstall) uninstall ;;
+  reconfig) reconfig ;;
+  recreate) recreate ;;
+  free-ports) free_ports ;;
+  logs) logs_api ;;
+  stop) stop_containers ;;
+  menu|"") menu ;;
+  *) error "Uso: $0 {install|uninstall|reconfig|recreate|free-ports|logs|stop|menu}" ;;
+esac

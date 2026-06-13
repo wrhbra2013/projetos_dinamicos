@@ -46,7 +46,15 @@ function gerarTicket(tipo, seq) {
     return prefixo + String(seq).padStart(3, '0');
 }
 
-async function garantirColunas(tabela, data, pool) {
+async function tabelaExiste(tabela) {
+    const result = await pool.query(
+        `SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1)`,
+        [tabela]
+    );
+    return result.rows[0].exists;
+}
+
+async function garantirColunas(tabela, data) {
     const chaves = Object.keys(data);
     if (chaves.length === 0) return;
     try {
@@ -63,6 +71,22 @@ async function garantirColunas(tabela, data, pool) {
     } catch (err) {
         console.error('Erro ao garantir colunas:', err.message);
     }
+}
+
+async function garantirTabela(tabela, data) {
+    if (await tabelaExiste(tabela)) return;
+    const cols = Object.keys(data)
+        .filter(k => k !== 'id')
+        .map(k => `"${k}" TEXT`)
+        .join(', ');
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS "${tabela}" (
+            id SERIAL PRIMARY KEY,
+            ${cols},
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    `);
+    console.log(`Tabela "${tabela}" criada dinamicamente`);
 }
 
 app.get('/', (req, res) => {
@@ -133,15 +157,9 @@ app.post('/settings', async (req, res) => {
     }
 });
 
-const TABELAS_PERMITIDAS = [
-    'animais', 'adocoes', 'castracoes', 'doacoes',
-    'eventos', 'parcerias', 'procura_se', 'usuarios',
-    'voluntarios', 'coleta'
-];
-
 app.get('/:tabela', async (req, res) => {
     const { tabela } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     try {
@@ -154,12 +172,10 @@ app.get('/:tabela', async (req, res) => {
 
 app.post('/:tabela', async (req, res) => {
     const { tabela } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
-        return res.status(404).json({ error: 'Tabela não encontrada' });
-    }
     const data = req.body;
     try {
-        await garantirColunas(tabela, data, pool);
+        await garantirTabela(tabela, data);
+        await garantirColunas(tabela, data);
 
         if (tabela === 'castracoes' && !data.ticket) {
             const seqResult = await pool.query("SELECT nextval('castracoes_id_seq')");
@@ -181,12 +197,12 @@ app.post('/:tabela', async (req, res) => {
 
 app.put('/:tabela/:id', async (req, res) => {
     const { tabela, id } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     const data = req.body;
     try {
-        await garantirColunas(tabela, data, pool);
+        await garantirColunas(tabela, data);
 
         const keys = Object.keys(data).map((k, i) => `"${k}" = $${i + 1}`).join(', ');
         const result = await pool.query(
@@ -201,7 +217,7 @@ app.put('/:tabela/:id', async (req, res) => {
 
 app.delete('/:tabela/:id', async (req, res) => {
     const { tabela, id } = req.params;
-    if (!TABELAS_PERMITIDAS.includes(tabela)) {
+    if (!(await tabelaExiste(tabela))) {
         return res.status(404).json({ error: 'Tabela não encontrada' });
     }
     try {
