@@ -81,14 +81,14 @@ function renderCastracoes(castracoes) {
       ? '<button class="btn-status-atendido" disabled><i class="bi bi-check-circle-fill"></i> Atendido</button>'
       : '<button class="btn-status-atender" onclick="atenderCastracao(this)" data-id="' + c.id + '"><i class="bi bi-check-lg"></i> Atender</button>';
     tr.innerHTML =
-      '<td><strong>' + esc(ticketNum) + '</strong></td>' +
-      '<td>' + esc(c.pet_nome) + '</td>' +
-      '<td>' + esc(c.tutor_nome) + '</td>' +
-      '<td>' + badgeCor + '</td>' +
-      '<td>' + esc(c.clinica) + '</td>' +
-      '<td>' + fmtDate(c.data_agendamento) + '</td>' +
-      '<td>' + statusHtml + '</td>' +
-      '<td>' +
+      '<td data-label="Ticket"><strong>' + esc(ticketNum) + '</strong></td>' +
+      '<td data-label="Pet">' + esc(c.pet_nome) + '</td>' +
+      '<td data-label="Respons\u00e1vel">' + esc(c.tutor_nome) + '</td>' +
+      '<td data-label="Esp\u00e9cie">' + badgeCor + '</td>' +
+      '<td data-label="Cl\u00ednica">' + esc(c.clinica) + '</td>' +
+      '<td data-label="Data">' + fmtDate(c.data_agendamento) + '</td>' +
+      '<td data-label="Status">' + statusHtml + '</td>' +
+      '<td data-label="A\u00e7\u00f5es">' +
         '<button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> ' +
         '<button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-id="' + c.id + '" title="Excluir"><i class="bi bi-trash"></i> Excluir</button>' +
       '</td>';

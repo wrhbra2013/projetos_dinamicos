@@ -24,30 +24,32 @@
 <div class="container mt-5 mb-5">
   <div class="form-container card p-4 shadow-sm" style="max-width:600px;margin:0 auto;">
     <form id="form-evento">
-      <div class="mb-3">
-        <label for="titulo" class="form-label">Título <span class="text-danger">*</span></label>
-        <input type="text" name="titulo" id="titulo" placeholder="Nome do Evento" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label for="data" class="form-label">Data <span class="text-danger">*</span></label>
-        <input type="date" name="data" id="data" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label for="local" class="form-label">Local</label>
-        <input type="text" name="local" id="local" placeholder="Local do evento" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label for="descricao" class="form-label">Descrição</label>
-        <textarea name="descricao" id="descricao" rows="4" placeholder="Descreva o evento..." class="form-control"></textarea>
-      </div>
-      <div class="mb-3">
-        <label for="foto" class="form-label">Foto do Evento</label>
-        <input type="file" id="foto" accept="image/*" class="form-control">
-        <div id="preview-foto" style="margin-top:8px;display:none;">
-          <img id="preview-img" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid var(--border-color);">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="titulo">Título <span class="text-danger">*</span></label>
+          <input type="text" name="titulo" id="titulo" placeholder="Nome do Evento" required>
+        </div>
+        <div class="form-group">
+          <label for="data">Data <span class="text-danger">*</span></label>
+          <input type="date" name="data" id="data" required>
+        </div>
+        <div class="form-group">
+          <label for="local">Local</label>
+          <input type="text" name="local" id="local" placeholder="Local do evento">
+        </div>
+        <div class="form-group">
+          <label for="descricao">Descrição</label>
+          <textarea name="descricao" id="descricao" rows="4" placeholder="Descreva o evento..."></textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label for="foto">Foto do Evento</label>
+          <input type="file" id="foto" accept="image/*">
+          <div id="preview-foto" style="margin-top:8px;display:none;">
+            <img id="preview-img" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid var(--border-color);">
+          </div>
         </div>
       </div>
-      <div class="mt-4 d-flex gap-2">
+      <div class="mt-4 d-flex gap-2" style="display:flex;gap:1rem;justify-content:flex-end;">
         <a href="../index.html" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Criar Evento</button>
       </div>

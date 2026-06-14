@@ -30,7 +30,7 @@
 
   <div class="card shadow-sm">
     <div class="table-responsive">
-      <table class="procura-se-table table table-striped table-hover align-middle caption-top">
+      <table class="procura-se-table table table-striped table-hover align-middle caption-top table-card-mobile">
         <caption>Lista detalhada de pets desaparecidos.</caption>
         <thead class="table-light">
           <tr>
@@ -82,14 +82,14 @@ function carregarProcuraSe() {
           : '<div style="width:80px;height:80px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:1.5rem"><i class="bi bi-question-circle"></i></div>';
         html +=
           '<tr>' +
-          '  <td>' + dataStr + '</td>' +
-          '  <td>' + fotoHtml + '</td>' +
-          '  <td style="font-weight:600">' + escapeHtml(p.nome || '-') + '</td>' +
-          '  <td>' + escapeHtml(p.idade || '-') + '</td>' +
-          '  <td>' + escapeHtml(p.especie || '-') + '</td>' +
-          '  <td>' + escapeHtml(p.porte || '-') + '</td>' +
-          '  <td>' + escapeHtml(p.informacoes || p.cor || '-') + '</td>' +
-          '  <td style="text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteProcuraSe(' + p.id + ',\'' + escapeForAttr(p.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
+          '  <td data-label="Data">' + dataStr + '</td>' +
+          '  <td data-label="Foto">' + fotoHtml + '</td>' +
+          '  <td data-label="Nome Pet" style="font-weight:600">' + escapeHtml(p.nome || '-') + '</td>' +
+          '  <td data-label="Idade">' + escapeHtml(p.idade || '-') + '</td>' +
+          '  <td data-label="Esp\u00e9cie">' + escapeHtml(p.especie || '-') + '</td>' +
+          '  <td data-label="Porte">' + escapeHtml(p.porte || '-') + '</td>' +
+          '  <td data-label="Caracter\u00edsticas">' + escapeHtml(p.informacoes || p.cor || '-') + '</td>' +
+          '  <td data-label="" style="text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteProcuraSe(' + p.id + ',\'' + escapeForAttr(p.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
           '</tr>';
       }
       tbody.innerHTML = html;

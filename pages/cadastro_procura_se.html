@@ -8,11 +8,7 @@
   <link rel="stylesheet" href="../static/css/icons/bootstrap-icons.min.css">
   <link rel="icon" type="image/png" href="../static/css/favicon/ong.ico">
   <style>
-    .form-container { max-width:600px; margin:0 auto; }
-    .form-container label { display:block; margin-bottom:4px; font-size:0.85rem; font-weight:600; }
-    .form-container input, .form-container textarea, .form-container select { width:100%; padding:10px; border:1px solid var(--input-border); border-radius:6px; font-size:1rem; box-sizing:border-box; }
-    .form-container .field { margin-bottom:1.25rem; }
-    .form-row { display:block; }
+    .form-container { max-width:700px; margin:0 auto; }
   </style>
 </head>
 <body>
@@ -44,35 +40,33 @@
 
       <form id="form-procura" onsubmit="return cadastrarProcuraSe(event)">
         <div class="form-container">
-          <h5 style="border-bottom:1px solid var(--border-color);padding-bottom:0.5rem;">Dados do Tutor</h5>
-          <div class="form-row">
-            <div class="field">
+          <h5 class="mb-3" style="border-bottom:1px solid var(--border-color);padding-bottom:0.5rem;">Dados do Tutor</h5>
+          <div class="form-grid">
+            <div class="form-group">
               <label>Nome do Tutor *</label>
               <input type="text" id="tutor_nome" placeholder="Seu nome completo" required>
             </div>
-            <div class="field">
+            <div class="form-group">
               <label>Telefone / Contato *</label>
               <input type="tel" id="tutor_contato" class="phone-input" placeholder="(00) 00000-0000" required>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
+            <div class="form-group">
               <label>WhatsApp</label>
               <input type="tel" id="tutor_whatsapp" class="phone-input" placeholder="(00) 00000-0000">
             </div>
-            <div class="field">
+            <div class="form-group">
               <label>Data do Desaparecimento</label>
               <input type="date" id="data_desaparecimento">
             </div>
           </div>
 
-          <h5 style="border-bottom:1px solid var(--border-color);padding-bottom:0.5rem;margin-top:1.5rem;">Dados do Pet</h5>
-          <div class="form-row">
-            <div class="field">
+          <h5 class="mt-4 mb-3" style="border-bottom:1px solid var(--border-color);padding-bottom:0.5rem;">Dados do Pet</h5>
+          <div class="form-grid">
+            <div class="form-group">
               <label>Nome do Pet *</label>
               <input type="text" id="pet_nome" placeholder="Nome do animal" required>
             </div>
-            <div class="field">
+            <div class="form-group">
               <label>Espécie *</label>
               <select id="pet_especie" required>
                 <option value="">Selecione</option>
@@ -81,13 +75,11 @@
                 <option value="Outro">Outro</option>
               </select>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
+            <div class="form-group">
               <label>Idade</label>
               <input type="text" id="pet_idade" placeholder="Ex: 2 anos">
             </div>
-            <div class="field">
+            <div class="form-group">
               <label>Porte</label>
               <select id="pet_porte">
                 <option value="">Selecione</option>
@@ -96,21 +88,21 @@
                 <option value="Grande">Grande</option>
               </select>
             </div>
-          </div>
-          <div class="field">
-            <label>Características</label>
-            <textarea id="pet_caracteristicas" rows="3" placeholder="Cor da pelagem, marcas distintas, coleira, etc."></textarea>
-          </div>
-          <div class="field">
-            <label>Local do Desaparecimento *</label>
-            <input type="text" id="local_desaparecimento" placeholder="Bairro, cidade, ponto de referência" required>
-          </div>
-          <div class="field">
-            <label>Foto do Pet</label>
-            <input type="file" id="pet_foto" accept="image/*">
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>Características</label>
+              <textarea id="pet_caracteristicas" rows="3" placeholder="Cor da pelagem, marcas distintas, coleira, etc."></textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>Local do Desaparecimento *</label>
+              <input type="text" id="local_desaparecimento" placeholder="Bairro, cidade, ponto de referência" required>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>Foto do Pet</label>
+              <input type="file" id="pet_foto" accept="image/*">
+            </div>
           </div>
 
-          <div style="border-top:1px solid var(--border-color);padding-top:1rem;">
+          <div class="form-actions" style="display:flex;gap:1rem;justify-content:space-between;border-top:1px solid var(--border-color);padding-top:1rem;">
             <a href="procura_se.html" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary" id="btn-submit">
               <i class="bi bi-megaphone me-2"></i>Publicar Anúncio

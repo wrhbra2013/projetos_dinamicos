@@ -75,114 +75,108 @@
           <input type="hidden" id="f_local" value="">
 
           <h4>Dados do Responsável</h4>
-          <div style="margin-bottom:1rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Nome do Responsável *</label>
-              <input type="text" id="f_tutor_nome" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" required>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_tutor_nome">Nome do Responsável *</label>
+              <input type="text" id="f_tutor_nome" required>
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">CPF *</label>
-              <input type="text" id="f_cpf" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="000.000.000-00" required>
+            <div class="form-group">
+              <label for="f_cpf">CPF *</label>
+              <input type="text" id="f_cpf" placeholder="000.000.000-00" required>
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Contato *</label>
-              <input type="tel" id="f_contato" class="phone-input" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="(00) 00000-0000" required>
+            <div class="form-group">
+              <label for="f_contato">Contato *</label>
+              <input type="tel" id="f_contato" class="phone-input" placeholder="(00) 00000-0000" required>
             </div>
           </div>
 
           <h4>Endereço</h4>
-          <div style="margin-bottom:1rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">CEP *</label>
-              <div>
-                <input type="text" id="f_cep" style="padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="00000-000" required>
-                <button type="button" onclick="buscarCep()" class="btn btn-primary btn-sm"><i class="bi bi-search"></i></button>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_cep">CEP *</label>
+              <div style="display:flex;gap:0.5rem;">
+                <input type="text" id="f_cep" placeholder="00000-000" required style="flex:1;">
+                <button type="button" onclick="buscarCep()" class="btn btn-primary btn-sm" style="white-space:nowrap;"><i class="bi bi-search"></i></button>
               </div>
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Endereço</label>
-              <input type="text" id="f_endereco" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Rua/Logradouro">
+            <div class="form-group">
+              <label for="f_endereco">Endereço</label>
+              <input type="text" id="f_endereco" placeholder="Rua/Logradouro">
             </div>
-          </div>
-          <div style="margin-bottom:1rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Número</label>
-              <input type="text" id="f_numero" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Nº">
+            <div class="form-group">
+              <label for="f_numero">Número</label>
+              <input type="text" id="f_numero" placeholder="Nº">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Complemento</label>
-              <input type="text" id="f_complemento" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Apto/Bloco">
+            <div class="form-group">
+              <label for="f_complemento">Complemento</label>
+              <input type="text" id="f_complemento" placeholder="Apto/Bloco">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Bairro</label>
-              <input type="text" id="f_bairro" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Bairro">
+            <div class="form-group">
+              <label for="f_bairro">Bairro</label>
+              <input type="text" id="f_bairro" placeholder="Bairro">
             </div>
-          </div>
-          <div style="margin-bottom:1.5rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Cidade</label>
-              <input type="text" id="f_cidade" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Cidade">
+            <div class="form-group">
+              <label for="f_cidade">Cidade</label>
+              <input type="text" id="f_cidade" placeholder="Cidade">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Estado</label>
-              <input type="text" id="f_estado" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="UF" maxlength="2">
+            <div class="form-group">
+              <label for="f_estado">Estado</label>
+              <input type="text" id="f_estado" placeholder="UF" maxlength="2">
             </div>
           </div>
 
-          <hr style="margin:1.5rem 0;">
+          <hr class="my-4">
 
           <h4>Adicionar Pet</h4>
-          <div style="margin-bottom:1rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Nome do Pet *</label>
-              <input type="text" id="f_pet_nome" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f_pet_nome">Nome do Pet *</label>
+              <input type="text" id="f_pet_nome">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Espécie *</label>
-              <select id="f_pet_especie" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;">
+            <div class="form-group">
+              <label for="f_pet_especie">Espécie *</label>
+              <select id="f_pet_especie">
                 <option value="">Selecione</option>
                 <option value="Gato">Gato</option>
                 <option value="Cachorro">Cachorro</option>
               </select>
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Sexo *</label>
-              <select id="f_pet_sexo" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;">
+            <div class="form-group">
+              <label for="f_pet_sexo">Sexo *</label>
+              <select id="f_pet_sexo">
                 <option value="">Selecione</option>
                 <option value="Macho">Macho</option>
                 <option value="Fêmea">Fêmea</option>
               </select>
             </div>
-          </div>
-          <div style="margin-bottom:1rem;">
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Idade</label>
-              <input type="text" id="f_pet_idade" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Ex: 2 anos">
+            <div class="form-group">
+              <label for="f_pet_idade">Idade</label>
+              <input type="text" id="f_pet_idade" placeholder="Ex: 2 anos">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Peso</label>
-              <input type="text" id="f_pet_peso" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Ex: 4kg">
+            <div class="form-group">
+              <label for="f_pet_peso">Peso</label>
+              <input type="text" id="f_pet_peso" placeholder="Ex: 4kg">
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Vacinado?</label>
-              <select id="f_pet_vacinado" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;">
+            <div class="form-group">
+              <label for="f_pet_vacinado">Vacinado?</label>
+              <select id="f_pet_vacinado">
                 <option value="false">Não</option>
                 <option value="true">Sim</option>
               </select>
             </div>
-            <div>
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Usa medicamento?</label>
-              <select id="f_pet_medicamento_tem" onchange="toggleMedicamento()" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;">
+            <div class="form-group">
+              <label for="f_pet_medicamento_tem">Usa medicamento?</label>
+              <select id="f_pet_medicamento_tem" onchange="toggleMedicamento()">
                 <option value="nao">Não</option>
                 <option value="sim">Sim</option>
               </select>
             </div>
-            <div id="f_pet_medicamento_div" style="display:none;">
-              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Qual medicamento?</label>
-              <input type="text" id="f_pet_medicamento" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Descreva">
+            <div class="form-group" id="f_pet_medicamento_div" style="display:none;">
+              <label for="f_pet_medicamento">Qual medicamento?</label>
+              <input type="text" id="f_pet_medicamento" placeholder="Descreva">
             </div>
           </div>
-          <div style="margin-bottom:1.5rem;">
+          <div class="my-3" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
             <button type="button" id="f_btn_add_pet" class="btn-add-pet">
               <i class="bi bi-plus-circle"></i> Adicionar Pet
             </button>
@@ -199,7 +193,7 @@
             </div>
           </div>
 
-          <div style="border-top:1px solid var(--border-color);padding-top:1rem;">
+          <div class="form-actions" style="display:flex;gap:1rem;justify-content:space-between;align-items:center;border-top:1px solid var(--border-color);padding-top:1rem;">
             <a href="castracao_mutirao.html" class="btn-back-link">Cancelar</a>
             <button type="submit" id="f_btn_submit" disabled class="btn-submit-pet">
               <i class="bi bi-paw"></i> Adicione um pet primeiro
@@ -443,7 +437,7 @@ function atualizarTabela() {
   btn.className = 'btn-submit-pet'; btn.disabled = false;
   btn.innerHTML = '<i class="bi bi-check-lg"></i> Realizar Inscrição (' + pets.length + ' pet(s))';
 
-  var html = '<table style="width:100%;border-collapse:collapse;"><thead style="background:var(--bg-alt);position:sticky;top:0;"><tr>';
+  var html = '<table class="table-card-mobile" style="width:100%;border-collapse:collapse;"><thead style="background:var(--bg-alt);position:sticky;top:0;"><tr>';
   html += '<th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-color);">#</th>';
   html += '<th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-color);">Nome</th>';
   html += '<th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-color);">Espécie</th>';
@@ -455,14 +449,14 @@ function atualizarTabela() {
 
   pets.forEach(function(pet, i) {
     html += '<tr>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (i + 1) + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);font-weight:700;">' + pet.nome + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + pet.especie + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + pet.sexo + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.idade || '-') + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.peso || '-') + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.vacinado ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>') + '</td>';
-    html += '<td style="padding:8px;border-bottom:1px solid var(--border-color);text-align:center;"><button type="button" onclick="removerPet(' + i + ')" class="btn-delete-sm"><i class="bi bi-trash"></i></button></td>';
+    html += '<td data-label="# " style="padding:8px;border-bottom:1px solid var(--border-color);">' + (i + 1) + '</td>';
+    html += '<td data-label="Nome " style="padding:8px;border-bottom:1px solid var(--border-color);font-weight:700;">' + pet.nome + '</td>';
+    html += '<td data-label="Espécie " style="padding:8px;border-bottom:1px solid var(--border-color);">' + pet.especie + '</td>';
+    html += '<td data-label="Sexo " style="padding:8px;border-bottom:1px solid var(--border-color);">' + pet.sexo + '</td>';
+    html += '<td data-label="Idade " style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.idade || '-') + '</td>';
+    html += '<td data-label="Peso " style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.peso || '-') + '</td>';
+    html += '<td data-label="Vacinado " style="padding:8px;border-bottom:1px solid var(--border-color);">' + (pet.vacinado ? '<span class="badge badge-success">Sim</span>' : '<span class="badge badge-danger">Não</span>') + '</td>';
+    html += '<td data-label="" style="padding:8px;border-bottom:1px solid var(--border-color);text-align:center;"><button type="button" onclick="removerPet(' + i + ')" class="btn-delete-sm"><i class="bi bi-trash"></i></button></td>';
     html += '</tr>';
   });
 

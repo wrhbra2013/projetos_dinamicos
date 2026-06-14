@@ -35,51 +35,53 @@
       <p>Quer adotar um pet? Preencha o formul&aacute;rio abaixo.</p>
     </div>
 
-    <div style="max-width:500px;margin:0 auto;padding:1.5rem;border:1px solid var(--border-color);border-radius:8px;background:var(--container-bg);">
+    <div class="card-shadow" style="max-width:600px;margin:0 auto;padding:1.5rem;border:1px solid var(--border-color);border-radius:8px;background:var(--container-bg);">
       <form id="form-adocao-cadastro">
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Foto do Pet *</label>
-          <div>
-            <input type="file" id="foto-pet" accept="image/*" capture="environment" style="padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
-            <button type="button" onclick="document.getElementById('foto-pet').click()" class="btn btn-primary btn-sm">
-              <i class="bi bi-camera"></i> C&acirc;mera
-            </button>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Foto do Pet *</label>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <input type="file" id="foto-pet" accept="image/*" capture="environment" style="flex:1;min-width:150px;padding:6px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
+              <button type="button" onclick="document.getElementById('foto-pet').click()" class="btn btn-primary btn-sm">
+                <i class="bi bi-camera"></i> Câmera
+              </button>
+            </div>
+            <div id="preview-foto" style="margin-top:8px;display:none;">
+              <img id="preview-img" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid var(--border-color);">
+            </div>
           </div>
-          <div id="preview-foto" style="margin-top:8px;display:none;">
-            <img id="preview-img" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid var(--border-color);">
+          <div class="form-group">
+            <label for="nome-pet">Nome do Pet *</label>
+            <input type="text" id="nome-pet" required>
+          </div>
+          <div class="form-group">
+            <label for="idade-pet">Idade do Pet</label>
+            <input type="text" id="idade-pet" placeholder="Ex: 2 anos, 6 meses">
+          </div>
+          <div class="form-group">
+            <label for="especie-pet">Espécie</label>
+            <select id="especie-pet">
+              <option value="">Selecione...</option>
+              <option value="Cachorro">Cachorro</option>
+              <option value="Gato">Gato</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="porte-pet">Porte</label>
+            <select id="porte-pet">
+              <option value="">Selecione...</option>
+              <option value="Pequeno">Pequeno</option>
+              <option value="Médio">Médio</option>
+              <option value="Grande">Grande</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label for="caracteristicas-pet">Características</label>
+            <textarea id="caracteristicas-pet" rows="3" placeholder="Ex: Amigável, brincalhão, bom com crianças..."></textarea>
           </div>
         </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Nome do Pet *</label>
-          <input type="text" id="nome-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" required>
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Idade do Pet</label>
-          <input type="text" id="idade-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Ex: 2 anos, 6 meses">
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Espécie</label>
-          <select id="especie-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
-            <option value="">Selecione...</option>
-            <option value="Cachorro">Cachorro</option>
-            <option value="Gato">Gato</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Porte</label>
-          <select id="porte-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;">
-            <option value="">Selecione...</option>
-            <option value="Pequeno">Pequeno</option>
-            <option value="Médio">Médio</option>
-            <option value="Grande">Grande</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;margin-bottom:4px;font-size:0.85rem;font-weight:600;">Características</label>
-          <textarea id="caracteristicas-pet" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;font-size:0.85rem;resize:vertical;" rows="3" placeholder="Ex: Amigável, brincalhão, bom com crianças..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">
           <i class="bi bi-send me-2"></i>Enviar
         </button>
       </form>

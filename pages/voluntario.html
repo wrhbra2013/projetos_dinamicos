@@ -210,7 +210,7 @@
       </div>
 
       <div class="table-responsive shadow-sm rounded" style="background:var(--container-bg);border-radius:12px;overflow:hidden;">
-        <table class="table table-hover align-middle mb-0" style="width:100%">
+        <table class="table table-hover align-middle mb-0 table-card-mobile" style="width:100%">
           <thead style="background:var(--nav-gradient);color:var(--nav-text);">
             <tr>
               <th style="padding:12px 16px">Data</th>
@@ -343,14 +343,14 @@ function carregarInteressados() {
         var v = data[i];
         html +=
           '<tr>' +
-          '  <td style="padding:10px 16px">' + (v.origem ? formatDate(v.origem) : '-') + '</td>' +
-          '  <td style="padding:10px 16px;font-weight:600">' + escapeHtml(v.nome || '') + '</td>' +
-          '  <td style="padding:10px 16px">' + (v.telefone ? '<a href="https://api.whatsapp.com/send?phone=55' + v.telefone.replace(/\D/g, '') + '" target="_blank" style="color:var(--brand-teal);text-decoration:none"><i class="bi bi-whatsapp"></i> ' + escapeHtml(v.telefone) + '</a>' : '-') + '</td>' +
-          '  <td style="padding:10px 16px">' + escapeHtml(v.localidade || '-') + '</td>' +
-          '  <td style="padding:10px 16px">' + escapeHtml(v.habilidade || '-') + '</td>' +
-          '  <td style="padding:10px 16px">' + escapeHtml(v.disponibilidade || '-') + '</td>' +
-          '  <td style="padding:10px 16px"><small>' + escapeHtml(v.mensagem || '-') + '</small></td>' +
-          '  <td style="padding:10px 16px;text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteInteressado(' + v.id + ',\'' + escapeForAttr(v.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
+          '  <td data-label="Data" style="padding:10px 16px">' + (v.origem ? formatDate(v.origem) : '-') + '</td>' +
+          '  <td data-label="Nome" style="padding:10px 16px;font-weight:600">' + escapeHtml(v.nome || '') + '</td>' +
+          '  <td data-label="Contato" style="padding:10px 16px">' + (v.telefone ? '<a href="https://api.whatsapp.com/send?phone=55' + v.telefone.replace(/\D/g, '') + '" target="_blank" style="color:var(--brand-teal);text-decoration:none"><i class="bi bi-whatsapp"></i> ' + escapeHtml(v.telefone) + '</a>' : '-') + '</td>' +
+          '  <td data-label="Localidade" style="padding:10px 16px">' + escapeHtml(v.localidade || '-') + '</td>' +
+          '  <td data-label="Habilidade" style="padding:10px 16px">' + escapeHtml(v.habilidade || '-') + '</td>' +
+          '  <td data-label="Disponibilidade" style="padding:10px 16px">' + escapeHtml(v.disponibilidade || '-') + '</td>' +
+          '  <td data-label="Mensagem" style="padding:10px 16px"><small>' + escapeHtml(v.mensagem || '-') + '</small></td>' +
+          '  <td data-label="" style="padding:10px 16px;text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteInteressado(' + v.id + ',\'' + escapeForAttr(v.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
           '</tr>';
       }
       tbody.innerHTML = html;

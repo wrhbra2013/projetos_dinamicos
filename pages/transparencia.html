@@ -81,25 +81,32 @@
       <div id="upload-msg" class="msg"></div>
 
       <form id="form-upload" onsubmit="return enviarDocumento(event)">
-        <label for="up-titulo">Título do Documento *</label>
-        <input type="text" id="up-titulo" required>
-
-        <label for="up-tipo">Categoria *</label>
-        <select id="up-tipo" required>
-          <option value="">Selecione...</option>
-        </select>
-
-        <label for="up-ano">Ano de Referência *</label>
-        <input type="number" id="up-ano" required min="2000" max="2027">
-
-        <label for="up-arquivo">Arquivo (PDF ou Imagem) *</label>
-        <input type="file" id="up-arquivo" accept=".pdf,.jpg,.jpeg,.png" required>
-        <small style="color:var(--muted-color);display:block;margin-top:-0.5rem;margin-bottom:1rem;font-size:0.8rem;">Formatos aceitos: PDF, JPG, PNG.</small>
-
-        <label for="up-descricao">Descrição (Opcional)</label>
-        <textarea id="up-descricao" rows="3"></textarea>
-
-        <div class="form-actions">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="up-titulo">Título do Documento *</label>
+            <input type="text" id="up-titulo" required>
+          </div>
+          <div class="form-group">
+            <label for="up-tipo">Categoria *</label>
+            <select id="up-tipo" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="up-ano">Ano de Referência *</label>
+            <input type="number" id="up-ano" required min="2000" max="2027">
+          </div>
+          <div class="form-group">
+            <label for="up-arquivo">Arquivo (PDF ou Imagem) *</label>
+            <input type="file" id="up-arquivo" accept=".pdf,.jpg,.jpeg,.png" required>
+            <small style="color:var(--muted-color);display:block;margin-top:0.25rem;font-size:0.8rem;">Formatos aceitos: PDF, JPG, PNG.</small>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label for="up-descricao">Descrição (Opcional)</label>
+            <textarea id="up-descricao" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-actions" style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
           <a onclick="voltarDashboard()" class="btn btn-secondary">Cancelar</a>
           <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Publicar</button>
         </div>

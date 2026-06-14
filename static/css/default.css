@@ -1830,12 +1830,15 @@ ul.list-checked li::before {
 .mt-3 { margin-top: 15px; }
 .mt-4 { margin-top: 20px; }
 .mt-5 { margin-top: 25px; }
+.mt-5 { margin-top: 25px; }
 .mb-0 { margin-bottom: 0; }
 .mb-1 { margin-bottom: 5px; }
 .mb-2 { margin-bottom: 10px; }
 .mb-3 { margin-bottom: 15px; }
 .mb-4 { margin-bottom: 20px; }
 .mb-5 { margin-bottom: 25px; }
+.my-3 { margin-top: 15px; margin-bottom: 15px; }
+.my-4 { margin-top: 20px; margin-bottom: 20px; }
 .me-1 { margin-right: 5px; }
 .me-2 { margin-right: 10px; }
 .ms-1 { margin-left: 5px; }
@@ -2465,5 +2468,131 @@ body.high-contrast .news-carousel-dots .dot.active {
   outline: none;
   border-color: var(--brand-teal);
   box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
+}
+
+/* ==========================================================================
+   11. Responsive Form Grid
+   ========================================================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-group label,
+.form-group .form-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--brand-teal);
+  box-shadow: 0 0 0 0.15rem rgba(13, 148, 136, 0.2);
+}
+
+@media (max-width: 600px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   12. Responsive Tables – Card layout on mobile
+   ========================================================================== */
+
+.table-card-mobile thead {
+  display: table-header-group;
+}
+
+.table-card-mobile tbody tr {
+  display: table-row;
+}
+
+@media (max-width: 768px) {
+  .table-card-mobile thead {
+    display: none;
+  }
+
+  .table-card-mobile tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.75rem;
+    background: var(--container-bg);
+  }
+
+  .table-card-mobile tbody td {
+    display: block;
+    text-align: right;
+    padding: 0.4rem 0;
+    border: none;
+    white-space: normal;
+    font-size: 0.85rem;
+  }
+
+  .table-card-mobile tbody td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    color: var(--muted-color);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .table-card-mobile tbody td:last-child {
+    border-bottom: none;
+  }
+
+  .table-card-mobile tbody tr:hover {
+    transform: none;
+    box-shadow: 0 2px 8px var(--container-shadow);
+  }
+}
+
+/* ==========================================================================
+   13. Responsive helpers
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
 }
 
