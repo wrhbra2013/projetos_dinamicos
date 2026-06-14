@@ -50,7 +50,7 @@ function renderCastracoes(castracoes) {
     return;
   }
   castracoes.forEach(function (c) {
-    var ticketNum = (c.ticket || '').replace(/^[A-Za-z]/, '');
+    var ticketNum = c.ticket || '';
     var isAtendido = c.status === 'Atendido' || c.status === 'atendido';
     var tr = document.createElement('tr');
     if (isAtendido) { tr.className = 'status-atendido'; tr.style.display = 'none'; }
@@ -81,7 +81,7 @@ function renderCastracoes(castracoes) {
       ? '<span class="badge" style="background:#8b5cf6;color:#fff;">Gato</span>'
       : '<span class="badge badge-info">' + esc(c.pet_especie) + '</span>';
     tr.innerHTML =
-      '<td><strong>#' + esc(ticketNum) + '</strong></td>' +
+      '<td><strong>' + esc(ticketNum) + '</strong></td>' +
       '<td>' + esc(c.pet_nome) + '</td>' +
       '<td>' + esc(c.tutor_nome) + '</td>' +
       '<td>' + badgeCor + '</td>' +
@@ -90,6 +90,7 @@ function renderCastracoes(castracoes) {
       '<td><span class="badge ' + statusClass + '">' + statusIcon + ' ' + esc(c.status) + '</span></td>' +
       '<td>' +
         '<button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> ' +
+        '<button class="btn-atender-castracao admin-only" onclick="atenderCastracao(this)" data-id="' + c.id + '" title="Atender"><i class="bi bi-check-lg"></i> OK</button> ' +
         '<button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-id="' + c.id + '" title="Excluir"><i class="bi bi-trash"></i> Excluir</button>' +
       '</td>';
     tbody.appendChild(tr);
