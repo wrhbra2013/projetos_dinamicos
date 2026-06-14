@@ -220,7 +220,7 @@
               <th style="padding:12px 16px">Habilidade</th>
               <th style="padding:12px 16px">Disponibilidade</th>
               <th style="padding:12px 16px">Mensagem</th>
-              <th style="padding:12px 16px;text-align:center">Ações</th>
+              <th id="interessados-acoes-th" style="padding:12px 16px;text-align:center">Ações</th>
             </tr>
           </thead>
           <tbody id="interessados-tbody"></tbody>
@@ -332,8 +332,10 @@ function carregarVoluntarios() {
 
 function carregarInteressados() {
   var tbody = document.getElementById('interessados-tbody');
+  var thAcoes = document.getElementById('interessados-acoes-th');
   var count = document.getElementById('interessados-count');
   var isAdmin = !!localStorage.getItem('amoranimal_token');
+  thAcoes.style.display = isAdmin ? '' : 'none';
   var colspan = isAdmin ? 8 : 7;
   tbody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align:center;padding:40px;color:var(--muted-color)"><i class="bi bi-hourglass-split" style="font-size:2em"></i><p>Carregando...</p></td></tr>';
   fetch(API_BASE + '/voluntarios')
