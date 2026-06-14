@@ -1,3 +1,0 @@
-Os dados estão nas tabelas no singular (adocao, castracao) mas a API consulta no plural. Primeiro, no servidor Debian:
-sudo bash install_amoranimal.sh migrate
-Isso vai renomear adocao → adocoes, castracao → castracoes etc.
