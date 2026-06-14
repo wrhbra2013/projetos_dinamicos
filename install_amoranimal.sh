@@ -680,14 +680,15 @@ app.get('/health', async (req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
-    const { usuario, senha } = req.body;
-    if (!usuario || !senha) {
+    const { usuario, email, nome, senha } = req.body;
+    const loginId = usuario || email || nome;
+    if (!loginId || !senha) {
         return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
     try {
         const result = await pool.query(
             'SELECT id, usuario, isadmin FROM login WHERE usuario = $1 AND senha = $2',
-            [usuario, senha]
+            [loginId, senha]
         );
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Usuário ou senha inválidos' });

@@ -129,7 +129,7 @@ class LoginFormHandler {
       fetch(window.API_BASE + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: valor, email: valor, senha })
+        body: JSON.stringify({ usuario: valor, senha })
       })
       .then(function(r) {
         if (!r.ok) {
