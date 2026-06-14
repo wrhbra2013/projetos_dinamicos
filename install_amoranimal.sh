@@ -80,8 +80,8 @@ _test_endpoint() {
 # ==============================================================
 migrate_schema() {
   [ -f "$SCRIPT_DIR/.env" ] && . "$SCRIPT_DIR/.env" || true
-  local DB_CONTAINER="${APP_NAME}-db"
-  local DB_NAME="${APP_NAME}_db"
+  local DB_CONTAINER="${APP_NAME:-amoranimal}-db"
+  local DB_NAME="${DB_NAME:-${APP_NAME:-amoranimal}_db}"
   local DB_USER="postgres"
 
   info "Verificando schema do banco de dados..."
@@ -456,7 +456,7 @@ install_flow() {
   APP_NAME=$(printf '%s' "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9_' '_')
 
   # Derivar configurações do nome do app
-  DB_NAME=$APP_NAME
+  DB_NAME="${APP_NAME}_db"
   DB_PASS=postgres
   DATA_DIR="/var/www/${APP_NAME}"
 
