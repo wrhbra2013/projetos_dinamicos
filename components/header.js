@@ -31,6 +31,7 @@
     '    <span id="admin-access-area">' +
     '      <a href="' + ROOT + '/login/index.html" id="admin-login-link" style="color:var(--brand-teal);text-decoration:none;font-weight:600"><i class="bi bi-lock"></i> Acesso</a>' +
       '      <span id="admin-logged-in" style="display:none">' +
+      '        <span id="admin-label" style="color:var(--brand-teal);font-weight:700;font-size:0.8rem;margin-right:8px;">ADMINISTRADOR</span>' +
       '        <a href="#" id="admin-logout-link" style="color:var(--brand-coral);text-decoration:none;font-weight:600" onclick="event.preventDefault();adminLogout()"><i class="bi bi-box-arrow-right"></i> Sair</a>' +
       '      </span>' +
     '    </span>' +
@@ -272,6 +273,13 @@
 
   function initAdminUI() {
     var token = localStorage.getItem('amoranimal_token');
+    var expiry = parseInt(localStorage.getItem('amoranimal_session_expiry') || '0', 10);
+    if (token && Date.now() > expiry) {
+      localStorage.removeItem('amoranimal_token');
+      localStorage.removeItem('amoranimal_usuario');
+      localStorage.removeItem('amoranimal_session_expiry');
+      token = null;
+    }
     var loginLink = document.getElementById('admin-login-link');
     var loggedIn = document.getElementById('admin-logged-in');
     if (loginLink && loggedIn) {
@@ -284,6 +292,7 @@
   window.adminLogout = function() {
     localStorage.removeItem('amoranimal_token');
     localStorage.removeItem('amoranimal_usuario');
+    localStorage.removeItem('amoranimal_session_expiry');
     window.location.href = window.location.origin + '/index.html';
   };
 
