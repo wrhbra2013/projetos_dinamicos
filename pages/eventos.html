@@ -16,59 +16,43 @@
 <main class="main-content">
   <div class="container py-5">
     <h2>Eventos</h2>
-
-    <div class="row">
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <img src="../static/css/imagem/ong3.png" class="card-img-top" alt="Feira de Adoção">
-          <div class="card-body">
-            <h5 class="card-title">Feira de Adoção</h5>
-            <p class="card-subtitle text-muted">15 de Junho de 2026</p>
-            <p class="card-text">Venha conhecer nossos animais e encontrar seu novo melhor amigo! Teremos diversos pets esperando por um lar amoroso.</p>
-          </div>
-          <div class="card-footer d-flex justify-content-between">
-            <a href="adocao.html" class="btn btn-sm btn-primary">Ver</a>
-            <span class="badge" style="background: var(--brand-teal); color: white;">Próximo</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <img src="../static/css/imagem/ong4.png" class="card-img-top" alt="Mutirão de Castração">
-          <div class="card-body">
-            <h5 class="card-title">Mutirão de Castração</h5>
-            <p class="card-subtitle text-muted">22 de Junho de 2026</p>
-            <p class="card-text">Mutirão de castração a baixo custo. Agende seu horário e contribua para o controle populacional de animais.</p>
-          </div>
-          <div class="card-footer d-flex justify-content-between">
-            <a href="castracao_mutirao.html" class="btn btn-sm btn-primary">Ver</a>
-            <span class="badge" style="background: var(--brand-coral); color: white;">Inscrições Abertas</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <img src="../static/css/imagem/ong.jpg" class="card-img-top" alt="Bazar Beneficente">
-          <div class="card-body">
-            <h5 class="card-title">Bazar Beneficente</h5>
-            <p class="card-subtitle text-muted">5 de Julho de 2026</p>
-            <p class="card-text">Participe do nosso bazar e ajude a causa animal. Roupas, acessórios e itens de decoração com preços especiais.</p>
-          </div>
-          <div class="card-footer d-flex justify-content-between">
-            <a href="doacao.html" class="btn btn-sm btn-primary">Ver</a>
-            <span class="badge" style="background: var(--brand-purple); color: white;">Em Breve</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="row" id="eventos-container"></div>
 
     <a href="../index.html" class="button btn-secondary mt-3">Voltar</a>
   </div>
 </main>
 
 <script src="../components/footer.js"></script>
+<script>
+var API_BASE = window.API_BASE;
+fetch(API_BASE + '/eventos')
+  .then(function(r) { return r.json(); })
+  .then(function(eventos) {
+    var container = document.getElementById('eventos-container');
+    if (!eventos || !eventos.length) {
+      container.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum evento cadastrado.</div>';
+      return;
+    }
+    eventos.forEach(function(ev) {
+      var col = document.createElement('div');
+      col.className = 'col-md-4 mb-4';
+      col.innerHTML =
+        '<div class="card h-100">' +
+          (ev.foto_url ? '<img src="' + ev.foto_url + '" class="card-img-top" alt="' + (ev.titulo || '') + '">' : '') +
+          '<div class="card-body">' +
+            '<h5 class="card-title">' + (ev.titulo || '') + '</h5>' +
+            '<p class="card-subtitle text-muted">' + (ev.data_evento || '') + '</p>' +
+            '<p class="card-text">' + (ev.descricao || '') + '</p>' +
+          '</div>' +
+          (ev.status ? '<div class="card-footer d-flex justify-content-between"><span class="badge" style="background: var(--brand-teal); color: white;">' + ev.status + '</span></div>' : '') +
+        '</div>';
+      container.appendChild(col);
+    });
+  })
+  .catch(function() {
+    document.getElementById('eventos-container').innerHTML = '<div class="col-12 text-center text-muted py-5">Erro ao carregar eventos.</div>';
+  });
+</script>
 
 </body>
 </html>

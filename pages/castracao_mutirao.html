@@ -174,13 +174,6 @@
 <script>
 var API_BASE = window.API_BASE;
 
-var EVENTOS_PADRAO = [
-  {data:'12/07/2026',local:'E O BICHO',endereco:'Rua Principal, 123 - Centro, Marília/SP',vagas:30,dataLimite:'05/07/2026',especiePadrao:'',status:'aberto'},
-  {data:'26/07/2026',local:'Clínica PetCare',endereco:'Av. das Nações, 500 - Bairro Alto, Marília/SP',vagas:25,dataLimite:'19/07/2026',especiePadrao:'',status:'aberto'},
-  {data:'09/08/2026',local:'Hospital VetLife',endereco:'Rua dos Veterinários, 50 - Jardim América, Marília/SP',vagas:0,dataLimite:'',especiePadrao:'',status:'indisponivel'},
-  {data:'15/06/2026',local:'E O BICHO',endereco:'Rua Principal, 123 - Centro, Marília/SP',vagas:0,dataLimite:'',especiePadrao:'',status:'encerrado'}
-];
-
 function salvarEventosAdmin(eventos) {
   var apenasAdmin = eventos.filter(function(e) { return e._admin; });
   localStorage.setItem('mutirao_eventos_admin', JSON.stringify(apenasAdmin));
@@ -192,7 +185,23 @@ function formatarDataISO(dataISO) {
   return partes[2] + '/' + partes[1] + '/' + partes[0];
 }
 
+function formatarDataISOInverso(dataBR) {
+  if (!dataBR) return '';
+  var partes = dataBR.split('/');
+  if (partes.length === 3) return partes[2] + '-' + partes[1] + '-' + partes[0];
+  return dataBR;
+}
+
 var isAdmin = false;
+var eventosAPI = [];
+
+function formatarDataBR(d) {
+  if (!d) return '';
+  if (d.match(/^\d{2}\/\d{2}\/\d{4}$/)) return d;
+  var partes = d.split('-');
+  if (partes.length === 3) return partes[2] + '/' + partes[1] + '/' + partes[0];
+  return d;
+}
 
 function renderizarEventos() {
   var container = document.getElementById('eventos-container');
@@ -208,8 +217,10 @@ function renderizarEventos() {
     var badgeHtml = '';
     var botoesHtml = '';
     var especieLabel = '';
-    if (ev.especiePadrao === 'Gato') especieLabel = '<span class="badge" style="background:#a855f7;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Gatos</span>';
-    else if (ev.especiePadrao === 'Cachorro') especieLabel = '<span class="badge" style="background:#f59e0b;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Cachorros</span>';
+    var especiePadrao = ev.especiePadrao || ev.especie || '';
+    if (especiePadrao === 'Gato') especieLabel = '<span class="badge" style="background:#a855f7;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Gatos</span>';
+    else if (especiePadrao === 'Cachorro') especieLabel = '<span class="badge" style="background:#f59e0b;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Cachorros</span>';
+    else if (especiePadrao) especieLabel = '<span class="badge" style="background:#10b981;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>' + especiePadrao + '</span>';
     else especieLabel = '<span class="badge" style="background:#10b981;color:white;margin-top:4px;"><i class="bi bi-tag-fill me-1"></i>Gatos e Cachorros</span>';
 
     if (isIndisponivel) {
@@ -220,7 +231,7 @@ function renderizarEventos() {
       botoesHtml = '<span class="badge badge-secondary d-block text-center mt-2"><i class="bi bi-x-circle me-2"></i>Encerrado</span>';
       botoesHtml += '<a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem(\'relatorio_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local + '\'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1"><i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições</a>';
     } else {
-      badgeHtml = '<span class="badge badge-success"><i class="bi bi-people-fill me-1"></i>' + ev.vagas + ' vagas disponíveis</span>';
+      badgeHtml = '<span class="badge badge-success"><i class="bi bi-people-fill me-1"></i>' + (ev.vagas || 0) + ' vagas disponíveis</span>';
       botoesHtml = '<a href="castracao_mutirao_form.html" onclick="event.preventDefault();sessionStorage.setItem(\'mutirao_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local.replace(/'/g,"\\'") + '\',endereco:\'' + ev.endereco.replace(/'/g,"\\'") + '\',vagas:' + ev.vagas + ',dataLimite:\'' + ev.dataLimite + '\',especiePadrao:\'' + ev.especiePadrao + '\'}));location.href=this.href;" class="btn btn-primary w-100"><i class="bi bi-pencil-square me-2"></i>Inscrever-se</a>';
       botoesHtml += '<a href="../relatorio/castracao.html" onclick="event.preventDefault();sessionStorage.setItem(\'relatorio_evento\',JSON.stringify({data:\'' + ev.data + '\',local:\'' + ev.local.replace(/'/g,"\\'") + '\'}));location.href=this.href;" class="btn btn-secondary btn-sm w-100 mt-1"><i class="bi bi-bar-chart-steps me-1"></i>Ver Inscrições</a>';
     }
@@ -237,7 +248,7 @@ function renderizarEventos() {
     html += '<div class="col-md-6 col-lg-4 mb-4" ' + opacidade + '>' +
       '<div class="card h-100">' +
         '<div class="card-body">' +
-          '<h5 class="card-title"><i class="bi bi-calendar-event text-primary me-2"></i>' + ev.data + '</h5>' +
+          '<h5 class="card-title"><i class="bi bi-calendar-event text-primary me-2"></i>' + formatarDataBR(ev.data || ev.data_evento) + '</h5>' +
           '<h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-geo-alt me-1"></i>' + ev.local + '</h6>' +
           '<p class="card-text small text-muted">' + ev.endereco + '</p>' +
           '<p class="card-text">' + badgeHtml + '</p>' +
@@ -367,7 +378,20 @@ function carregarEventos() {
   var salvos = localStorage.getItem('mutirao_eventos_admin');
   var adminEventos = salvos ? JSON.parse(salvos) : [];
   var ocultos = JSON.parse(localStorage.getItem('mutirao_eventos_ocultos') || '[]');
-  return EVENTOS_PADRAO.concat(adminEventos).filter(function(ev) {
+  var apiEventos = eventosAPI.map(function(ev) {
+    return {
+      _api: true,
+      _id: ev.id,
+      data: ev.data_evento ? formatarDataBR(ev.data_evento) : '',
+      local: ev.local || '',
+      endereco: ev.endereco || '',
+      vagas: ev.vagas || 0,
+      dataLimite: ev.data_limite ? formatarDataBR(ev.data_limite) : '',
+      especiePadrao: ev.especie_padrao || '',
+      status: ev.status || 'aberto'
+    };
+  });
+  return apiEventos.concat(adminEventos).filter(function(ev) {
     return ocultos.indexOf(ev.data + '|' + ev.local) === -1;
   });
 }
@@ -495,6 +519,24 @@ function cadastrarEventoAdmin(e) {
 
   if (!evento.local || !evento.endereco) { alert('Preencha o local e endereço.'); return false; }
 
+  var token = localStorage.getItem('amoranimal_token');
+  if (token) {
+    fetch(API_BASE + '/eventos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        titulo: 'Mutirão de Castração - ' + evento.local,
+        data_evento: formatarDataISOInverso(evento.data),
+        local: evento.local,
+        endereco: evento.endereco,
+        vagas: evento.vagas,
+        data_limite: formatarDataISOInverso(evento.dataLimite),
+        especie_padrao: evento.especiePadrao,
+        status: 'aberto'
+      })
+    }).then(function(r) { if (r.ok) carregarEventosAPI(); });
+  }
+
   var eventos = carregarEventos();
   eventos.push(evento);
   salvarEventosAdmin(eventos);
@@ -549,14 +591,23 @@ function atualizarAdminLista() {
   container.innerHTML = html;
 }
 
+function carregarEventosAPI() {
+  return fetch(API_BASE + '/eventos')
+    .then(function(r) { return r.json(); })
+    .then(function(data) { eventosAPI = Array.isArray(data) ? data : []; })
+    .catch(function() { eventosAPI = []; });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  carregarEventosAPI().then(function() {
+    renderizarEventos();
+  });
   if (localStorage.getItem('amoranimal_token')) {
     isAdmin = true;
     document.getElementById('admin-section').style.display = 'block';
     popularSelectsClinicas();
     atualizarAdminLista();
   }
-  renderizarEventos();
 });
 </script>
 
