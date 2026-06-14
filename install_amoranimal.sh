@@ -135,6 +135,34 @@ SQLEOS
     } || warn "Falha ao restaurar dump (pode ser conflito com tabelas existentes)"
   fi
 
+  # 4. Renomear tabelas do dump (singular -> plural) se existirem
+  info "Verificando tabelas do dump (singular -> plural)..."
+  docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" <<-'SQLEOS'
+    DO $$
+    DECLARE
+      m RECORD;
+    BEGIN
+      FOR m IN
+        SELECT * FROM (VALUES
+          ('adocao',     'adocoes'),
+          ('adotado',    'animais'),
+          ('castracao',  'castracoes'),
+          ('parceria',   'parcerias'),
+          ('voluntario', 'voluntarios')
+        ) AS t(singular, plural)
+      LOOP
+        IF EXISTS (SELECT 1 FROM information_schema.tables
+                   WHERE table_schema='public' AND table_name=m.singular) THEN
+          IF EXISTS (SELECT 1 FROM information_schema.tables
+                     WHERE table_schema='public' AND table_name=m.plural) THEN
+            EXECUTE 'DROP TABLE IF EXISTS "' || m.plural || '" CASCADE';
+          END IF;
+          EXECUTE 'ALTER TABLE "' || m.singular || '" RENAME TO "' || m.plural || '"';
+          RAISE NOTICE 'Tabela % renomeada para %', m.singular, m.plural;
+        END IF;
+      END LOOP;
+    END $$;
+SQLEOS
   info "Migração concluída."
 }
 
