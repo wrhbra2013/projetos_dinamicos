@@ -30,8 +30,8 @@
         </a>
         <a href="#" class="dashboard-card" onclick="showView('cadastro');return false">
           <i class="bi bi-person-plus-fill"></i>
-          <h3>Cadastro de Voluntário</h3>
-          <p>Registrar novo voluntário na plataforma</p>
+          <h3>Voluntários Ativos</h3>
+          <p>Registro de voluntários na plataforma</p>
         </a>
         <a href="#" class="dashboard-card" onclick="showView('interessados');return false">
           <i class="bi bi-person-lines-fill"></i>
@@ -251,6 +251,7 @@ function showView(view) {
 function carregarVoluntarios() {
   var grid = document.getElementById('voluntariosGrid');
   var count = document.getElementById('voluntarios-count');
+  var isAdmin = !!localStorage.getItem('amoranimal_token');
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted-color)"><i class="bi bi-hourglass-split" style="font-size:2em"></i><p>Carregando voluntários...</p></div>';
   fetch(API_BASE + '/voluntarios')
     .then(function(r) { return r.json(); })
@@ -311,10 +312,14 @@ function carregarVoluntarios() {
         }
         html +=
           '    </div>' +
-          '  </div>' +
-          '  <div class="card-actions">' +
-          '    <button class="btn-action btn-delete" onclick="deleteVoluntario(' + v.id + ',\'' + escapeHtml(v.nome) + '\')"><i class="bi bi-trash"></i> Excluir</button>' +
-          '  </div>' +
+          '  </div>';
+        if (isAdmin) {
+          html +=
+            '  <div class="card-actions">' +
+            '    <button class="btn-action btn-delete" onclick="deleteVoluntario(' + v.id + ',\'' + escapeHtml(v.nome) + '\')"><i class="bi bi-trash"></i> Excluir</button>' +
+            '  </div>';
+        }
+        html +=
           '</div>';
       }
       grid.innerHTML = html;
@@ -328,12 +333,14 @@ function carregarVoluntarios() {
 function carregarInteressados() {
   var tbody = document.getElementById('interessados-tbody');
   var count = document.getElementById('interessados-count');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted-color)"><i class="bi bi-hourglass-split" style="font-size:2em"></i><p>Carregando...</p></td></tr>';
+  var isAdmin = !!localStorage.getItem('amoranimal_token');
+  var colspan = isAdmin ? 8 : 7;
+  tbody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align:center;padding:40px;color:var(--muted-color)"><i class="bi bi-hourglass-split" style="font-size:2em"></i><p>Carregando...</p></td></tr>';
   fetch(API_BASE + '/voluntarios')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">Nenhum interesse registrado até o momento.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="text-center py-4 text-muted">Nenhum interesse registrado até o momento.</td></tr>';
         count.innerHTML = '<i class="bi bi-heart me-1"></i> Nenhum interessado';
         return;
       }
@@ -349,14 +356,18 @@ function carregarInteressados() {
           '  <td data-label="Localidade" style="padding:10px 16px">' + escapeHtml(v.localidade || '-') + '</td>' +
           '  <td data-label="Habilidade" style="padding:10px 16px">' + escapeHtml(v.habilidade || '-') + '</td>' +
           '  <td data-label="Disponibilidade" style="padding:10px 16px">' + escapeHtml(v.disponibilidade || '-') + '</td>' +
-          '  <td data-label="Mensagem" style="padding:10px 16px"><small>' + escapeHtml(v.mensagem || '-') + '</small></td>' +
-          '  <td data-label="" style="padding:10px 16px;text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteInteressado(' + v.id + ',\'' + escapeForAttr(v.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>' +
+          '  <td data-label="Mensagem" style="padding:10px 16px"><small>' + escapeHtml(v.mensagem || '-') + '</small></td>';
+        if (isAdmin) {
+          html +=
+            '  <td data-label="" style="padding:10px 16px;text-align:center"><button class="btn btn-sm btn-outline-danger" onclick="deleteInteressado(' + v.id + ',\'' + escapeForAttr(v.nome) + '\')" title="Excluir"><i class="bi bi-trash"></i></button></td>';
+        }
+        html +=
           '</tr>';
       }
       tbody.innerHTML = html;
     })
     .catch(function() {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted-color)">Erro ao carregar dados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align:center;padding:40px;color:var(--muted-color)">Erro ao carregar dados.</td></tr>';
     });
 }
 
