@@ -79,7 +79,7 @@ function renderCastracoes(castracoes) {
       : '<span class="badge badge-info">' + esc(c.pet_especie) + '</span>';
     var statusHtml = isAtendido
       ? '<button class="btn-status-atendido" disabled><i class="bi bi-check-circle-fill"></i> Atendido</button>'
-      : '<button class="btn-status-atender admin-only" onclick="atenderCastracao(this)" data-id="' + c.id + '"><i class="bi bi-check-lg"></i> Atender</button>';
+      : '<button class="btn-status-atender" onclick="atenderCastracao(this)" data-id="' + c.id + '"><i class="bi bi-check-lg"></i> Atender</button>';
     tr.innerHTML =
       '<td><strong>' + esc(ticketNum) + '</strong></td>' +
       '<td>' + esc(c.pet_nome) + '</td>' +

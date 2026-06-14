@@ -44,7 +44,7 @@
     '    <div class="search-bar-row">' +
     '      <a href="' + ROOT + '/index.html" class="search-home-btn" aria-label="Ir para pagina inicial"><i class="bi bi-house-door-fill"></i></a>' +
     '      <div class="search-inner">' +
-    '        <input type="text" id="site-search" class="search-input" placeholder="Pesquisar em todo o site..." autocomplete="off" aria-label="Pesquisar" role="combobox" aria-expanded="false" aria-controls="search-results">' +
+    '        <input type="text" id="site-search" class="search-input" autocomplete="off" aria-label="Pesquisar" role="combobox" aria-expanded="false" aria-controls="search-results">' +
     '        <i class="bi bi-search search-icon"></i>' +
     '        <button type="button" id="search-clear" class="search-clear-btn" aria-label="Limpar pesquisa"><i class="bi bi-x-lg"></i></button>' +
     '      </div>' +
@@ -83,6 +83,15 @@
     { t:"Admin", d:"Painel administrativo e login do sistema", k:"admin administrador login acesso gestao painel sistema entrar", i:"bi bi-lock", c:"#64748b", u:"login/index.html" }
   ];
 
+  var API_SECTIONS = [
+    { t:"Eventos na Landing", d:"Eventos cadastrados na pagina inicial", k:"evento agenda calendario programacao", i:"bi bi-calendar-event", c:"#a855f7", e:"eventos", f:"titulo" },
+    { t:"Castracoes", d:"Agendamentos de castracao realizados", k:"castracao cirurgia castrar agendamento veterinario", i:"bi bi-person-heart", c:"#10b981", e:"castracoes", f:"pet_nome" },
+    { t:"Pets para Adocao", d:"Animais disponiveis para adocao", k:"pet cachorro gato cao felino adocao animal", i:"bi bi-paw", c:"#f59e0b", e:"animais", f:"nome" },
+    { t:"Voluntarios", d:"Voluntarios cadastrados no sistema", k:"voluntario voluntariado ajuda contribuir", i:"bi bi-people-fill", c:"#ec4899", e:"voluntarios", f:"nome" },
+    { t:"Parcerias", d:"Empresas parceiras da ONG", k:"parceria empresa patrocinio apoio parceiro", i:"bi bi-handshake", c:"#14b8a6", e:"parcerias", f:"empresa" },
+    { t:"Animais Perdidos", d:"Animais desaparecidos divulgacao", k:"procura-se perdido desaparecido sumido busca", i:"bi bi-search", c:"#f97316", e:"procura_se", f:"nome" }
+  ];
+
   function highlightText(text, query) {
     if (!query) return text;
     var words = query.toLowerCase().split(/[\s,;\-]+/).filter(function(w){ return w.length > 0; });
@@ -99,6 +108,8 @@
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
   }
+
+  var searchCache = {};
 
   function searchPages(q) {
     var results = document.getElementById('search-results');
@@ -120,6 +131,7 @@
 
     var words = q.toLowerCase().split(/[\s,;\-]+/).filter(function(w){ return w.length > 0; });
     var found = [];
+
     for (var i = 0; i < PAGES.length; i++) {
       var p = PAGES[i];
       var text = (p.t + ' ' + p.d + ' ' + p.k).toLowerCase();
@@ -130,12 +142,38 @@
           if (p.t.toLowerCase().indexOf(words[w]) !== -1) score += 2;
         }
       }
-      if (score > 0) found.push({ page: p, score: score });
+      if (score > 0) found.push({ page: p, score: score, api: false });
     }
+
+    for (var i = 0; i < API_SECTIONS.length; i++) {
+      var s = API_SECTIONS[i];
+      var text = (s.t + ' ' + s.d + ' ' + s.k).toLowerCase();
+      var score = 0;
+      for (var w = 0; w < words.length; w++) {
+        if (text.indexOf(words[w]) !== -1) {
+          score += 1;
+          if (s.t.toLowerCase().indexOf(words[w]) !== -1) score += 2;
+        }
+      }
+      if (score > 0) found.push({ page: s, score: score, api: true });
+    }
+
     found.sort(function(a, b) { return b.score - a.score; });
 
     renderDropdown(found, q);
     renderPanel(found, q);
+  }
+
+  function sectionUrl(s) {
+    var map = {
+      eventos: 'pages/eventos.html',
+      castracoes: 'pages/castracao.html',
+      animais: 'pages/adocao.html',
+      voluntarios: 'pages/voluntario.html',
+      parcerias: 'pages/parceria.html',
+      procura_se: 'pages/procura_se.html'
+    };
+    return map[s.e] || 'index.html';
   }
 
   function renderDropdown(found, q) {
@@ -148,7 +186,8 @@
       var html = '';
       for (var i = 0; i < found.length; i++) {
         var p = found[i].page;
-        html += '<a href="' + ROOT + '/' + p.u + '" data-search-link="1" role="option" data-index="' + i + '">';
+        var url = found[i].api ? sectionUrl(p) : p.u;
+        html += '<a href="' + ROOT + '/' + url + '" data-search-link="1" role="option" data-index="' + i + '">';
         html += '<span class="sr-icon" style="background:' + p.c + '"><i class="' + p.i + '"></i></span>';
         html += '<div><div class="sr-title">' + highlightText(p.t, q) + '</div><div class="sr-desc">' + highlightText(p.d, q) + '</div></div>';
         html += '</a>';
@@ -169,13 +208,38 @@
       var html = '';
       for (var i = 0; i < found.length; i++) {
         var p = found[i].page;
-        html += '<a href="' + ROOT + '/' + p.u + '" data-search-link="1" role="option" data-index="' + i + '">';
+        var url = found[i].api ? sectionUrl(p) : p.u;
+        html += '<a href="' + ROOT + '/' + url + '" data-search-link="1" role="option" data-index="' + i + '">';
         html += '<span class="sr-icon" style="background:' + p.c + '"><i class="' + p.i + '"></i></span>';
         html += '<div><div class="sr-title">' + highlightText(p.t, q) + '</div><div class="sr-desc">' + highlightText(p.d, q) + '</div></div>';
         html += '</a>';
       }
       panelResults.innerHTML = html;
       if (panelCount) panelCount.innerHTML = '<strong>' + found.length + '</strong> resultado(s) para <strong>' + escapeHtml(q) + '</strong>';
+    }
+  }
+
+  function updateSearchPlaceholder() {
+    var input = document.getElementById('site-search');
+    if (!input) return;
+
+    var defaultText = 'Pesquisar em todo o site...';
+    var sections = document.querySelectorAll('.landing-section');
+    var names = [];
+
+    for (var i = 0; i < sections.length; i++) {
+      var h2 = sections[i].querySelector('h2');
+      if (!h2) continue;
+      var text = h2.textContent.replace(/^\s*[\d.]+\s*/, '').trim();
+      if (!text || text.length < 2) continue;
+      if (text === 'Administração') continue;
+      names.push(text);
+    }
+
+    if (names.length > 0) {
+      input.placeholder = 'Pesquisar: ' + names.join(', ');
+    } else {
+      input.placeholder = defaultText;
     }
   }
 
@@ -193,6 +257,8 @@
     var clearBtn = document.getElementById('search-clear');
 
     if (!input || !results) return;
+
+    updateSearchPlaceholder();
 
     function onResultClick(e) {
       var link = e.target.closest('a[data-search-link]');
