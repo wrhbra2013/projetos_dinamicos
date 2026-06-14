@@ -688,6 +688,8 @@ function atenderCastracao(btn) {
       var tr = btn.closest('tr');
       tr.className = 'status-atendido';
       tr.style.display = 'none';
+      td = btn.parentNode;
+      td.innerHTML = '<button class="btn-status-atendido" disabled><i class="bi bi-check-circle-fill"></i> Atendido</button>';
       var checkbox = document.getElementById('toggleAtendidos');
       if (checkbox && checkbox.checked) tr.style.display = 'table-row';
     })

@@ -74,12 +74,12 @@ function renderCastracoes(castracoes) {
     tr.setAttribute('data-cidade', c.tutor_cidade || '');
     tr.setAttribute('data-estado', c.tutor_estado || '');
     tr.setAttribute('data-cep', c.tutor_cep || '');
-    var statusClass = 'badge-warning';
-    var statusIcon = '\u23F3';
-    if (isAtendido) { statusClass = 'badge-success'; statusIcon = '\u2713'; }
     var badgeCor = (c.pet_especie || '').toLowerCase() === 'gato'
       ? '<span class="badge" style="background:#8b5cf6;color:#fff;">Gato</span>'
       : '<span class="badge badge-info">' + esc(c.pet_especie) + '</span>';
+    var statusHtml = isAtendido
+      ? '<button class="btn-status-atendido" disabled><i class="bi bi-check-circle-fill"></i> Atendido</button>'
+      : '<button class="btn-status-atender admin-only" onclick="atenderCastracao(this)" data-id="' + c.id + '"><i class="bi bi-check-lg"></i> Atender</button>';
     tr.innerHTML =
       '<td><strong>' + esc(ticketNum) + '</strong></td>' +
       '<td>' + esc(c.pet_nome) + '</td>' +
@@ -87,10 +87,9 @@ function renderCastracoes(castracoes) {
       '<td>' + badgeCor + '</td>' +
       '<td>' + esc(c.clinica) + '</td>' +
       '<td>' + fmtDate(c.data_agendamento) + '</td>' +
-      '<td><span class="badge ' + statusClass + '">' + statusIcon + ' ' + esc(c.status) + '</span></td>' +
+      '<td>' + statusHtml + '</td>' +
       '<td>' +
         '<button class="btn-comprovante" onclick="gerarComprovante(this)"><i class="bi bi-file-earmark-text"></i> Comprovante</button> ' +
-        '<button class="btn-atender-castracao admin-only" onclick="atenderCastracao(this)" data-id="' + c.id + '" title="Atender"><i class="bi bi-check-lg"></i> OK</button> ' +
         '<button class="btn-excluir-castracao admin-only" onclick="excluirCastracao(this)" data-id="' + c.id + '" title="Excluir"><i class="bi bi-trash"></i> Excluir</button>' +
       '</td>';
     tbody.appendChild(tr);
